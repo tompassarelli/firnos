@@ -1,0 +1,23 @@
+{ config, lib, pkgs, ... }:
+let
+  cfg = config.myConfig.containers;
+  username = config.myConfig.users.username;
+in
+{
+  config = lib.mkIf cfg.enable {
+    virtualisation.podman = {
+      enable = true;
+      # Docker-compatible CLI alias (podman runs when you type `docker`)
+      dockerCompat = true;
+      # Enable default network for rootless containers
+      defaultNetwork.settings.dns_enabled = true;
+    };
+
+    # Add user to podman group
+    users.users.${username}.extraGroups = [ "podman" ];
+
+    environment.systemPackages = with pkgs; [
+      distrobox
+    ];
+  };
+}

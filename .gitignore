@@ -1,0 +1,15 @@
+scratch.txt
+result
+result-*
+/builds/
+.env
+
+# sops age private keys — NEVER commit these
+*.age.key
+keys.txt
+
+# Editor backup files that might contain secrets
+*~
+*.swp
+*.swo
+.#*

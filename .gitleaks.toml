@@ -1,0 +1,35 @@
+title = "FirnOS gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "nix-hashed-password"
+description = "Hashed password in Nix config"
+regex = '''hashedPassword\s*=\s*"[^"]{10,}"'''
+tags = ["nix", "password"]
+
+[[rules]]
+id = "nix-plaintext-password"
+description = "Plaintext password in Nix config"
+regex = '''(?i)(password|passwd|pass)\s*=\s*"[^"]{4,}"'''
+tags = ["nix", "password"]
+
+[[rules]]
+id = "wifi-psk"
+description = "WiFi pre-shared key"
+regex = '''(?i)(psk|pre.?shared.?key|wifi.?password)\s*=\s*"[^"]{8,}"'''
+tags = ["nix", "wifi"]
+
+[[rules]]
+id = "age-private-key"
+description = "age private key"
+regex = '''AGE-SECRET-KEY-[A-Z0-9]+'''
+tags = ["sops", "age"]
+
+[allowlist]
+description = "FirnOS global allowlist"
+paths = [
+  '''\.sops\.yaml''',
+  '''secrets/.*\.yaml''',
+]

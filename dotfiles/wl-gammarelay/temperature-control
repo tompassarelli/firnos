@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Temperature control using wl-gammarelay (instant, no flicker!)
+# Usage: temp-wl-relay [up|down]
+
+temp=$(busctl --user get-property rs.wl-gammarelay / rs.wl.gammarelay Temperature | awk '{print $2}')
+
+case "$1" in
+    "up")
+        if [ "$temp" -lt 6500 ]; then
+            busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateTemperature n +500
+        fi
+        ;;
+    "down")
+        busctl --user -- call rs.wl-gammarelay / rs.wl.gammarelay UpdateTemperature n -500
+        ;;
+    *)
+        echo "Usage: $0 [up|down]"
+        exit 1
+        ;;
+esac
+
+temp=$(busctl --user get-property rs.wl-gammarelay / rs.wl.gammarelay Temperature | awk '{print $2}')
+
+notify-send \
+    -h "string:x-canonical-private-synchronous:temperature" \
+    -t 2000 \
+    "🌡  ${temp}K"

@@ -1,0 +1,40 @@
+# Ironbar configuration
+name = "main"
+position = "top"
+height = 32
+start_hidden = true
+
+# Left modules
+[[start]]
+type = "clock"
+format = "%A %I:%M %p"
+
+# Center modules
+[[center]]
+type = "workspaces"
+all_monitors = true
+
+# Right modules
+[[end]]
+type = "sys_info"
+format = ["󰻠 {cpu_percent}%", "󰍛 {memory_percent}%"]
+interval.cpu = 5
+interval.memory = 30
+
+[[end]]
+type = "volume"
+format = "{icon} {percentage}%"
+max_volume = 100
+icons.volume_high = "󰕾"
+icons.volume_medium = "󰖀"
+icons.volume_low = "󰕿"
+icons.muted = "󰝟"
+
+[[end]]
+type = "script"
+cmd = "~/.config/ironbar/battery.sh"
+interval = 30000
+
+[[end]]
+type = "tray"
+icon_size = 28

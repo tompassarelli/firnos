@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Brightness control with mako notification
+# Usage: brightness-control [up|down]
+
+case "$1" in
+    "up")
+        brightnessctl --class=backlight set +10%
+        ;;
+    "down")
+        brightnessctl --class=backlight set 10%-
+        ;;
+    *)
+        echo "Usage: $0 [up|down]"
+        exit 1
+        ;;
+esac
+
+# Get current brightness percentage
+pct=$(brightnessctl --class=backlight -m | cut -d, -f4 | tr -d '%')
+
+# Pick icon based on level
+if [ "$pct" -le 33 ]; then
+    icon="☀"
+elif [ "$pct" -le 66 ]; then
+    icon="☀"
+else
+    icon="☀"
+fi
+
+notify-send \
+    -h "string:x-canonical-private-synchronous:brightness" \
+    -t 2000 \
+    "$icon  ${pct}%"

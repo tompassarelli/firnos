@@ -1,0 +1,41 @@
+configuration {
+  /* Show icons */
+  show-icons: true;
+
+  /* Navigation with Ctrl+J/K */
+  kb-row-down: "Down,Control+j";
+  kb-row-up: "Up,Control+k";
+
+  /* Unbind Control+j from accept-entry (keep Return and Control+m) */
+  kb-accept-entry: "Control+m,Return,KP_Enter";
+
+  /* Unbind Control+k from delete-to-eol */
+  kb-remove-to-eol: "";
+
+  /* Window format: just title, no workspace number */
+  window-format: "{t}";
+
+  /* Prioritize windows first in combi mode */
+  combi-modi: "window,drun";
+}
+
+@theme "Arc-Dark"
+
+/* Custom tweaks */
+element {
+    spacing: 0px;
+}
+
+element-icon {
+    padding: 0px 5px 0px 5px;
+    background-color: inherit;
+}
+
+element-text {
+    padding: 0px 0px 0px 5px;
+    background-color: inherit;
+}
+
+listview {
+    scrollbar: false;
+}

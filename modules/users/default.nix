@@ -1,0 +1,6 @@
+{ lib, ... }:
+{
+  imports = [
+    ./users.nix
+  ];
+}
