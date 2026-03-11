@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, flakeRoot, ... }:
 let
   username = config.myConfig.users.username;
 in
@@ -18,6 +18,12 @@ in
       libtool         # For vterm compilation
       sbcl            # Common Lisp compiler
     ];
+
+    # Clockify API key (decrypted to /run/secrets/msa-clockify-api-key)
+    sops.secrets."msa-clockify-api-key" = {
+      sopsFile = flakeRoot + "/secrets/clockify.yaml";
+      owner = username;
+    };
 
     # HOME-MANAGER: Doom config and environment
     home-manager.users.${username} = { config, ... }: {

@@ -196,3 +196,52 @@ Also refreshes the agenda file cache."
     (with-current-buffer (find-file-noselect f)
       (when (member "public" (org-get-tags))
         (org-hugo-export-wim-to-md)))))
+
+;; ============ Clockify API ============
+
+(defvar +clockify/api-base "https://api.clockify.me/api/v1")
+(defvar +clockify/workspace-id "699de28e73587cb175abd341")
+(defvar +clockify/project-msa "699de2e373587cb175abdedb")
+(defvar +clockify/default-project +clockify/project-msa)
+
+(defun +clockify/api-key ()
+  "Read Clockify API key from sops secret."
+  (string-trim (with-temp-buffer
+                 (insert-file-contents "/run/secrets/msa-clockify-api-key")
+                 (buffer-string))))
+
+(defun +clockify/request (method endpoint &optional body)
+  "Make a Clockify API request. Returns parsed JSON."
+  (let* ((url-request-method method)
+         (url-request-extra-headers
+          `(("X-Api-Key" . ,(+clockify/api-key))
+            ("Content-Type" . "application/json")))
+         (url-request-data (when body (encode-coding-string (json-encode body) 'utf-8)))
+         (buf (url-retrieve-synchronously
+               (concat +clockify/api-base endpoint) t)))
+    (unwind-protect
+        (with-current-buffer buf
+          (goto-char (point-min))
+          (re-search-forward "\n\n")
+          (json-read))
+      (kill-buffer buf))))
+
+(defun +clockify/create-time-entry (description start-iso end-iso &optional project-id)
+  "Create a Clockify time entry.
+START-ISO and END-ISO are ISO 8601 strings like 2026-03-12T09:00:00.000Z.
+PROJECT-ID defaults to MSA."
+  (+clockify/request "POST"
+                     (format "/workspaces/%s/time-entries" +clockify/workspace-id)
+                     `((start . ,start-iso)
+                       (end . ,end-iso)
+                       (description . ,description)
+                       (projectId . ,(or project-id +clockify/default-project)))))
+
+(defun +clockify/test ()
+  "Create a dummy 1-hour time entry on Clockify to verify API works."
+  (interactive)
+  (let ((result (+clockify/create-time-entry
+                 "Test entry from Emacs"
+                 "2026-03-12T09:00:00.000Z"
+                 "2026-03-12T10:00:00.000Z")))
+    (message "Created entry: %s" (alist-get 'id result))))
