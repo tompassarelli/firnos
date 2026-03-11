@@ -1,5 +1,5 @@
 # My machine configuration
-# Enable the modules you want from Firn
+# Enable the modules you want from FirnOS
 { lib, ... }:
 {
   # ============ REQUIRED ============

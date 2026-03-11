@@ -15,7 +15,7 @@ hosts/
 
 ## How It Works
 
-Firn uses a **flat namespace** for modules:
+FirnOS uses a **flat namespace** for modules:
 
 ```nix
 myConfig.niri.enable = true;

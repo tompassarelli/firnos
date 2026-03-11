@@ -1,10 +1,10 @@
-# Firn
+# FirnOS
 
 A modular, shareable NixOS configuration framework.
 
-## What is Firn?
+## What is FirnOS?
 
-Firn is a NixOS configuration that you can use as a foundation for your own system. Instead of forking and dealing with merge conflicts, you import Firn as a flake input and build on top of it.
+FirnOS is a NixOS configuration that you can use as a foundation for your own system. Instead of forking and dealing with merge conflicts, you import FirnOS as a flake input and build on top of it.
 
 **Features:**
 - 65+ modules covering desktop, development, theming, and applications
@@ -13,19 +13,19 @@ Firn is a NixOS configuration that you can use as a foundation for your own syst
 - Stylix theming integration
 - home-manager integration
 
-## Using Firn
+## Using FirnOS
 
 ### Option 1: Create Your Own Config (Recommended)
 
-Create your own repo that imports Firn:
+Create your own repo that imports FirnOS:
 
 ```nix
 # ~/code/my-config/flake.nix
 {
-  inputs.firn.url = "github:tompassarelli/firn";
+  inputs.firnos.url = "github:tompassarelli/firnos";
 
-  outputs = { firn, ... }: {
-    nixosConfigurations.my-machine = firn.lib.mkSystem {
+  outputs = { firnos, ... }: {
+    nixosConfigurations.my-machine = firnos.lib.mkSystem {
       hostname = "my-machine";
       hostConfig = ./hosts/my-machine/configuration.nix;
       hardwareConfig = ./hosts/my-machine/hardware-configuration.nix;
@@ -50,9 +50,9 @@ Create your own repo that imports Firn:
 
 See [`template/`](template/) for a complete starting point.
 
-**To update Firn:**
+**To update FirnOS:**
 ```bash
-nix flake update firn
+nix flake update firnos
 rebuild
 ```
 
@@ -63,7 +63,7 @@ If you want full control, fork this repo and modify it directly. You'll manage m
 ## lib.mkSystem Options
 
 ```nix
-firn.lib.mkSystem {
+firnos.lib.mkSystem {
   hostname = "my-machine";           # Required: your hostname
   hostConfig = ./configuration.nix;  # Required: your host config
   hardwareConfig = ./hardware.nix;   # Required: hardware-configuration.nix

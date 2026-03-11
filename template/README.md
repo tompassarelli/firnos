@@ -1,13 +1,13 @@
-# Firn User Config Template
+# FirnOS User Config Template
 
-This is a starting point for your own NixOS configuration powered by [Firn](https://github.com/tompassarelli/firn).
+This is a starting point for your own NixOS configuration powered by [FirnOS](https://github.com/tompassarelli/firnos).
 
 ## Quick Start
 
 1. **Copy this template** to your own repo:
    ```bash
    mkdir ~/code/my-nixos-config
-   cp -r /path/to/firn/template/* ~/code/my-nixos-config/
+   cp -r /path/to/firnos/template/* ~/code/my-nixos-config/
    cd ~/code/my-nixos-config
    git init
    ```
@@ -35,12 +35,12 @@ This is a starting point for your own NixOS configuration powered by [Firn](http
    sudo nixos-rebuild switch --flake .#yourhostname
    ```
 
-## Updating Firn
+## Updating FirnOS
 
-To pull the latest changes from upstream Firn:
+To pull the latest changes from upstream FirnOS:
 
 ```bash
-nix flake update firn
+nix flake update firnos
 sudo nixos-rebuild switch --flake .#yourhostname
 ```
 
@@ -82,8 +82,8 @@ Add more entries to `nixosConfigurations`:
 
 ```nix
 nixosConfigurations = {
-  laptop = firn.lib.mkSystem { ... };
-  desktop = firn.lib.mkSystem { ... };
-  server = firn.lib.mkSystem { ... };
+  laptop = firnos.lib.mkSystem { ... };
+  desktop = firnos.lib.mkSystem { ... };
+  server = firnos.lib.mkSystem { ... };
 };
 ```

@@ -1,5 +1,5 @@
 {
-  description = "Firn - A modular, shareable NixOS configuration framework";
+  description = "FirnOS - A modular, shareable NixOS configuration framework";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
@@ -200,7 +200,7 @@
 
     # ============================================================
     # TOM'S PERSONAL CONFIGURATIONS
-    # (Example usage - users create their own in their firn repo)
+    # (Example usage - users create their own in their firnos repo)
     # ============================================================
 
     # Container images

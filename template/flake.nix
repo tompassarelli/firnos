@@ -1,18 +1,18 @@
 {
-  description = "My NixOS configuration powered by Firn";
+  description = "My NixOS configuration powered by FirnOS";
 
   inputs = {
-    # Firn - the module framework
-    firn.url = "github:tompassarelli/firn";
+    # FirnOS - the module framework
+    firnos.url = "github:tompassarelli/firnos";
 
     # You can add your own inputs here
     # my-package.url = "github:someone/something";
   };
 
-  outputs = { self, firn, ... }@inputs: {
+  outputs = { self, firnos, ... }@inputs: {
     nixosConfigurations = {
       # Your machine - rename "my-machine" to your hostname
-      my-machine = firn.lib.mkSystem {
+      my-machine = firnos.lib.mkSystem {
         hostname = "my-machine";
         hostConfig = ./hosts/my-machine/configuration.nix;
         hardwareConfig = ./hosts/my-machine/hardware-configuration.nix;
@@ -32,7 +32,7 @@
       };
 
       # Add more machines here
-      # another-machine = firn.lib.mkSystem { ... };
+      # another-machine = firnos.lib.mkSystem { ... };
     };
   };
 }
