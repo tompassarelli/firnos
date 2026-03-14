@@ -80,14 +80,6 @@ gap: space between components, like padding/margin
   - regions can be folded with fold button or `za` key in vim
 
 
-=== Optional Features ===
-
-[hover-reveal] (off by default)
-- when sidebar is hidden (zen mode), hovering the left edge reveals the drawer
-- enable: uncomment the hover-reveal region in the CSS
-- limitation: close is instant (Firefox doesn't trigger CSS transitions
-  via :has() selector changes, only direct :hover transitions work)
-
 #endregion fennec-ui */
 
 /* #endregion dev-docs */
@@ -160,96 +152,22 @@ gap: space between components, like padding/margin
 /* #region dynamic sidebar toggle */
 
 /* toggle the entire ui by toggling the sidebar */
-body:has(#sidebar-box[hidden]:not(:hover)) #navigator-toolbox {
+body:has(#sidebar-box[hidden]) #navigator-toolbox {
   width: 0px !important;
   pointer-events: none;
 }
 
-body:has(#sidebar-box[hidden]:not(:hover)) toolbaritem#urlbar-container {
+body:has(#sidebar-box[hidden]) toolbaritem#urlbar-container {
   width: 0px !important;
   max-width: 0px !important;
   pointer-events: none;
 }
 
-body:has(#sidebar-box[hidden]) #identity-icon-box {
+body:has(#sidebar-box[hidden="true"]) #identity-icon-box {
 	background-color: transparent !important;
 }
 
 /* #endregion dynamic sidebar toggle */
-
-/* #region hover-reveal (off by default)
-   To enable: remove the comment markers around the CSS below.
-   When enabled, hovering the left edge in zen mode reveals the drawer.
-   Note: close is instant (Firefox doesn't trigger CSS transitions via :has()).
-*/
-/*
-
-#sidebar-box[hidden] > * {
-  pointer-events: none !important;
-}
-#sidebar-box[hidden]:hover > *,
-body:has(#navigator-toolbox:hover) #sidebar-box[hidden] > * {
-  pointer-events: auto !important;
-}
-
-#sidebar-box[hidden] {
-  display: flex !important;
-  width: 10px !important;
-  min-width: 10px !important;
-  max-width: 10px !important;
-  margin-right: -10px !important;
-  overflow: hidden !important;
-  opacity: 0;
-  padding: 0 !important;
-  pointer-events: auto !important;
-  z-index: 10 !important;
-}
-
-#sidebar-box[hidden]:hover,
-body:has(#navigator-toolbox:hover) #sidebar-box[hidden] {
-  width: 300px !important;
-  min-width: 224px !important;
-  max-width: var(--fen-max-width) !important;
-  margin-right: 0px !important;
-  overflow: visible !important;
-  opacity: 1;
-  padding-left: var(--fen-gap-x) !important;
-  pointer-events: auto !important;
-  z-index: 1 !important;
-  background-color: var(--fen-color) !important;
-}
-
-body:has(#sidebar-box[hidden]:hover) #sidebar-splitter[hidden],
-body:has(#navigator-toolbox:hover) #sidebar-splitter[hidden] {
-  display: flex !important;
-  width: var(--fen-sidebar-splitter-width) !important;
-  background-color: transparent !important;
-  background-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--fen-header-height),
-    var(--fen-color) 0,
-    var(--fen-color) 100%
-  );
-}
-
-body:has(#sidebar-box[hidden]:hover) #navigator-toolbox,
-body:has(#sidebar-box[hidden]) #navigator-toolbox:hover {
-  width: calc(var(--fen-max-width) + var(--fen-sidebar-splitter-width)) !important;
-  pointer-events: auto !important;
-  opacity: 1;
-  z-index: 2 !important;
-}
-
-body:has(#sidebar-box[hidden]:hover) toolbaritem#urlbar-container,
-body:has(#sidebar-box[hidden]):has(#navigator-toolbox:hover) toolbaritem#urlbar-container {
-  width: 215px !important;
-  max-width: unset !important;
-  pointer-events: auto !important;
-}
-
-*/
-/* #endregion hover-reveal */
 
 /* #region header */
 
@@ -397,7 +315,7 @@ panel#appMenu-popup {
 /* url bar above the sideberry tabs */
 #urlbar-container {
   position: absolute;
-  width: 215px !important;
+  width: 215px !important; 
   margin: 0px !important;
   margin-left: var(--fen-gap-x) !important;
   top: var(--fen-urlbar-position-y);

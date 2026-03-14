@@ -2,5 +2,9 @@
   "alwaysThinkingEnabled": true,
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   }
 }

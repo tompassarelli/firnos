@@ -195,7 +195,20 @@ Also refreshes the agenda file cache."
   (dolist (f (org-roam-list-files))
     (with-current-buffer (find-file-noselect f)
       (when (member "public" (org-get-tags))
-        (org-hugo-export-wim-to-md)))))
+        (org-hugo-export-wim-to-md))))
+  (+org/hugo-ensure-section-indexes))
+
+(defun +org/hugo-ensure-section-indexes ()
+  "Create _index.md for any content subdirectory missing one."
+  (let ((content-dir (expand-file-name "content" org-hugo-base-dir)))
+    (dolist (dir (directory-files content-dir t "\\`[^.]"))
+      (when (file-directory-p dir)
+        (let ((index (expand-file-name "_index.md" dir)))
+          (unless (file-exists-p index)
+            (write-region
+             (format "---\ntitle: \"%s\"\n---\n"
+                     (capitalize (file-name-nondirectory dir)))
+             nil index)))))))
 
 ;; ============ Clockify API ============
 
@@ -245,3 +258,43 @@ PROJECT-ID defaults to MSA."
                  "2026-03-12T09:00:00.000Z"
                  "2026-03-12T10:00:00.000Z")))
     (message "Created entry: %s" (alist-get 'id result))))
+
+(defun +clockify/delete-time-entry (entry-id)
+  "Delete a Clockify time entry by ID."
+  (let* ((url-request-method "DELETE")
+         (url-request-extra-headers
+          `(("X-Api-Key" . ,(+clockify/api-key))
+            ("Content-Type" . "application/json")))
+         (buf (url-retrieve-synchronously
+               (concat +clockify/api-base
+                       (format "/workspaces/%s/time-entries/%s"
+                               +clockify/workspace-id entry-id))
+               t)))
+    (unwind-protect
+        (with-current-buffer buf
+          (goto-char (point-min))
+          (when (re-search-forward "^HTTP/[0-9.]+ \\([0-9]+\\)" nil t)
+            (< (string-to-number (match-string 1)) 300)))
+      (kill-buffer buf))))
+
+(defun +clockify/clock-hash (clock-line)
+  "Return an 8-char MD5 hash of CLOCK-LINE text."
+  (substring (md5 (string-trim clock-line)) 0 8))
+
+(defun +clockify/parse-sync-property (prop)
+  "Parse CLOCKIFY_SYNC property string into alist of (hash . id).
+PROP is like \"a1b2c3=69b1d32f,d4e5f6=69b1d44a\"."
+  (when (and prop (not (string-empty-p prop)))
+    (mapcar (lambda (pair)
+              (let ((parts (split-string pair "=")))
+                (cons (car parts) (cadr parts))))
+            (split-string prop ","))))
+
+(defun +clockify/write-sync-property (alist)
+  "Write alist of (hash . id) pairs as CLOCKIFY_SYNC property at point."
+  (if alist
+      (org-entry-put nil "CLOCKIFY_SYNC"
+                     (mapconcat (lambda (pair)
+                                  (format "%s=%s" (car pair) (cdr pair)))
+                                alist ","))
+    (org-entry-delete nil "CLOCKIFY_SYNC")))
