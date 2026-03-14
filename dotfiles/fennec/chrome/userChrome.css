@@ -157,12 +157,25 @@ gap: space between components, like padding/margin
 
 /* #endregion css variables and theme handling */
 
+#sidebar-box[hidden] {
+  display: flex !important;
+  width: 0px !important;
+  min-width: 0px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  transition: width 0.3s ease, padding 0.3s step-end, opacity 0.2s ease !important;
+}
+
 /* #region dynamic sidebar toggle */
 
 /* toggle the entire ui by toggling the sidebar */
 body:has(#sidebar-box[hidden]:not(:hover)) #navigator-toolbox {
   width: 0px !important;
+  overflow: hidden !important;
   pointer-events: none;
+  opacity: 0 !important;
+  transition: width 0.3s ease, opacity 0.2s ease !important;
 }
 
 body:has(#sidebar-box[hidden]:not(:hover)) toolbaritem#urlbar-container {
@@ -173,6 +186,11 @@ body:has(#sidebar-box[hidden]:not(:hover)) toolbaritem#urlbar-container {
 
 body:has(#sidebar-box[hidden]) #identity-icon-box {
 	background-color: transparent !important;
+}
+
+body:has(#sidebar-box[hidden]) #urlbar {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
 }
 
 /* #endregion dynamic sidebar toggle */
@@ -263,6 +281,7 @@ body:has(#sidebar-box[hidden]):has(#navigator-toolbox:hover) toolbaritem#urlbar-
   padding-top: var(--fen-gap-y) !important;
 /*   background-color: var(--fen-color) !important; */
   background-color: var(--fen-header-bg-color) !important;
+  transition: width 0.3s ease, opacity 0.3s ease 0.2s !important;
 }
 
 /* the thing that comes up when you hold alt, there's already settings menu */
@@ -401,6 +420,10 @@ panel#appMenu-popup {
   margin: 0px !important;
   margin-left: var(--fen-gap-x) !important;
   top: var(--fen-urlbar-position-y);
+}
+
+#urlbar {
+  transition: opacity 0.3s ease 0.2s !important;
 }
 /* moz setting: "Show sidebar" active */
 body:not(:has(#sidebar-main[hidden])) #urlbar-container {
@@ -627,8 +650,10 @@ body:has(#sidebar-box[hidden]):has(#identity-box.notSecure)::before {
 /* smallest width seems to be 224px */
 #sidebar-box {
   max-width: var(--fen-max-width) !important;
+  min-width: 0px !important;
   padding-left: var(--fen-gap-x);
   background-color: var(--fen-color) !important;
+  transition: width 0.3s ease, padding 0.3s step-start, opacity 0.3s ease 0.2s !important;
 }
 
 /* Remove the "Sideberry", "History", etc. sidepanel header  */
