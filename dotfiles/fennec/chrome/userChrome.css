@@ -82,13 +82,17 @@ gap: space between components, like padding/margin
 
 === Optional Features ===
 
-[hover-reveal] (off by default)
-- when sidebar is hidden (zen mode), hovering the left edge reveals the drawer
-- enable: uncomment the hover-reveal region in the CSS
+[autohide] (off by default)
+- sidebar must be enabled (not toggled off)
+- auto-collapses the drawer when the mouse leaves
+- hovering the left edge reveals it again
+- enable: uncomment @import url("autohide.css") below and restart Firefox
 
-#endregion fennec-ui */
+/* #endregion fennec-ui */
 
 /* #endregion dev-docs */
+
+/* @import url("autohide.css"); */
 
 /* #region css vars and theme handling */
 :root {
@@ -155,6 +159,20 @@ gap: space between components, like padding/margin
 
 /* #endregion css variables and theme handling */
 
+
+/* #region dynamic sidebar toggle 
+ *
+ * note that autohide.css has hardcoded mirror
+ * transitions that correspond to the properties below
+ * it is advised to keep the configuration in sync
+ *
+ * */
+
+/* 
+ * set sidebar-hidden flex so animations apply when toggling 
+ * have a from/to. otherwise display:none prevents animations
+ *
+ * */
 #sidebar-box[hidden] {
   display: flex !important;
   width: 0px !important;
@@ -164,8 +182,6 @@ gap: space between components, like padding/margin
   opacity: 0 !important;
   transition: width 0.3s ease, padding 0.3s step-end, opacity 0.2s ease !important;
 }
-
-/* #region dynamic sidebar toggle */
 
 /* toggle the entire ui by toggling the sidebar */
 body:has(#sidebar-box[hidden]:not(:hover)) #navigator-toolbox {
@@ -192,68 +208,6 @@ body:has(#sidebar-box[hidden]) #urlbar {
 }
 
 /* #endregion dynamic sidebar toggle */
-
-/* #region hover-reveal
-   When enabled, the visible sidebar auto-collapses when the mouse leaves
-   the drawer area. Hovering the left edge expands it.
-
-   Mirrors the exact same styles as the [hidden] / dynamic sidebar toggle
-   rules above, just triggered by hover instead of the [hidden] attribute.
-   The existing base transitions handle the animation.
-
-   To enable: remove the comment markers around the CSS below.
-*/
-/*
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  #sidebar-box:not([hidden]) {
-  display: flex !important;
-  width: 10px !important;
-  min-width: 10px !important;
-  max-width: 10px !important;
-  margin-right: -10px !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  opacity: 0 !important;
-  pointer-events: auto !important;
-  z-index: 10 !important;
-  transition: width 0.3s ease, max-width 0.3s ease, margin-right 0.3s ease, padding 0.3s step-end, opacity 0.2s ease !important;
-}
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  #navigator-toolbox {
-  width: 0px !important;
-  overflow: hidden !important;
-  pointer-events: none;
-  opacity: 0 !important;
-  transition: width 0.3s ease, opacity 0.2s ease !important;
-}
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  toolbaritem#urlbar-container {
-  width: 0px !important;
-  max-width: 0px !important;
-  pointer-events: none;
-}
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  #urlbar {
-  opacity: 0 !important;
-  transition: opacity 0.2s ease !important;
-}
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  #identity-icon-box {
-  background-color: transparent !important;
-}
-
-body:not(:has(#sidebar-box:hover)):not(:has(#navigator-toolbox:hover)):not(:has(#sidebar-splitter:hover))
-  #sidebar-splitter {
-  display: none !important;
-}
-
-*/
-/* #endregion hover-reveal */
 
 /* #region header */
 
