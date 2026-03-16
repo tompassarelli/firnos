@@ -6,7 +6,7 @@ in
 {
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      protonmail-desktop   # encrypted mail
+      unstable.protonmail-desktop   # encrypted mail
     ];
   };
 }

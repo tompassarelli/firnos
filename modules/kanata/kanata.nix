@@ -22,13 +22,13 @@ in
   };
   users.groups.kanata = {};
 
-  # Use custom fork when enabled
   services.kanata = {
     enable = true;
-    package = if cfg.customFork then pkgs.kanata-fork else pkgs.kanata;
+    package = pkgs.kanata-git;
     keyboards = lib.mkIf (cfg.devices != []) {
       main = {
         devices = cfg.devices;
+        port = lib.mkIf config.myConfig.glide.enable 7070;
         extraDefCfg = "process-unmapped-keys yes"; # req for tap-hold-press, or need a set of explicit passthrough keys
         config = let
           # Always define full keyboard for layer switching (ISO layout)
@@ -51,15 +51,20 @@ in
           '';
 
         in ''
-          ;; Define aliases (tap-hold-release-order: pure event-driven, no timers)
+          ;; Define aliases (tap-hold-order: pure event-driven, no timers)
           ${lib.optionalString cfg.capsLockEscCtrl "(defalias capesc (tap-hold-press 0 65535 esc lctl))"}
-          ${lib.optionalString cfg.spacebarSymbols "(defalias spacesym (tap-hold-release-order 200 50 spc (layer-while-held symbols)))"}
+          ${lib.optionalString cfg.spacebarSymbols "(defalias spacesym (tap-hold-order 200 50 spc (layer-while-held symbols)))"}
           (defalias lshiftcaps (tap-dance-eager 200 (lsft caps)))
-          (defalias slashshift (tap-hold-release-order 0 0 / lsft))
-          (defalias enteralt (tap-hold-release-order 0 0 ret ralt))
-          (defalias apostrophenum (tap-hold-release-order 0 0 ' (layer-while-held numbers)))
-          (defalias m4shift (tap-hold-release-order 0 0 mbck lsft))
-          (defalias m5ctrl (tap-hold-release-order 0 0 mfwd lctl))
+          (defalias slashshift (tap-hold-order 0 0 / lsft))
+          (defalias enteralt (tap-hold-order 0 0 ret ralt))
+          (defalias apostrophenum (tap-hold-order 0 0 ' (layer-while-held numbers)))
+          (defalias m4shift (tap-hold-order 0 0 mbck lsft))
+          (defalias m5ctrl (tap-hold-order 0 0 mfwd lctl))
+
+          ${lib.optionalString config.myConfig.glide.enable ''
+          ;; Touchpad contact virtual key
+          (defvirtualkeys pad-touch (layer-while-held pad-layer))
+          ''}
 
           ;; Source layer
           (defsrc ${srcKeys})
@@ -88,6 +93,30 @@ in
             _    1    2    3    4    5    _    6    7    8    9    0    _
             _    S-1  S-2  S-3  S-4  S-5  _    S-6  S-7  S-8  S-9  S-0  _    _
             _    _    S-[  S-]  [    ]    _    _    _    '    -    =    _
+            _    _    _              _              _    _    _    _
+            _    _    _
+          )
+          ''}
+
+          ${lib.optionalString config.myConfig.glide.enable ''
+          ;; Pad layer - active while finger is on touchpad
+          ;; d = left click, f = right click
+          (deflayer pad-layer
+            _    _    _    _    _    _    _    _    _    _    _    _    _    _
+            _    _    _    _    _    _    _    _    _    _    _    _    _
+            _    _    _    mrgt mlft _    _    _    _    _    _    _    _    _
+            _    _    _    _    _    _    _    _    _    _    _    _    _
+            _    _    _              (layer-while-held pad-nav)              _    _    _    _
+            _    _    _
+          )
+
+          ;; Pad-nav layer - touchpad + spacebar held
+          ;; e=up s=left d=down f=right
+          (deflayer pad-nav
+            _    _    _    _    _    _    _    _    _    _    _    _    _    _
+            _    _    _    up   _    _    _    _    _    _    _    _    _
+            _    _    left down rght _    _    _    _    _    _    _    _    _
+            _    _    _    _    _    _    _    _    _    _    _    _    _
             _    _    _              _              _    _    _    _
             _    _    _
           )

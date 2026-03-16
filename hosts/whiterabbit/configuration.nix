@@ -18,7 +18,6 @@
   myConfig.piper.enable = true;
   myConfig.kanata = {
     enable = true;
-    customFork = true;
     capsLockEscCtrl = true;
     spacebarSymbols = true;
     devices = [
@@ -27,6 +26,7 @@
       "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
     ];
   };
+  myConfig.glide.enable = true;
 
   # System
   myConfig.system.stateVersion = "25.05";

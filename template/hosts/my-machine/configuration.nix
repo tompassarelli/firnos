@@ -34,7 +34,7 @@
     enable = true;
     capsLockEscCtrl = true;
     # spacebarSymbols = true;
-    # customFork = true;  # Use custom kanata fork with tap-hold-release-order
+    # customFork = true;  # Use custom kanata fork with tap-hold-order
     # devices = [          # Find yours: ls /dev/input/by-id/
     #   "/dev/input/event0"
     # ];

@@ -18,9 +18,15 @@
     # Lem - Common Lisp editor
     lem.url = "github:lem-project/lem";
 
-    # Kanata fork with tap-hold-release-order (event-driven buffer-based tap-hold)
-    kanata-fork = {
-      url = "github:tompassarelli/kanata";
+    # Kanata from upstream main (has tap-hold-order, not yet in a release)
+    kanata-git = {
+      url = "github:jtroo/kanata";
+      flake = false;
+    };
+
+    # Glide - touchpad motion detection daemon for kanata
+    glide = {
+      url = "github:tompassarelli/glide";
       flake = false;
     };
 
@@ -32,7 +38,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-fork }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide }:
     let
       # All available modules - can be imported by external configs
       firnModules = ./modules;
@@ -97,6 +103,7 @@
             "${firnModules}/mako"
             "${firnModules}/gtk"
             "${firnModules}/kanata"
+            "${firnModules}/glide"
             "${firnModules}/users"
             "${firnModules}/networking"
             "${firnModules}/wireguard"
@@ -180,15 +187,21 @@
                 inherit system;
                 config.allowUnfree = true;
               };
-              # Kanata fork with tap-hold-release-order (uses unstable rust for newer deps)
-              kanata-fork = final.unstable.kanata.overrideAttrs (old: {
-                src = kanata-fork;
-                version = "fork";
+              kanata-git = final.unstable.kanata.overrideAttrs (old: {
+                src = kanata-git;
+                version = "git";
                 cargoDeps = final.unstable.rustPlatform.importCargoLock {
-                  lockFile = "${kanata-fork}/Cargo.lock";
+                  lockFile = "${kanata-git}/Cargo.lock";
                 };
+                doCheck = false;
                 doInstallCheck = false;
               });
+              glide = final.unstable.rustPlatform.buildRustPackage {
+                pname = "glide";
+                version = "git";
+                src = glide;
+                cargoLock.lockFile = "${glide}/Cargo.lock";
+              };
             })
           ] ++ extraOverlays;
         }

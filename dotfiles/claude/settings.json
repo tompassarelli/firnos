@@ -1,10 +1,11 @@
 {
-  "alwaysThinkingEnabled": true,
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true
-  },
   "attribution": {
     "commit": "",
     "pr": ""
-  }
+  },
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium"
 }
