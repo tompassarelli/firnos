@@ -13,3 +13,4 @@ keys.txt
 *.swp
 *.swo
 .#*
+.direnv

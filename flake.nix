@@ -238,5 +238,14 @@
         hardwareConfig = ./hardware-configuration.nix;
       };
     };
+
+    devShells.x86_64-linux.default = let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    in pkgs.mkShell {
+      packages = [ pkgs.pre-commit pkgs.gitleaks ];
+      shellHook = ''
+        pre-commit install --allow-missing-config 2>/dev/null
+      '';
+    };
   };
 }
