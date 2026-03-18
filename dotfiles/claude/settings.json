@@ -6,6 +6,14 @@
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true
   },
+  "extraKnownMarketplaces": {
+    "claude-code-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-code"
+      }
+    }
+  },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium"
+  "effortLevel": "high"
 }

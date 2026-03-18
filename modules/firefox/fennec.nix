@@ -35,7 +35,7 @@ in
 
       # Symlink Fennec custom chrome directory
       home.file.".mozilla/firefox/${username}/chrome".source = config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/code/nixos-config/dotfiles/fennec/chrome";
+        "${config.home.homeDirectory}/code/fennec/chrome";
     };
   };
 }

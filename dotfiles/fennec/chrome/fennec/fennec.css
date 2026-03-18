@@ -1,3 +1,9 @@
+/* fennec.css — core theme
+ *
+ * This file is overwritten on update.
+ * Put your customizations in user/user.css instead.
+ */
+
 /* #region dev-docs */
 
 /* #region firefox-chrome
@@ -80,9 +86,18 @@ gap: space between components, like padding/margin
   - regions can be folded with fold button or `za` key in vim
 
 
-#endregion fennec-ui */
+=== Optional Features ===
+
+[autohide] (off by default)
+- sidebar must be enabled (not toggled off)
+- auto-collapses the drawer when the mouse leaves
+- hovering the left edge reveals it again
+- enable: uncomment @import url("autohide.css") in userChrome.css and restart Firefox
+
+/* #endregion fennec-ui */
 
 /* #endregion dev-docs */
+
 
 /* #region css vars and theme handling */
 :root {
@@ -149,22 +164,52 @@ gap: space between components, like padding/margin
 
 /* #endregion css variables and theme handling */
 
-/* #region dynamic sidebar toggle */
 
-/* toggle the entire ui by toggling the sidebar */
-body:has(#sidebar-box[hidden]) #navigator-toolbox {
+/* #region dynamic sidebar toggle 
+ *
+ * note that autohide.css has hardcoded mirror
+ * transitions that correspond to the properties below
+ * it is advised to keep the configuration in sync
+ *
+ * */
+
+/* 
+ * set sidebar-hidden flex so animations apply when toggling 
+ * have a from/to. otherwise display:none prevents animations
+ *
+ * */
+#sidebar-box[hidden] {
+  display: flex !important;
   width: 0px !important;
-  pointer-events: none;
+  min-width: 0px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  transition: width 0.3s ease, padding 0.3s step-end, opacity 0.2s ease !important;
 }
 
-body:has(#sidebar-box[hidden]) toolbaritem#urlbar-container {
+/* toggle the entire ui by toggling the sidebar */
+body:has(#sidebar-box[hidden]:not(:hover)) #navigator-toolbox {
+  width: 0px !important;
+  overflow: hidden !important;
+  pointer-events: none;
+  opacity: 0 !important;
+  transition: width 0.3s ease, opacity 0.2s ease !important;
+}
+
+body:has(#sidebar-box[hidden]:not(:hover)) toolbaritem#urlbar-container {
   width: 0px !important;
   max-width: 0px !important;
   pointer-events: none;
 }
 
-body:has(#sidebar-box[hidden="true"]) #identity-icon-box {
+body:has(#sidebar-box[hidden]) #identity-icon-box {
 	background-color: transparent !important;
+}
+
+body:has(#sidebar-box[hidden]) #urlbar {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
 }
 
 /* #endregion dynamic sidebar toggle */
@@ -181,6 +226,7 @@ body:has(#sidebar-box[hidden="true"]) #identity-icon-box {
   padding-top: var(--fen-gap-y) !important;
 /*   background-color: var(--fen-color) !important; */
   background-color: var(--fen-header-bg-color) !important;
+  transition: width 0.3s ease, opacity 0.3s ease 0.2s !important;
 }
 
 /* the thing that comes up when you hold alt, there's already settings menu */
@@ -315,10 +361,14 @@ panel#appMenu-popup {
 /* url bar above the sideberry tabs */
 #urlbar-container {
   position: absolute;
-  width: 215px !important; 
+  width: 215px !important;
   margin: 0px !important;
   margin-left: var(--fen-gap-x) !important;
   top: var(--fen-urlbar-position-y);
+}
+
+#urlbar {
+  transition: opacity 0.3s ease 0.2s !important;
 }
 /* moz setting: "Show sidebar" active */
 body:not(:has(#sidebar-main[hidden])) #urlbar-container {
@@ -545,8 +595,10 @@ body:has(#sidebar-box[hidden]):has(#identity-box.notSecure)::before {
 /* smallest width seems to be 224px */
 #sidebar-box {
   max-width: var(--fen-max-width) !important;
+  min-width: 0px !important;
   padding-left: var(--fen-gap-x);
   background-color: var(--fen-color) !important;
+  transition: width 0.3s ease, max-width 0.3s ease, margin-right 0.3s ease, padding 0.3s step-start, opacity 0.3s ease 0.2s !important;
 }
 
 /* Remove the "Sideberry", "History", etc. sidepanel header  */

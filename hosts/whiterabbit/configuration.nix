@@ -88,6 +88,7 @@
   };
   myConfig.claude.enable = true;
   myConfig.postgresql.enable = true;
+  myConfig.sqlcmd.enable = true;
   myConfig.direnv.enable = true;
 
   # Applications

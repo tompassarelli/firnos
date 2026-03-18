@@ -159,6 +159,7 @@
             "${firnModules}/zed"
             "${firnModules}/printing"
             "${firnModules}/postgresql"
+            "${firnModules}/sqlcmd"
             "${firnModules}/direnv"
             "${firnModules}/windows-vm"
             "${firnModules}/containers"

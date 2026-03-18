@@ -192,11 +192,39 @@ Also refreshes the agenda file cache."
 (defun +org/hugo-publish-all ()
   "Export all org-roam files tagged :public: to Hugo via ox-hugo."
   (interactive)
-  (dolist (f (org-roam-list-files))
-    (with-current-buffer (find-file-noselect f)
-      (when (member "public" (org-get-tags))
-        (org-hugo-export-wim-to-md))))
-  (+org/hugo-ensure-section-indexes))
+  (require 'ox-hugo)
+  (let ((exported 0)
+        (skipped 0)
+        (failed nil))
+    (dolist (f (org-roam-list-files))
+      (with-current-buffer (find-file-noselect f)
+        (if (not (member "public" (+org/file-tags)))
+            (cl-incf skipped)
+          (condition-case err
+              (progn
+                (org-hugo-export-wim-to-md)
+                (cl-incf exported))
+            (error
+             (push (cons f (error-message-string err)) failed)
+             (message "ox-hugo: FAILED %s: %s"
+                      (file-name-nondirectory f)
+                      (error-message-string err)))))))
+    (+org/hugo-ensure-section-indexes)
+    (message "ox-hugo: %d exported, %d skipped, %d failed"
+             exported skipped (length failed))
+    (when failed
+      (message "Failed:\n%s"
+               (mapconcat (lambda (p) (format "  %s: %s" (car p) (cdr p)))
+                          failed "\n")))))
+
+(defun +org/file-tags ()
+  "Return file-level tags from #+filetags as a list of strings."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (when (re-search-forward "^#\\+filetags:\\s-*\\(.*\\)" nil t)
+        (split-string (match-string-no-properties 1) ":" t)))))
 
 (defun +org/hugo-ensure-section-indexes ()
   "Create _index.md for any content subdirectory missing one."
