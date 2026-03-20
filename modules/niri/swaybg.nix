@@ -2,6 +2,7 @@
 let
   username = config.myConfig.users.username;
   chosenTheme = config.myConfig.theming.chosenTheme;
+
 in
 {
   config = lib.mkIf config.myConfig.niri.enable {
@@ -14,7 +15,7 @@ in
           Requisite = [ "graphical-session.target" ];
         };
         Service = {
-          ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.swaybg}/bin/swaybg -i $(${pkgs.fd}/bin/fd -t f . $HOME/.config/themes/${chosenTheme}/wallpapers/ | ${pkgs.coreutils}/bin/shuf -n 1) --mode fill'";
+          ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.swaybg}/bin/swaybg -i \"$(${pkgs.fd}/bin/fd -t f . $HOME/.config/themes/${chosenTheme}/wallpapers/ | ${pkgs.coreutils}/bin/shuf -n 1)\" --mode fill'";
           Restart = "on-failure";
         };
         Install = {

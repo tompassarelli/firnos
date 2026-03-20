@@ -3,6 +3,7 @@
 let
   cfg = config.myConfig.quickshell;
   username = config.myConfig.users.username;
+  monoFont = config.stylix.fonts.monospace.name;
 in
 {
   config = lib.mkIf cfg.enable {
@@ -25,6 +26,31 @@ in
 
       xdg.configFile."quickshell/BarState.qml".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/BarState.qml";
+
+      # Generate stylix colors for quickshell
+      xdg.configFile."quickshell/StylixColors.qml".text = with config.lib.stylix.colors; ''
+        import QtQuick
+
+        QtObject {
+            readonly property color base00: "#${base00}"
+            readonly property color base01: "#${base01}"
+            readonly property color base02: "#${base02}"
+            readonly property color base03: "#${base03}"
+            readonly property color base04: "#${base04}"
+            readonly property color base05: "#${base05}"
+            readonly property color base06: "#${base06}"
+            readonly property color base07: "#${base07}"
+            readonly property color base08: "#${base08}"
+            readonly property color base09: "#${base09}"
+            readonly property color base0A: "#${base0A}"
+            readonly property color base0B: "#${base0B}"
+            readonly property color base0C: "#${base0C}"
+            readonly property color base0D: "#${base0D}"
+            readonly property color base0E: "#${base0E}"
+            readonly property color base0F: "#${base0F}"
+            readonly property string fontFamily: "${monoFont}"
+        }
+      '';
 
       # Systemd service: Quickshell daemon
       systemd.user.services.quickshell = {
