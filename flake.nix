@@ -30,7 +30,12 @@
       flake = false;
     };
 
-    # Walker and elephant
+    # Quickshell - Qt6/QML shell toolkit
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     elephant.url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";
     walker = {
       url = "github:abenz1267/walker";
@@ -38,7 +43,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell }:
     let
       # All available modules - can be imported by external configs
       firnModules = ./modules;
@@ -68,7 +73,7 @@
     }: nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inputs = { inherit nur walker elephant lem; };
+        inputs = { inherit nur walker elephant lem quickshell; };
         flakeRoot = self;
       } // extraSpecialArgs;
       modules = [
@@ -149,6 +154,7 @@
             "${firnModules}/rofi"
             "${firnModules}/walker"
             "${firnModules}/waybar"
+            "${firnModules}/quickshell"
             "${firnModules}/ironbar"
             "${firnModules}/framework"
             "${firnModules}/claude"
@@ -161,6 +167,7 @@
             "${firnModules}/postgresql"
             "${firnModules}/sqlcmd"
             "${firnModules}/direnv"
+            "${firnModules}/dotnet"
             "${firnModules}/windows-vm"
             "${firnModules}/containers"
           ];
@@ -168,7 +175,7 @@
           # Home-manager configuration
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = {
-            inputs = { inherit nur walker elephant lem; };
+            inputs = { inherit nur walker elephant lem quickshell; };
           } // extraSpecialArgs;
           home-manager.users.${config.myConfig.users.username} = {
             home.stateVersion = config.myConfig.system.stateVersion;

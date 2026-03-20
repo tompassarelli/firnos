@@ -104,7 +104,7 @@ in
       # Systemd service: Overview listener script
       systemd.user.services.waybar-overview = {
         Unit = {
-          Description = "Waybar overview listener script";
+          Description = "Waybar visibility controller (overview + workspace switch)";
           PartOf = [ "graphical-session.target" ];
           After = [ "waybar.service" ];
           Requires = [ "waybar.service" ];

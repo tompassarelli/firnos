@@ -1,14 +1,28 @@
 ;;; config.el -*- lexical-binding: t; -*-
 
 
-(setq doom-theme 'doom-one)
-;; Override background to Tokyo Night color
-(after! doom-themes
-  (custom-set-faces!
-    '(default :background "#1a1b26")
-    '(fringe :background "#1a1b26")
-    '(solaire-default-face :background "#1a1b26")
-    '(solaire-fringe-face :background "#1a1b26")))
+;; Set doom theme based on NixOS chosenTheme
+(setq doom-theme
+      (let ((nixos-theme (or (getenv "NIXOS_THEME") "")))
+        (cond
+         ((string-match-p "everforest" nixos-theme) 'doom-everforest)
+         ((string-match-p "tokyo-night" nixos-theme) 'doom-tokyo-night)
+         ((string-match-p "gruvbox" nixos-theme) 'doom-gruvbox)
+         ((string-match-p "dracula" nixos-theme) 'doom-dracula)
+         ((string-match-p "nord" nixos-theme) 'doom-nord)
+         ((string-match-p "solarized-dark" nixos-theme) 'doom-solarized-dark)
+         ((string-match-p "solarized-light" nixos-theme) 'doom-solarized-light)
+         ((string-match-p "onedark" nixos-theme) 'doom-one)
+         (t 'doom-one))))
+
+;; Tokyo Night background overrides
+(when (eq doom-theme 'doom-tokyo-night)
+  (after! doom-themes
+    (custom-set-faces!
+      '(default :background "#1a1b26")
+      '(fringe :background "#1a1b26")
+      '(solaire-default-face :background "#1a1b26")
+      '(solaire-fringe-face :background "#1a1b26"))))
 
 ;; Disable all syntax highlighting except comments
 (setq doom-themes-enable-bold nil

@@ -1,6 +1,7 @@
 { config, lib, pkgs, flakeRoot, ... }:
 let
   username = config.myConfig.users.username;
+  chosenTheme = config.myConfig.theming.chosenTheme;
 in
 {
   config = lib.mkIf config.myConfig.doom-emacs.enable {
@@ -31,9 +32,10 @@ in
       home.file.".config/doom".source = config.lib.file.mkOutOfStoreSymlink
         "${config.home.homeDirectory}/code/nixos-config/dotfiles/doom";
 
-      # Set DOOMDIR environment variable
+      # Set DOOMDIR and theme environment variables
       home.sessionVariables = {
         DOOMDIR = "${config.home.homeDirectory}/.config/doom";
+        NIXOS_THEME = chosenTheme;
       };
 
       # Add doom bin to PATH (fish-specific)

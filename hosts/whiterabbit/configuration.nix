@@ -65,14 +65,15 @@
   myConfig.auth.enable = true;
   myConfig.rofi-wayland.enable = true;
   myConfig.walker.enable = false;
-  myConfig.waybar.enable = true;
+  myConfig.waybar.enable = false;
+  myConfig.quickshell.enable = true;
   myConfig.mako.enable = true;
 
   # Theming
   myConfig.gtk.enable = true;
   myConfig.styling.enable = true;
   myConfig.theming.enable = true;
-  myConfig.theming.chosenTheme = "tokyo-night-dark";
+  myConfig.theming.chosenTheme = "everforest-dark-hard";
   myConfig.theme-switcher.enable = true;
 
   # Development
@@ -90,6 +91,7 @@
   myConfig.postgresql.enable = true;
   myConfig.sqlcmd.enable = true;
   myConfig.direnv.enable = true;
+  myConfig.dotnet.enable = true;
 
   # Applications
   myConfig.firefox = {

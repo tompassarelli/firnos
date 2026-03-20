@@ -17,14 +17,12 @@
 #workspaces button {
   all: initial;
   padding: 2px 6px;
-  margin-right: 3px;
+  margin-right: 12px;
   color: @base05;
-  border-right: 1px solid @base03;
-  padding-right: 9px;
 }
 
-#workspaces button:last-child {
-  border-right: none;
+#workspaces button:not(:last-child) {
+  box-shadow: 7px 0 0px -4px @base03;
 }
 
 #battery,

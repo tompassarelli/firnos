@@ -28,6 +28,7 @@ let
         "solarized-light"
         "onedark"
         "everforest"
+        "everforest-dark-hard"
         "rose-pine"
         "rose-pine-dawn"
     )

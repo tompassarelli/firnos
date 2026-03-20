@@ -11,7 +11,8 @@
     "modules-right": ["tray", "network", "pulseaudio", "battery"],
 
     "niri/workspaces": {
-        "all-outputs": true
+        "all-outputs": true,
+        "format": "{name}"
     },
 
     "clock": {

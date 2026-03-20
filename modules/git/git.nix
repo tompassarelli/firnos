@@ -18,8 +18,6 @@ in
           enable = true;
           options = {
             navigate = true;
-            color-only = true;
-            #syntax-theme = "DarkNeon"; # handled by stylix?
           };
         };
         extraConfig = {
