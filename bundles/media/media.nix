@@ -11,7 +11,7 @@ in
     zoom-us              # meetings
 
     # Music
-    spotify              # enjoyable sounds
+    spotify-player       # TUI spotify client
     youtube-music        # also enjoyable sounds
 
     # Media viewers

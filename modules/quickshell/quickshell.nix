@@ -27,6 +27,15 @@ in
       xdg.configFile."quickshell/BarState.qml".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/BarState.qml";
 
+      xdg.configFile."quickshell/WorkspaceRow.qml".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspaceRow.qml";
+
+      xdg.configFile."quickshell/WorkspacePopup.qml".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspacePopup.qml";
+
+      xdg.configFile."quickshell/LayoutConfig.qml".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/LayoutConfig.qml";
+
       # Generate stylix colors for quickshell
       xdg.configFile."quickshell/StylixColors.qml".text = with config.lib.stylix.colors; ''
         import QtQuick

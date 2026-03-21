@@ -1,3 +1,4 @@
+pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -9,7 +10,7 @@ Singleton {
     Timer {
         id: hideTimer
         interval: 1000
-        onTriggered: BarState.visible = false
+        onTriggered: BarState.workspaceSwitchActive = false
     }
 
     Process {
@@ -23,17 +24,22 @@ Singleton {
                     if ("OverviewOpenedOrClosed" in event) {
                         if (event.OverviewOpenedOrClosed.is_open) {
                             hideTimer.stop()
-                            BarState.visible = true
+                            BarState.workspaceSwitchActive = false
+                            BarState.overviewOpen = true
                         } else {
-                            hideTimer.restart()
+                            BarState.overviewOpen = false
                         }
                     }
 
                     if ("WorkspaceActivated" in event) {
                         const wa = event.WorkspaceActivated
                         if (wa.focused) {
-                            if (root.lastWorkspaceId !== -1 && wa.id !== root.lastWorkspaceId) {
-                                BarState.visible = true
+                            for (let i = 0; i < BarState.workspaceModel.count; i++) {
+                                const ws = BarState.workspaceModel.get(i)
+                                BarState.workspaceModel.setProperty(i, "isActive", ws.wsId === wa.id)
+                            }
+                            if (root.lastWorkspaceId !== -1 && wa.id !== root.lastWorkspaceId && !BarState.overviewOpen) {
+                                BarState.workspaceSwitchActive = true
                                 hideTimer.restart()
                             }
                             root.lastWorkspaceId = wa.id
@@ -41,7 +47,18 @@ Singleton {
                     }
 
                     if ("WorkspacesChanged" in event) {
-                        const focused = event.WorkspacesChanged.workspaces.find(w => w.is_focused)
+                        const workspaces = event.WorkspacesChanged.workspaces
+                        workspaces.sort((a, b) => a.idx - b.idx)
+                        BarState.workspaceModel.clear()
+                        for (const ws of workspaces) {
+                            BarState.workspaceModel.append({
+                                wsId: ws.id,
+                                idx: ws.idx,
+                                name: ws.name || "",
+                                isActive: ws.is_focused
+                            })
+                        }
+                        const focused = workspaces.find(w => w.is_focused)
                         if (focused && root.lastWorkspaceId === -1)
                             root.lastWorkspaceId = focused.id
                     }

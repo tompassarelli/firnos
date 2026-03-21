@@ -1,5 +1,17 @@
 ;;; config.el -*- lexical-binding: t; -*-
 
+;; Use bash internally to avoid issues with non-POSIX shells
+(setq shell-file-name (executable-find "bash"))
+;; But keep fish for terminal emulators
+(setq-default vterm-shell "/run/current-system/sw/bin/fish")
+(setq-default explicit-shell-file-name "/run/current-system/sw/bin/fish")
+
+;; Ensure straight-built themes are on the theme load path
+(let ((straight-dir (expand-file-name "straight" doom-local-dir)))
+  (dolist (dir (directory-files straight-dir t "^build"))
+    (let ((theme-dir (expand-file-name "doom-everforest-theme" dir)))
+      (when (file-directory-p theme-dir)
+        (add-to-list 'custom-theme-load-path theme-dir)))))
 
 ;; Set doom theme based on NixOS chosenTheme
 (setq doom-theme

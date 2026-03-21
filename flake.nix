@@ -145,6 +145,7 @@
             "${firnModules}/steam"
             "${firnModules}/neovim"
             "${firnModules}/doom-emacs"
+            "${firnBundles}/doom"
             "${firnBundles}/productivity"
             "${firnBundles}/creative"
             "${firnBundles}/media"

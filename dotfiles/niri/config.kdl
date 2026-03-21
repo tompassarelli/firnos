@@ -340,7 +340,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.92
+  opacity 0.86
 }
 
 binds {
@@ -364,7 +364,9 @@ binds {
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+T hotkey-overlay-title="Terminal" { spawn "kitty"; }
     Super+Space hotkey-overlay-title="Window Switcher" { spawn "rofi" "-show" "window"; }
+    Super+S hotkey-overlay-title="App Switcher" { spawn "rofi" "-show" "combi" "-combi-modes" "window,drun"; }
     Super+Ctrl+Space hotkey-overlay-title="App Launcher" { spawn "rofi" "-show" "drun"; }
+    Super+D hotkey-overlay-title="App Launcher" { spawn "rofi" "-show" "drun"; }
     Super+Alt+Ctrl+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
 
     // Dismiss all notifications
@@ -546,6 +548,9 @@ binds {
 
     // Switches focus between the current and the previous workspace.
     // Mod+Tab { focus-workspace-previous; }
+
+    // Peek at workspace indicator
+    Mod+Tab { spawn "qs" "ipc" "call" "bar" "peek"; }
 
     // The following binds move the focused window in and out of a column.
     // If the window is alone, they will consume it into the nearby column to the side.

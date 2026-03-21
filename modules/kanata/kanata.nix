@@ -38,7 +38,7 @@ in
             caps a    s    d    f    g    h    j    k    l    ;    '    \    ret
             lsft 102d z    x    c    v    b    n    m    ,    .    /    rsft
             lctl lmet lalt           spc            rmet ralt cmp  rctl
-            mbck mfwd f9
+            mbck mfwd f10
           '';
 
           baseKeys = ''
@@ -60,6 +60,7 @@ in
           (defalias apostrophenum (tap-hold-order 0 0 ' (layer-while-held numbers)))
           (defalias m4shift (tap-hold-order 0 0 mbck lsft))
           (defalias m5ctrl (tap-hold-order 0 0 mfwd lctl))
+          (defalias bracketpair (macro [ ] left))
 
           ${lib.optionalString config.myConfig.glide.enable ''
           ;; Touchpad contact virtual key
@@ -84,15 +85,14 @@ in
 
           ${lib.optionalString cfg.spacebarSymbols ''
           ;; Symbols layer (spacebar hold)
-          ;; Top:    1 2 3 4 5 _ 6 7 8 9 0   (numbers)
-          ;; Home:   ! @ # $ % _ ^ & * ( ) _ _ (shifted numbers)
-          ;; Bottom: { } [ ] _ ' - = , .      (brackets/punctuation)
-          ;; Note: _ on y/h/n positions (the extra keys from right-hand shift)
+          ;; Top:    ! @ # $ % _ ^ & * ( )   (shifted numbers)
+          ;; Home:   M-a M-s M-d M-f M-g _ M-h M-j M-k M-l (super+home row)
+          ;; Bottom: { } [] ] _ M-n _ ' - = , .  (brackets/punctuation + super+n)
           (deflayer symbols
             _    _    _    _    _    _    _    _    _    _    _    _    _    _
-            _    1    2    3    4    5    _    6    7    8    9    0    _
-            _    S-1  S-2  S-3  S-4  S-5  _    S-6  S-7  S-8  S-9  S-0  _    _
-            _    _    S-[  S-]  [    ]    _    _    _    '    -    =    _
+            _    S-1  S-2  S-3  S-4  S-5  _    S-6  S-7  S-8  S-9  S-0  _
+            _    M-a  M-s  M-d  M-f  M-g  _    M-h  M-j  M-k  M-l  _    _    _
+            _    _    S-[  S-]  @bracketpair  ]    _    _    M-n  '    -    =    _
             _    _    _              _              _    _    _    _
             _    _    _
           )
