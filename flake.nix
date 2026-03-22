@@ -142,6 +142,7 @@
             "${firnBundles}/development"
             "${firnModules}/firefox"
             "${firnModules}/chrome"
+            "${firnModules}/nyxt"
             "${firnModules}/steam"
             "${firnModules}/neovim"
             "${firnModules}/doom-emacs"

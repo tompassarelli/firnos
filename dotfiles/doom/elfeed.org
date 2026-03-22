@@ -1,0 +1,17 @@
+#+title: Elfeed Feeds
+
+* Feeds                                                         :elfeed:
+** Tech                                                         :tech:
+*** https://news.ycombinator.com/rss                            :news:
+*** https://lobste.rs/rss                                       :news:
+*** https://lwn.net/headlines/rss                                :linux:
+** NixOS                                                        :nix:
+*** https://nixos.org/blog/announcements-rss.xml
+*** https://weekly.nixos.org/feeds/all.rss.xml
+** Emacs                                                        :emacs:
+*** https://planet.emacslife.com/atom.xml
+*** https://sachachua.com/blog/category/emacs-news/feed/
+** Lisp                                                         :lisp:
+*** https://planet.lisp.org/rss20.xml
+** Blogs                                                        :blog:
+*** https://www.creativetension.co/rss.xml                      :lisp:

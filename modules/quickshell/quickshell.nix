@@ -12,6 +12,9 @@ in
       inputs.quickshell.packages.${pkgs.system}.default
     ];
 
+    # User needs input group for evdev key release detection
+    users.users.${username}.extraGroups = [ "input" ];
+
     # HOME-MANAGER: Dotfiles and services
     home-manager.users.${username} = { config, ... }: {
       # Dotfiles: QML config (live-edit symlink)
@@ -32,6 +35,9 @@ in
 
       xdg.configFile."quickshell/WorkspacePopup.qml".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspacePopup.qml";
+
+      xdg.configFile."quickshell/key-release-monitor.py".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/key-release-monitor.py";
 
       xdg.configFile."quickshell/LayoutConfig.qml".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/LayoutConfig.qml";

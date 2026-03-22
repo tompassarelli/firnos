@@ -79,6 +79,9 @@
 
 ;; Org mode configuration
 (setq org-directory "~/org")
+
+;; Elfeed: point elfeed-org at our dotfiles-managed elfeed.org
+(setq rmh-elfeed-org-files (list (expand-file-name "elfeed.org" doom-user-dir)))
 (after! org
   (setq org-hide-emphasis-markers t)
   (setq org-log-done 'time)

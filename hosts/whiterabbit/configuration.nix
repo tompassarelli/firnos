@@ -99,6 +99,7 @@
     fennec.enable = true;
   };
   myConfig.chrome.enable = true;
+  myConfig.nyxt.enable = true;
   myConfig.steam = {
     enable = true;
     wowup.enable = true;
