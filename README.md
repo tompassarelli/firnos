@@ -13,7 +13,7 @@
 FirnOS is a NixOS configuration you can use as a foundation for your own system. Import it as a flake input and build on top of it.
 
 **Features:**
-- 113 modules + 5 bundles covering desktop, development, theming, and applications
+- 138 modules + 10 bundles covering desktop, development, theming, and applications
 - `myConfig.*` namespace for clean, declarative configuration
 - Niri window manager with Wayland support
 - Stylix theming integration
@@ -90,8 +90,7 @@ firnos.lib.mkSystem {
 ├── bundles/            # Bundles (compose modules under one toggle)
 ├── hosts/              # Host-specific configurations
 ├── template/           # Starting point for your own config
-├── dotfiles/           # Out-of-store configs (live editing)
-└── docs/               # Documentation
+└── dotfiles/           # Out-of-store configs (live editing)
 ```
 
 **Module** = atom. One package or feature. `modules/<name>/{default.nix, <name>.nix}`.
@@ -117,24 +116,29 @@ Enable with `myConfig.<module>.enable = true` in your host config.
 
 | Category | Modules |
 |----------|---------|
-| System | `boot`, `users`, `networking`, `wireguard`, `remmina`, `protonvpn`, `timezone`, `ssh`, `nix-settings`, `auto-upgrade`, `system` |
+| System | `boot`, `users`, `networking`, `wireguard`, `remmina`, `timezone`, `ssh`, `nix-settings`, `auto-upgrade`, `system`, `fwupd` |
 | Desktop | `niri`, `waybar`, `quickshell`, `ironbar`, `rofi`, `walker`, `mako`, `upower` |
-| Hardware | `pipewire`, `bluetooth`, `input`, `wl-clipboard`, `brightnessctl`, `wl-gammarelay`, `piper`, `kanata`, `glide`, `framework`, `via`, `printing` |
+| Hardware | `pipewire`, `bluetooth`, `input`, `wl-clipboard`, `brightnessctl`, `wl-gammarelay`, `piper`, `g203-led`, `kanata`, `glide`, `framework`, `via` |
 | Auth | `polkit`, `gnome-keyring`, `password` |
-| Theming | `styling`, `theming`, `gtk`, `theme-switcher` |
+| Theming | `styling`, `theming`, `gtk`, `theme-switcher`, `nerd-fonts` |
 | Terminal | `kitty`, `fish`, `zoxide`, `atuin`, `starship` |
-| Editors | `neovim`, `doom-emacs`, `lem`, `zed`, `vim` |
-| CLI Tools | `git`, `yazi`, `btop`, `eza`, `dust`, `tree`, `procs`, `tealdeer`, `fastfetch`, `direnv`, `ripgrep`, `fd`, `delta` |
-| Dev Tools | `claude`, `rust`, `nodejs`, `python`, `sqlite`, `dbeaver`, `gh`, `imagemagick`, `postgresql`, `sqlcmd`, `dotnet`, `containers`, `mini-serve` |
-| Utilities | `wget`, `curl`, `unzip`, `unrar`, `parted`, `pandoc`, `hugo`, `ffmpeg` |
+| Editors | `neovim`, `emacs`, `lem`, `zed`, `vim` |
+| Rust | `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bevy` |
+| C/Build | `gcc`, `clang`, `cmake`, `gnumake`, `libtool`, `pkg-config` |
+| Languages | `nodejs`, `python`, `uv`, `sbcl`, `dotnet` |
+| CLI Tools | `git`, `yazi`, `btop`, `eza`, `dust`, `tree`, `procs`, `tealdeer`, `fastfetch`, `direnv`, `ripgrep`, `fd`, `delta`, `shellcheck` |
+| Dev Tools | `claude`, `sqlite`, `dbeaver`, `gh`, `imagemagick`, `ghostscript`, `graphviz`, `postgresql`, `sqlcmd`, `containers`, `mini-serve` |
+| Utilities | `wget`, `curl`, `unzip`, `unrar`, `parted`, `pandoc`, `hugo`, `ffmpeg`, `fuse`, `libnotify`, `gnome-screenshot` |
 | Browsers | `firefox`, `chrome`, `nyxt`, `ladybird` |
 | Media | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `pavucontrol` |
 | Creative | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `eyedropper` |
 | Productivity | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `slack` |
 | Desktop Tools | `nautilus`, `swaylock`, `grim` |
-| Gaming | `steam`, `lutris` |
+| Gaming | `steam`, `lutris`, `wowup` |
+| VPN | `protonvpn-gui`, `protonvpn-cli` |
+| Printing | `gutenprint`, `hplip` |
 | Mail | `mail` |
-| Virtualization | `windows-vm` |
+| VM | `windows-vm` |
 
 ## Bundles
 
@@ -143,10 +147,15 @@ Bundles group modules under one toggle. All modules default to enabled; override
 | Bundle | Modules included |
 |--------|-----------------|
 | `auth` | `polkit`, `gnome-keyring` |
-| `development` | `vim`, `claude`, `ripgrep`, `fd`, `unzip`, `parted`, `wget`, `curl`, `imagemagick`, `nodejs`, `python`, `sqlite`, `dbeaver`, `gh`, `delta` |
+| `development` | `vim`, `claude`, `ripgrep`, `fd`, `unzip`, `parted`, `wget`, `curl`, `imagemagick`, `ghostscript`, `nodejs`, `python`, `uv`, `sqlite`, `dbeaver`, `gh`, `delta` |
+| `rust` | `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `pkg-config`, `gcc`, `bevy` (off by default) |
+| `csharp` | `dotnet`, `sqlcmd`, `windows-vm` |
+| `doom-emacs` | `emacs`, `nerd-fonts`, `ripgrep`, `fd`, `clang`, `cmake`, `gnumake`, `gcc`, `libtool`, `sbcl`, `gnome-screenshot`, `graphviz`, `shellcheck` |
 | `creative` | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `ffmpeg`, `eyedropper` |
 | `media` | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `lutris`, `nautilus`, `swaylock`, `grim`, `slurp`, `pavucontrol` |
 | `productivity` | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `unrar`, `slack`, `hugo`, `pandoc` |
+| `printing` | CUPS service + `gutenprint`, `hplip` |
+| `protonvpn` | `protonvpn-gui`, `protonvpn-cli` |
 
 ## Documentation
 

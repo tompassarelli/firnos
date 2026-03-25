@@ -374,6 +374,20 @@ json.dump(d, open(f, \"w\"), indent=2)
             echo "Opacity: $argv[1]"
           end
 
+          # Show what bundles/hosts reference a module
+          function firnos-refs
+            if test (count $argv) -eq 0
+              echo "Usage: firnos-refs <module-name>"
+              return 1
+            end
+            set -l name $argv[1]
+            echo "Bundles:"
+            rg "myConfig\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
+            echo ""
+            echo "Hosts:"
+            rg "myConfig\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
+          end
+
           # Show current and next NixOS generation numbers
           function nixgen
             set current (nixos-rebuild list-generations | grep current | cut -d' ' -f1)
