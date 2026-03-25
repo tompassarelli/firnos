@@ -43,8 +43,10 @@
     enable = true;
     mako.enable = false;
   };
-  myConfig.bundles.theming.enable = true;
-  myConfig.modules.stylix.chosenTheme = "everforest-dark-hard";
+  myConfig.bundles.theming = {
+    enable = true;
+    stylix.chosenTheme = "everforest-dark-hard";
+  };
   myConfig.bundles.auth.enable = true;
   myConfig.bundles.development.enable = true;
   myConfig.bundles.rust = {
@@ -53,8 +55,10 @@
   };
   myConfig.bundles.csharp.enable = true;
   myConfig.bundles.lisp.enable = true;
-  myConfig.bundles.browsers.enable = true;
-  myConfig.modules.firefox.fennec.enable = true;
+  myConfig.bundles.browsers = {
+    enable = true;
+    firefox.fennec.enable = true;
+  };
   myConfig.bundles.gaming.enable = true;
   myConfig.bundles.creative.enable = true;
   myConfig.bundles.media.enable = true;
