@@ -10,14 +10,12 @@
 
 ## What is FirnOS?
 
-FirnOS is a NixOS configuration you can use as a foundation for your own system. Import it as a flake input and build on top of it.
+A NixOS configuration framework. 138 atomic modules, 18 bundles. Import it as a flake input and build on top of it.
 
-**Features:**
-- 138 modules + 10 bundles covering desktop, development, theming, and applications
-- `myConfig.*` namespace for clean, declarative configuration
-- Niri window manager with Wayland support
-- Stylix theming integration
-- home-manager integration
+- `myConfig.modules.*` for individual packages/services
+- `myConfig.bundles.*` for composed groups with per-module overrides
+- Auto-discovery — add a module by creating a directory
+- Niri + Wayland, Stylix theming, home-manager
 
 ## Using FirnOS
 
