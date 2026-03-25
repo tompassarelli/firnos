@@ -1,4 +1,4 @@
-function vpn
+function vpn --description "WireGuard VPN with kill switch"
   # vpn on / vpn off (default: tokyo)
   # vpn tokyo on / vpn tokyo off
   set -l action

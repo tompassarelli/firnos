@@ -1,4 +1,4 @@
-function sandbox
+function sandbox --description "podman dev containers with Claude Code"
   # Help
   if test "$argv[1]" = "--help"; or test "$argv[1]" = "-h"
     echo "sandbox - sandboxed dev containers with Claude Code"

@@ -1,4 +1,4 @@
-function firn
+function firn --description "FirnOS config management CLI"
   switch $argv[1]
     case rebuild
       if test (count $argv) -le 1

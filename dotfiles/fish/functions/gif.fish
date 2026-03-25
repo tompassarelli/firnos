@@ -1,4 +1,4 @@
-function gif
+function gif --description "record screen region to GIF"
   if test (count $argv) -eq 0
     echo "Usage: gif <name> [seconds]"
     return 1
