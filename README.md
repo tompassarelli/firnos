@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="firnos-logo.png">
-    <source media="(prefers-color-scheme: light)" srcset="firnos-logo-dark.png">
-    <img alt="FirnOS" src="firnos-logo.png" width="400">
+    <source media="(prefers-color-scheme: dark)" srcset="firnos-logo.png" width="200">
+    <source media="(prefers-color-scheme: light)" srcset="firnos-logo-dark.png" width="200">
+    <img alt="FirnOS" src="firnos-logo.png" width="200">
   </picture>
 </p>
 
