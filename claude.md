@@ -104,7 +104,7 @@ myConfig.bundles.python.enable = lib.mkDefault cfg.python.enable;
 
 ## Firn CLI
 
-User's fish shell defines `firn`, a CLI for managing this config. Defined in `modules/fish/fish.nix`.
+Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, symlinked via out-of-store symlinks. `modules/fish/fish.nix` auto-discovers them.
 
 | Command | What it does |
 |---|---|
@@ -115,6 +115,9 @@ User's fish shell defines `firn`, a CLI for managing this config. Defined in `mo
 | `firn refs <name>` | Show what hosts/bundles reference a module or bundle |
 | `firn mod <name>` | Scaffold a new module (creates dir + git adds) |
 | `firn bundle <name> <mods...>` | Scaffold a new bundle with given modules |
+| `firn secret <name>` | Create/edit an encrypted secret (sops + git add) |
+| `firn secret list` | List secret files |
+| `firn secret show <name>` | Decrypt and display a secret |
 | `firn gen` | Show current and next generation numbers |
 
 Other fish helpers: `gitc` (commit with nvim), `wlc <file>` (copy to clipboard), `movess` (move latest screenshot to cwd), `gif <name> [secs]` (record screen region to GIF), `makedev` (podman dev containers with Claude Code), `wgon`/`wgoff` (WireGuard + kill switch + logging), `niri-opacity`.
