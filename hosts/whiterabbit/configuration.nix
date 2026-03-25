@@ -63,7 +63,7 @@
   myConfig.niri.enable = true;
   myConfig.upower.enable = true;
   myConfig.auth.enable = true;
-  myConfig.rofi-wayland.enable = true;
+  myConfig.rofi.enable = true;
   myConfig.walker.enable = false;
   myConfig.waybar.enable = false;
   myConfig.quickshell.enable = true;

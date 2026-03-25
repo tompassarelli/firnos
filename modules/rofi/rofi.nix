@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.rofi-wayland;
+  cfg = config.myConfig.rofi;
   username = config.myConfig.users.username;
 in
 {

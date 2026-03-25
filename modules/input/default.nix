@@ -5,6 +5,6 @@
   };
 
   imports = [
-    ./libinput.nix
+    ./input.nix
   ];
 }

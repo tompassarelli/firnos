@@ -1,10 +1,8 @@
 { lib, ... }:
 {
-  options.myConfig.rofi-wayland = {
-    enable = lib.mkEnableOption "Rofi application launcher for Wayland";
-  };
+  options.myConfig.rofi.enable = lib.mkEnableOption "Rofi application launcher";
 
   imports = [
-    ./rofi-wayland.nix
+    ./rofi.nix
   ];
 }
