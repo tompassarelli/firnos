@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="firnos-logo.png" alt="FirnOS" width="400">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="firnos-logo.png">
+    <source media="(prefers-color-scheme: light)" srcset="firnos-logo-dark.png">
+    <img alt="FirnOS" src="firnos-logo.png" width="400">
+  </picture>
 </p>
 
 <p align="center">A modular, shareable NixOS configuration framework.</p>
