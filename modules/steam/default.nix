@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.steam.enable = lib.mkEnableOption "Steam gaming platform";
+  options.myConfig.modules.steam.enable = lib.mkEnableOption "Steam gaming platform";
   imports = [ ./steam.nix ];
 }

@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.wireguard;
-  username = config.myConfig.users.username;
+  cfg = config.myConfig.modules.wireguard;
+  username = config.myConfig.modules.users.username;
 in
 {
   config = lib.mkIf cfg.enable {

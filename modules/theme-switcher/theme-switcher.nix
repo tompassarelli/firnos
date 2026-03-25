@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.theme-switcher;
+  cfg = config.myConfig.modules.theme-switcher;
 
   switch-theme = pkgs.writeShellScriptBin "switch-theme" ''
     #!/usr/bin/env bash
@@ -34,7 +34,7 @@ let
     )
 
     # Get current theme from host configuration
-    CURRENT_THEME=$(${pkgs.gnugrep}/bin/grep -Po '(?<=myConfig\.theming\.chosenTheme = ")[^"]+' "$HOST_CONFIG" | ${pkgs.coreutils}/bin/head -1)
+    CURRENT_THEME=$(${pkgs.gnugrep}/bin/grep -Po '(?<=myConfig\.modules\.stylix\.chosenTheme = ")[^"]+' "$HOST_CONFIG" | ${pkgs.coreutils}/bin/head -1)
 
     # Show themes in walker dmenu
     SELECTED=$(printf '%s\n' "''${THEMES[@]}" | ${pkgs.walker}/bin/walker --dmenu -p "Select theme:")
@@ -57,10 +57,10 @@ let
     ${pkgs.coreutils}/bin/cp "$HOST_CONFIG" "$HOST_CONFIG.bak"
 
     # Update the chosenTheme line in host configuration
-    ${pkgs.gnused}/bin/sed -i "s/myConfig\.theming\.chosenTheme = \"$CURRENT_THEME\"/myConfig.stylix.chosenTheme = \"$SELECTED\"/" "$HOST_CONFIG"
+    ${pkgs.gnused}/bin/sed -i "s/myConfig\.modules\.stylix\.chosenTheme = \"$CURRENT_THEME\"/myConfig.modules.stylix.chosenTheme = \"$SELECTED\"/" "$HOST_CONFIG"
 
     # Verify the change
-    if ! ${pkgs.gnugrep}/bin/grep -q "myConfig\.theming\.chosenTheme = \"$SELECTED\"" "$HOST_CONFIG"; then
+    if ! ${pkgs.gnugrep}/bin/grep -q "myConfig\.modules\.stylix\.chosenTheme = \"$SELECTED\"" "$HOST_CONFIG"; then
         echo "Error: Failed to update theme in host configuration"
         ${pkgs.coreutils}/bin/mv "$HOST_CONFIG.bak" "$HOST_CONFIG"
         exit 1

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.tealdeer = {
+  options.myConfig.modules.tealdeer = {
     enable = lib.mkEnableOption "Enable tealdeer (tldr client)";
   };
 

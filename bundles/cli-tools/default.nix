@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.cli-tools = {
+  options.myConfig.bundles.cli-tools = {
     enable = lib.mkEnableOption "modern CLI tools";
     yazi.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable yazi"; };
     tree.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable tree"; };

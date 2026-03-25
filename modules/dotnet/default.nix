@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.dotnet = {
+  options.myConfig.modules.dotnet = {
     enable = lib.mkEnableOption ".NET SDK and CLI tools";
   };
 

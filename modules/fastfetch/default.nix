@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.fastfetch = {
+  options.myConfig.modules.fastfetch = {
     enable = lib.mkEnableOption "Enable fastfetch system info display";
   };
 

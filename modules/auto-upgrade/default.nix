@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.auto-upgrade = {
+  options.myConfig.modules.auto-upgrade = {
     enable = lib.mkEnableOption "Automatic system updates";
   };
 

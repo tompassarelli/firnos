@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.nix-settings = {
+  options.myConfig.modules.nix-settings = {
     enable = lib.mkEnableOption "Nix configuration and package settings";
   };
 

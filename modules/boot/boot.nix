@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.boot.enable {
+  config = lib.mkIf config.myConfig.modules.boot.enable {
     # Use the systemd-boot EFI boot loader
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;

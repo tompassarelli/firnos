@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.doom-emacs = {
+  options.myConfig.bundles.doom-emacs = {
     enable = lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)";
     emacs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Emacs"; };
     nerd-fonts.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Nerd Fonts"; };

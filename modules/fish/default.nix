@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.fish = {
+  options.myConfig.modules.fish = {
     enable = lib.mkEnableOption "Fish shell configuration";
   };
 

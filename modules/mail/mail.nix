@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.mail;
+  cfg = config.myConfig.modules.mail;
 in
 {
   config = lib.mkIf cfg.enable {

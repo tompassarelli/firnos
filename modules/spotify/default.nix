@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.spotify.enable = lib.mkEnableOption "Spotify TUI player";
+  options.myConfig.modules.spotify.enable = lib.mkEnableOption "Spotify TUI player";
   imports = [ ./spotify.nix ];
 }

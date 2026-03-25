@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.firefox = {
+  options.myConfig.modules.firefox = {
     enable = lib.mkEnableOption "Enable Firefox browser";
     fennec.enable = lib.mkEnableOption "Enable Fennec (Firefox with custom UI styling)";
 

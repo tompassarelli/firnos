@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.piper = {
+  options.myConfig.modules.piper = {
     enable = lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)";
   };
 

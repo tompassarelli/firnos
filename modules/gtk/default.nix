@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.gtk = {
+  options.myConfig.modules.gtk = {
     enable = lib.mkEnableOption "GTK theming configuration";
   };
 

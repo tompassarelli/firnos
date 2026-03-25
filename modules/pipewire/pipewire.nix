@@ -1,6 +1,6 @@
 { config, lib, ... }:
 {
-  config = lib.mkIf config.myConfig.pipewire.enable {
+  config = lib.mkIf config.myConfig.modules.pipewire.enable {
     # Audio with PipeWire
     services.pipewire = {
       enable = true;

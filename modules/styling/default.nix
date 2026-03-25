@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.styling = {
+  options.myConfig.modules.styling = {
     enable = lib.mkEnableOption "system-wide theming and styling";
   };
 

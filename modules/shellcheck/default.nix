@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.shellcheck.enable = lib.mkEnableOption "ShellCheck shell script linter";
+  options.myConfig.modules.shellcheck.enable = lib.mkEnableOption "ShellCheck shell script linter";
   imports = [ ./shellcheck.nix ];
 }

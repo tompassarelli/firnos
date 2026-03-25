@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.users;
+  cfg = config.myConfig.modules.users;
 in
 {
-  options.myConfig.users = {
+  options.myConfig.modules.users = {
     enable = lib.mkEnableOption "Enable user configuration";
 
     username = lib.mkOption {

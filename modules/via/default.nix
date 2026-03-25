@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.via = {
+  options.myConfig.modules.via = {
     enable = lib.mkEnableOption "VIA keyboard configurator support";
   };
 

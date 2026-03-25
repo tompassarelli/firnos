@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.yazi.enable {
+  config = lib.mkIf config.myConfig.modules.yazi.enable {
     # ============ SYSTEM-LEVEL CONFIGURATION ============
     # (None needed - yazi is installed via home-manager)
 

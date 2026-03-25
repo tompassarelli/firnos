@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.terminal = {
+  options.myConfig.bundles.terminal = {
     enable = lib.mkEnableOption "terminal environment";
     kitty.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable kitty"; };
     fish.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fish"; };

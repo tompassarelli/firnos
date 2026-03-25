@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.ripgrep.enable = lib.mkEnableOption "ripgrep search tool";
+  options.myConfig.modules.ripgrep.enable = lib.mkEnableOption "ripgrep search tool";
   imports = [ ./ripgrep.nix ];
 }

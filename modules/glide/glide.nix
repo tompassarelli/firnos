@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.glide;
+  cfg = config.myConfig.modules.glide;
 in
 {
   config = lib.mkIf cfg.enable {

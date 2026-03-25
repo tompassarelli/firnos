@@ -4,9 +4,9 @@
 # here and customize as needed if this machine comes back into service.
 { lib, ... }:
 {
-  myConfig.system.stateVersion = "25.05";
-  myConfig.boot.enable = true;
-  myConfig.users.enable = true;
-  myConfig.users.username = "tom";
-  myConfig.fish.enable = true;
+  myConfig.modules.system.stateVersion = "25.05";
+  myConfig.modules.boot.enable = true;
+  myConfig.modules.users.enable = true;
+  myConfig.modules.users.username = "tom";
+  myConfig.modules.fish.enable = true;
 }

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.wl-gammarelay = {
+  options.myConfig.modules.wl-gammarelay = {
     enable = lib.mkEnableOption "Wayland gamma/temperature control";
   };
 

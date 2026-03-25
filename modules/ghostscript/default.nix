@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.ghostscript.enable = lib.mkEnableOption "Ghostscript PostScript interpreter";
+  options.myConfig.modules.ghostscript.enable = lib.mkEnableOption "Ghostscript PostScript interpreter";
   imports = [ ./ghostscript.nix ];
 }

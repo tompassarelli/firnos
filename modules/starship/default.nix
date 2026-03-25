@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.starship = {
+  options.myConfig.modules.starship = {
     enable = lib.mkEnableOption "starship prompt";
   };
 

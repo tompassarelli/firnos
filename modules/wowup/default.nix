@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.wowup.enable = lib.mkEnableOption "WowUp-CF addon manager";
+  options.myConfig.modules.wowup.enable = lib.mkEnableOption "WowUp-CF addon manager";
   imports = [ ./wowup.nix ];
 }

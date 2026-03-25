@@ -1,12 +1,12 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.csharp;
+  cfg = config.myConfig.bundles.csharp;
 in
 {
   config = lib.mkIf cfg.enable {
-    myConfig.dotnet.enable = lib.mkDefault cfg.dotnet.enable;
-    myConfig.sqlcmd.enable = lib.mkDefault cfg.sqlcmd.enable;
-    myConfig.windows-vm.enable = lib.mkDefault cfg.windows-vm.enable;
+    myConfig.modules.dotnet.enable = lib.mkDefault cfg.dotnet.enable;
+    myConfig.modules.sqlcmd.enable = lib.mkDefault cfg.sqlcmd.enable;
+    myConfig.modules.windows-vm.enable = lib.mkDefault cfg.windows-vm.enable;
   };
 }

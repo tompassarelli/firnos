@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.rust = {
+  options.myConfig.bundles.rust = {
     enable = lib.mkEnableOption "Rust development toolchain";
     rustc.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Rust compiler"; };
     cargo.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Cargo"; };

@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.nix-settings;
+  cfg = config.myConfig.modules.nix-settings;
 in
 {
   config = lib.mkIf cfg.enable {

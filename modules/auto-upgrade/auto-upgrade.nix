@@ -1,7 +1,7 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.auto-upgrade;
+  cfg = config.myConfig.modules.auto-upgrade;
 in
 {
   config = lib.mkIf cfg.enable {

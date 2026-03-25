@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.btop = {
+  options.myConfig.modules.btop = {
     enable = lib.mkEnableOption "Enable btop system monitor";
   };
 

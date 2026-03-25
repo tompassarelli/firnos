@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.desktop = {
+  options.myConfig.bundles.desktop = {
     enable = lib.mkEnableOption "Wayland desktop environment";
     niri.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable niri"; };
     upower.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable upower"; };

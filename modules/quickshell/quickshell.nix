@@ -1,8 +1,8 @@
 { config, lib, pkgs, inputs, ... }:
 
 let
-  cfg = config.myConfig.quickshell;
-  username = config.myConfig.users.username;
+  cfg = config.myConfig.modules.quickshell;
+  username = config.myConfig.modules.users.username;
   monoFont = config.stylix.fonts.monospace.name;
 in
 {

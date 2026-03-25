@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.fuse.enable {
+  config = lib.mkIf config.myConfig.modules.fuse.enable {
     environment.systemPackages = [ pkgs.fuse ];
   };
 }

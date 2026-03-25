@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.atuin = {
+  options.myConfig.modules.atuin = {
     enable = lib.mkEnableOption "atuin shell history sync";
   };
 

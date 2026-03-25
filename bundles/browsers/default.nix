@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.browsers = {
+  options.myConfig.bundles.browsers = {
     enable = lib.mkEnableOption "web browsers";
     firefox.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable firefox"; };
     chrome.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable chrome"; };

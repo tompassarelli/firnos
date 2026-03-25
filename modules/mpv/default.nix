@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.mpv.enable = lib.mkEnableOption "mpv media player";
+  options.myConfig.modules.mpv.enable = lib.mkEnableOption "mpv media player";
   imports = [ ./mpv.nix ];
 }

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.graphviz.enable {
+  config = lib.mkIf config.myConfig.modules.graphviz.enable {
     environment.systemPackages = [ pkgs.graphviz ];
   };
 }

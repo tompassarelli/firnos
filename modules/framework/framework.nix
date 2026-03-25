@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.framework;
+  cfg = config.myConfig.modules.framework;
 in
 {
   config = lib.mkIf cfg.enable {

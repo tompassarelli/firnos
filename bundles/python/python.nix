@@ -1,11 +1,11 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.python-dev;
+  cfg = config.myConfig.bundles.python-dev;
 in
 {
   config = lib.mkIf cfg.enable {
-    myConfig.python.enable = lib.mkDefault cfg.python.enable;
-    myConfig.uv.enable = lib.mkDefault cfg.uv.enable;
+    myConfig.modules.python.enable = lib.mkDefault cfg.python.enable;
+    myConfig.modules.uv.enable = lib.mkDefault cfg.uv.enable;
   };
 }

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.waybar = {
+  options.myConfig.modules.waybar = {
     enable = lib.mkEnableOption "Waybar status bar for Wayland";
   };
 

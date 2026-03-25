@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.todoist.enable = lib.mkEnableOption "Todoist task manager";
+  options.myConfig.modules.todoist.enable = lib.mkEnableOption "Todoist task manager";
   imports = [ ./todoist.nix ];
 }

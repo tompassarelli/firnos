@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.godot.enable = lib.mkEnableOption "Godot game engine";
+  options.myConfig.modules.godot.enable = lib.mkEnableOption "Godot game engine";
   imports = [ ./godot.nix ];
 }

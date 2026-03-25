@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.timezone = {
+  options.myConfig.modules.timezone = {
     enable = lib.mkEnableOption "timezone configuration";
   };
 

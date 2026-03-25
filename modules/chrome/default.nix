@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.chrome = {
+  options.myConfig.modules.chrome = {
     enable = lib.mkEnableOption "Enable Google Chrome browser";
 
     default = lib.mkOption {

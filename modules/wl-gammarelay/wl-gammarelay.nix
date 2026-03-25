@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.wl-gammarelay.enable {
+  config = lib.mkIf config.myConfig.modules.wl-gammarelay.enable {
     environment.systemPackages = with pkgs; [
       wl-gammarelay-rs
     ];

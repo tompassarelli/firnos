@@ -1,11 +1,11 @@
 { config, lib, pkgs, inputs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.firefox.fennec.enable {
+  config = lib.mkIf config.myConfig.modules.firefox.fennec.enable {
     # Fennec implies firefox
-    myConfig.firefox.enable = lib.mkDefault true;
+    myConfig.modules.firefox.enable = lib.mkDefault true;
 
     home-manager.users.${username} = { config, ... }: {
       programs.firefox = {

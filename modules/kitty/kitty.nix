@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.kitty;
-  username = config.myConfig.users.username;
+  cfg = config.myConfig.modules.kitty;
+  username = config.myConfig.modules.users.username;
 in
 {
   config = lib.mkIf cfg.enable {

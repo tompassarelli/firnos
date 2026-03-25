@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.input = {
+  options.myConfig.modules.input = {
     enable = lib.mkEnableOption "touchpad support (libinput)";
   };
 

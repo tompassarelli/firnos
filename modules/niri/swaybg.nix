@@ -1,11 +1,11 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
-  chosenTheme = config.myConfig.stylix.chosenTheme;
+  username = config.myConfig.modules.users.username;
+  chosenTheme = config.myConfig.modules.stylix.chosenTheme;
 
 in
 {
-  config = lib.mkIf config.myConfig.niri.enable {
+  config = lib.mkIf config.myConfig.modules.niri.enable {
     home-manager.users.${username} = { config, ... }: {
       systemd.user.services.swaybg = {
         Unit = {

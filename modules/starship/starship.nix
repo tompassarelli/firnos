@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.starship.enable {
+  config = lib.mkIf config.myConfig.modules.starship.enable {
     home-manager.users.${username} = {
       programs.starship = {
         enable = true;

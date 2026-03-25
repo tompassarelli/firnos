@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.walker = {
+  options.myConfig.modules.walker = {
     enable = lib.mkEnableOption "Walker modern wayland app launcher";
   };
 

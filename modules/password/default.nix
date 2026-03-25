@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.password = {
+  options.myConfig.modules.password = {
     enable = lib.mkEnableOption "password management tools";
   };
 

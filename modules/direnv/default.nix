@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.direnv = {
+  options.myConfig.modules.direnv = {
     enable = lib.mkEnableOption "direnv for automatic dev shell activation";
   };
 

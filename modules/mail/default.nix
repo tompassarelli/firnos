@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.mail = {
+  options.myConfig.modules.mail = {
     enable = lib.mkEnableOption "email applications";
   };
 

@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.imv.enable = lib.mkEnableOption "imv image viewer";
+  options.myConfig.modules.imv.enable = lib.mkEnableOption "imv image viewer";
   imports = [ ./imv.nix ];
 }

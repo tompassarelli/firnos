@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.timezone;
+  cfg = config.myConfig.modules.timezone;
 in
 {
   config = lib.mkIf cfg.enable {

@@ -1,25 +1,25 @@
 { config, lib, pkgs, flakeRoot, ... }:
 let
-  cfg = config.myConfig.doom-emacs;
-  username = config.myConfig.users.username;
-  chosenTheme = config.myConfig.stylix.chosenTheme;
+  cfg = config.myConfig.bundles.doom-emacs;
+  username = config.myConfig.modules.users.username;
+  chosenTheme = config.myConfig.modules.stylix.chosenTheme;
 in
 {
   config = lib.mkIf cfg.enable {
     # Enable atomic modules
-    myConfig.emacs.enable = lib.mkDefault cfg.emacs.enable;
-    myConfig.nerd-fonts.enable = lib.mkDefault cfg.nerd-fonts.enable;
-    myConfig.ripgrep.enable = lib.mkDefault cfg.ripgrep.enable;
-    myConfig.fd.enable = lib.mkDefault cfg.fd.enable;
-    myConfig.clang.enable = lib.mkDefault cfg.clang.enable;
-    myConfig.cmake.enable = lib.mkDefault cfg.cmake.enable;
-    myConfig.gnumake.enable = lib.mkDefault cfg.gnumake.enable;
-    myConfig.gcc.enable = lib.mkDefault cfg.gcc.enable;
-    myConfig.libtool.enable = lib.mkDefault cfg.libtool.enable;
-    myConfig.sbcl.enable = lib.mkDefault cfg.sbcl.enable;
-    myConfig.gnome-screenshot.enable = lib.mkDefault cfg.gnome-screenshot.enable;
-    myConfig.graphviz.enable = lib.mkDefault cfg.graphviz.enable;
-    myConfig.shellcheck.enable = lib.mkDefault cfg.shellcheck.enable;
+    myConfig.modules.emacs.enable = lib.mkDefault cfg.emacs.enable;
+    myConfig.modules.nerd-fonts.enable = lib.mkDefault cfg.nerd-fonts.enable;
+    myConfig.modules.ripgrep.enable = lib.mkDefault cfg.ripgrep.enable;
+    myConfig.modules.fd.enable = lib.mkDefault cfg.fd.enable;
+    myConfig.modules.clang.enable = lib.mkDefault cfg.clang.enable;
+    myConfig.modules.cmake.enable = lib.mkDefault cfg.cmake.enable;
+    myConfig.modules.gnumake.enable = lib.mkDefault cfg.gnumake.enable;
+    myConfig.modules.gcc.enable = lib.mkDefault cfg.gcc.enable;
+    myConfig.modules.libtool.enable = lib.mkDefault cfg.libtool.enable;
+    myConfig.modules.sbcl.enable = lib.mkDefault cfg.sbcl.enable;
+    myConfig.modules.gnome-screenshot.enable = lib.mkDefault cfg.gnome-screenshot.enable;
+    myConfig.modules.graphviz.enable = lib.mkDefault cfg.graphviz.enable;
+    myConfig.modules.shellcheck.enable = lib.mkDefault cfg.shellcheck.enable;
 
     # Clockify API key (decrypted to /run/secrets/msa-clockify-api-key)
     sops.secrets."msa-clockify-api-key" = {

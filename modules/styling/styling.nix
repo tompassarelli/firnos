@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.styling;
-  username = config.myConfig.users.username;
-  chosenTheme = config.myConfig.stylix.chosenTheme;
+  cfg = config.myConfig.modules.styling;
+  username = config.myConfig.modules.users.username;
+  chosenTheme = config.myConfig.modules.stylix.chosenTheme;
 
   # Read the base16 scheme YAML to get the variant (dark/light)
   schemeFile = "${pkgs.base16-schemes}/share/themes/${chosenTheme}.yaml";

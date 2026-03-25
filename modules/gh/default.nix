@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.gh.enable = lib.mkEnableOption "GitHub CLI";
+  options.myConfig.modules.gh.enable = lib.mkEnableOption "GitHub CLI";
   imports = [ ./gh.nix ];
 }

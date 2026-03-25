@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.remmina = {
+  options.myConfig.modules.remmina = {
     enable = lib.mkEnableOption "Remmina remote desktop client";
   };
 

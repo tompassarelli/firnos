@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.gutenprint.enable = lib.mkEnableOption "Gutenprint printer drivers";
+  options.myConfig.modules.gutenprint.enable = lib.mkEnableOption "Gutenprint printer drivers";
   imports = [ ./gutenprint.nix ];
 }

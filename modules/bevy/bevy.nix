@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.bevy;
+  cfg = config.myConfig.modules.bevy;
 
   bevyLibs = with pkgs; [
     alsa-lib            # Audio

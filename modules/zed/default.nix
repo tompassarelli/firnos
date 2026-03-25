@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.zed = {
+  options.myConfig.modules.zed = {
     enable = lib.mkEnableOption "Zed editor with MCP support";
   };
 

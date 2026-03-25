@@ -2,46 +2,46 @@
 # Enable the modules you want from FirnOS
 {
   # ============ REQUIRED ============
-  myConfig.system.stateVersion = "25.05";  # Set to your NixOS install version
-  myConfig.users.username = "yourname";   # Change this!
+  myConfig.modules.system.stateVersion = "25.05";  # Set to your NixOS install version
+  myConfig.modules.users.username = "yourname";   # Change this!
 
   # ============ BUNDLES ============
   # Groups of modules under one toggle. Override individual members as needed.
-  myConfig.auth.enable = true;
-  myConfig.development.enable = true;
-  # myConfig.development = {
+  myConfig.bundles.auth.enable = true;
+  myConfig.bundles.development.enable = true;
+  # myConfig.bundles.development = {
   #   enable = true;
   #   dbeaver.enable = false;  # everything except this
   # };
-  myConfig.media.enable = true;
-  myConfig.productivity.enable = true;
-  # myConfig.creative.enable = true;
+  myConfig.bundles.media.enable = true;
+  myConfig.bundles.productivity.enable = true;
+  # myConfig.bundles.creative.enable = true;
 
   # ============ SYSTEM ============
-  myConfig.nix-settings.enable = true;
-  myConfig.boot.enable = true;
-  myConfig.users.enable = true;
-  myConfig.networking.enable = true;
-  # myConfig.wireguard.enable = true;
-  # myConfig.remmina.enable = true;
-  # myConfig.protonvpn.enable = true;
-  myConfig.timezone.enable = true;
-  myConfig.ssh.enable = true;
-  # myConfig.auto-upgrade.enable = true;
+  myConfig.modules.nix-settings.enable = true;
+  myConfig.modules.boot.enable = true;
+  myConfig.modules.users.enable = true;
+  myConfig.modules.networking.enable = true;
+  # myConfig.modules.wireguard.enable = true;
+  # myConfig.modules.remmina.enable = true;
+  # myConfig.bundles.protonvpn.enable = true;
+  myConfig.modules.timezone.enable = true;
+  myConfig.modules.ssh.enable = true;
+  # myConfig.modules.auto-upgrade.enable = true;
 
   # ============ HARDWARE ============
-  myConfig.pipewire.enable = true;
-  myConfig.bluetooth.enable = true;
-  myConfig.input.enable = true;
-  # myConfig.wl-clipboard.enable = true;
-  # myConfig.brightnessctl.enable = true;
-  # myConfig.wl-gammarelay.enable = true;
-  # myConfig.piper.enable = true;
-  # myConfig.printing.enable = true;
-  # myConfig.framework.enable = true;  # Only for Framework laptops
-  # myConfig.via.enable = true;        # QMK/VIA keyboard firmware
+  myConfig.modules.pipewire.enable = true;
+  myConfig.modules.bluetooth.enable = true;
+  myConfig.modules.input.enable = true;
+  # myConfig.modules.wl-clipboard.enable = true;
+  # myConfig.modules.brightnessctl.enable = true;
+  # myConfig.modules.wl-gammarelay.enable = true;
+  # myConfig.modules.piper.enable = true;
+  # myConfig.bundles.printing.enable = true;
+  # myConfig.modules.framework.enable = true;  # Only for Framework laptops
+  # myConfig.modules.via.enable = true;        # QMK/VIA keyboard firmware
 
-  myConfig.kanata = {
+  myConfig.modules.kanata = {
     enable = true;
     capsLockEscCtrl = true;
     # spacebarSymbols = true;
@@ -51,54 +51,54 @@
   };
 
   # ============ DESKTOP ============
-  myConfig.niri.enable = true;
-  myConfig.upower.enable = true;
-  myConfig.walker.enable = true;
-  myConfig.waybar.enable = true;
-  myConfig.mako.enable = true;
+  myConfig.modules.niri.enable = true;
+  myConfig.modules.upower.enable = true;
+  myConfig.modules.walker.enable = true;
+  myConfig.modules.waybar.enable = true;
+  myConfig.modules.mako.enable = true;
 
   # ============ THEMING ============
-  myConfig.gtk.enable = true;
-  myConfig.styling.enable = true;
-  myConfig.stylix.enable = true;
-  myConfig.stylix.chosenTheme = "tokyo-night-dark";
-  # myConfig.theme-switcher.enable = true;
+  myConfig.modules.gtk.enable = true;
+  myConfig.modules.styling.enable = true;
+  myConfig.modules.stylix.enable = true;
+  myConfig.modules.stylix.chosenTheme = "tokyo-night-dark";
+  # myConfig.modules.theme-switcher.enable = true;
 
   # ============ TERMINAL ============
-  myConfig.kitty.enable = true;
-  myConfig.fish.enable = true;
-  myConfig.zoxide.enable = true;
-  myConfig.atuin.enable = true;
-  myConfig.starship.enable = true;
+  myConfig.modules.kitty.enable = true;
+  myConfig.modules.fish.enable = true;
+  myConfig.modules.zoxide.enable = true;
+  myConfig.modules.atuin.enable = true;
+  myConfig.modules.starship.enable = true;
 
   # ============ CLI TOOLS ============
-  myConfig.yazi.enable = true;
-  myConfig.git.enable = true;
-  myConfig.tree.enable = true;
-  myConfig.dust.enable = true;
-  myConfig.eza.enable = true;
-  myConfig.procs.enable = true;
-  myConfig.tealdeer.enable = true;
-  myConfig.fastfetch.enable = true;
-  myConfig.btop.enable = true;
+  myConfig.modules.yazi.enable = true;
+  myConfig.modules.git.enable = true;
+  myConfig.modules.tree.enable = true;
+  myConfig.modules.dust.enable = true;
+  myConfig.modules.eza.enable = true;
+  myConfig.modules.procs.enable = true;
+  myConfig.modules.tealdeer.enable = true;
+  myConfig.modules.fastfetch.enable = true;
+  myConfig.modules.btop.enable = true;
 
   # ============ EDITORS ============
-  myConfig.neovim.enable = true;
-  # myConfig.doom-emacs.enable = true;
-  # myConfig.lem.enable = true;
-  # myConfig.zed.enable = true;
+  myConfig.modules.neovim.enable = true;
+  # myConfig.bundles.doom-emacs.enable = true;
+  # myConfig.modules.lem.enable = true;
+  # myConfig.modules.zed.enable = true;
 
   # ============ APPLICATIONS ============
-  myConfig.firefox = {
+  myConfig.modules.firefox = {
     enable = true;
     fennec.enable = true;
   };
-  # myConfig.chrome.enable = true;
-  myConfig.password.enable = true;
-  # myConfig.mail.enable = true;
-  # myConfig.steam.enable = true;
+  # myConfig.modules.chrome.enable = true;
+  myConfig.modules.password.enable = true;
+  # myConfig.modules.mail.enable = true;
+  # myConfig.modules.steam.enable = true;
 
   # ============ VIRTUALIZATION ============
-  # myConfig.windows-vm.enable = true;
-  # myConfig.containers.enable = true;
+  # myConfig.modules.windows-vm.enable = true;
+  # myConfig.modules.containers.enable = true;
 }

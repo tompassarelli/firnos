@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.boot = {
+  options.myConfig.modules.boot = {
     enable = lib.mkEnableOption "boot configuration";
   };
 

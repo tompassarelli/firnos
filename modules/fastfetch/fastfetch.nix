@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.fastfetch.enable {
+  config = lib.mkIf config.myConfig.modules.fastfetch.enable {
     # ============ SYSTEM-LEVEL CONFIGURATION ============
 
     environment.systemPackages = with pkgs; [ fastfetch ];

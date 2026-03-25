@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.niri = {
+  options.myConfig.modules.niri = {
     enable = lib.mkEnableOption "Enable niri compositor configuration";
   };
 

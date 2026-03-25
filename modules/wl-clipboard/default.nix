@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.wl-clipboard = {
+  options.myConfig.modules.wl-clipboard = {
     enable = lib.mkEnableOption "Wayland clipboard utilities";
   };
 

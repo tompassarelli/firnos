@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.libnotify.enable {
+  config = lib.mkIf config.myConfig.modules.libnotify.enable {
     environment.systemPackages = [ pkgs.libnotify ];
   };
 }

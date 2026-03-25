@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.mini-serve;
+  cfg = config.myConfig.modules.mini-serve;
 
   page = pkgs.writeTextDir "index.html" ''
     <!DOCTYPE html><html><body style="background:#2b3339;margin:0"></body></html>

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.zoxide = {
+  options.myConfig.modules.zoxide = {
     enable = lib.mkEnableOption "zoxide smart directory jumper";
   };
 

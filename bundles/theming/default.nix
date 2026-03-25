@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.theming = {
+  options.myConfig.bundles.theming = {
     enable = lib.mkEnableOption "visual theming stack";
     gtk.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GTK"; };
     styling.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Stylix styling"; };

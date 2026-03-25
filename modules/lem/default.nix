@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.lem = {
+  options.myConfig.modules.lem = {
     enable = lib.mkEnableOption "Lem Common Lisp editor";
   };
 

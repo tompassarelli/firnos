@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.git.enable {
+  config = lib.mkIf config.myConfig.modules.git.enable {
     # ============ SYSTEM-LEVEL CONFIGURATION ============
     # (None needed - git is installed via home-manager)
 

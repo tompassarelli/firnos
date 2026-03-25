@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.sqlcmd;
+  cfg = config.myConfig.modules.sqlcmd;
 in
 {
   config = lib.mkIf cfg.enable {

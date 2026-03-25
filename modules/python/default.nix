@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.python.enable = lib.mkEnableOption "Python runtime with uv";
+  options.myConfig.modules.python.enable = lib.mkEnableOption "Python runtime with uv";
   imports = [ ./python.nix ];
 }

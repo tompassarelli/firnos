@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.sqlcmd = {
+  options.myConfig.modules.sqlcmd = {
     enable = lib.mkEnableOption "sqlcmd for Microsoft SQL Server";
   };
 

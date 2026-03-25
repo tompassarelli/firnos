@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.swaylock.enable {
+  config = lib.mkIf config.myConfig.modules.swaylock.enable {
     environment.systemPackages = [ pkgs.swaylock ];
   };
 }

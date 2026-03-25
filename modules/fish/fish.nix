@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.fish.enable {
+  config = lib.mkIf config.myConfig.modules.fish.enable {
     # ============ SYSTEM-LEVEL CONFIGURATION ============
 
     # Enable fish shell system-wide

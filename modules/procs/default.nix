@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.procs = {
+  options.myConfig.modules.procs = {
     enable = lib.mkEnableOption "Enable procs (modern ps replacement)";
   };
 

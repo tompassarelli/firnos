@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.dust = {
+  options.myConfig.modules.dust = {
     enable = lib.mkEnableOption "Enable dust disk usage analyzer";
   };
 

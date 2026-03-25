@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 
   # Viewport navigation script - jumps between "tuples" of windows
   # A viewport is what fits on screen: 2x 50% windows or 1x 100% window
@@ -129,7 +129,7 @@ let
   '';
 in
 {
-  config = lib.mkIf config.myConfig.niri.enable {
+  config = lib.mkIf config.myConfig.modules.niri.enable {
     # Enable niri compositor at system level
     programs.niri.enable = true;
 

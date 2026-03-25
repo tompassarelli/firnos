@@ -2,55 +2,55 @@
 { lib, ... }:
 {
   # ============ REQUIRED ============
-  myConfig.system.stateVersion = "25.05";
-  myConfig.users.enable = true;
-  myConfig.users.username = "tom";
+  myConfig.modules.system.stateVersion = "25.05";
+  myConfig.modules.users.enable = true;
+  myConfig.modules.users.username = "tom";
 
   # ============ BUNDLES ============
-  myConfig.terminal.enable = true;
-  myConfig.cli-tools.enable = true;
-  myConfig.desktop = {
+  myConfig.bundles.terminal.enable = true;
+  myConfig.bundles.cli-tools.enable = true;
+  myConfig.bundles.desktop = {
     enable = true;
     mako.enable = false;
   };
-  myConfig.theming.enable = true;
-  myConfig.stylix.chosenTheme = "everforest-dark-hard";
-  myConfig.auth.enable = true;
-  myConfig.development.enable = true;
-  myConfig.rust = {
+  myConfig.bundles.theming.enable = true;
+  myConfig.modules.stylix.chosenTheme = "everforest-dark-hard";
+  myConfig.bundles.auth.enable = true;
+  myConfig.bundles.development.enable = true;
+  myConfig.bundles.rust = {
     enable = true;
     bevy.enable = true;
   };
-  myConfig.csharp.enable = true;
-  myConfig.lisp.enable = true;
-  myConfig.browsers.enable = true;
-  myConfig.firefox.fennec.enable = true;
-  myConfig.gaming.enable = true;
-  myConfig.creative.enable = true;
-  myConfig.media.enable = true;
-  myConfig.productivity.enable = true;
-  myConfig.printing.enable = true;
-  myConfig.protonvpn.enable = true;
+  myConfig.bundles.csharp.enable = true;
+  myConfig.bundles.lisp.enable = true;
+  myConfig.bundles.browsers.enable = true;
+  myConfig.modules.firefox.fennec.enable = true;
+  myConfig.bundles.gaming.enable = true;
+  myConfig.bundles.creative.enable = true;
+  myConfig.bundles.media.enable = true;
+  myConfig.bundles.productivity.enable = true;
+  myConfig.bundles.printing.enable = true;
+  myConfig.bundles.protonvpn.enable = true;
 
   # ============ SYSTEM ============
-  myConfig.nix-settings.enable = true;
-  myConfig.boot.enable = true;
-  myConfig.networking.enable = true;
-  myConfig.wireguard.enable = true;
-  myConfig.remmina.enable = true;
-  myConfig.timezone.enable = true;
-  myConfig.ssh.enable = true;
-  myConfig.auto-upgrade.enable = true;
+  myConfig.modules.nix-settings.enable = true;
+  myConfig.modules.boot.enable = true;
+  myConfig.modules.networking.enable = true;
+  myConfig.modules.wireguard.enable = true;
+  myConfig.modules.remmina.enable = true;
+  myConfig.modules.timezone.enable = true;
+  myConfig.modules.ssh.enable = true;
+  myConfig.modules.auto-upgrade.enable = true;
 
   # ============ HARDWARE ============
-  myConfig.framework.enable = true;
-  myConfig.fwupd.enable = true;
-  myConfig.pipewire.enable = true;
-  myConfig.bluetooth.enable = true;
-  myConfig.input.enable = true;
-  myConfig.piper.enable = true;
-  myConfig.g203-led.enable = true;
-  myConfig.kanata = {
+  myConfig.modules.framework.enable = true;
+  myConfig.modules.fwupd.enable = true;
+  myConfig.modules.pipewire.enable = true;
+  myConfig.modules.bluetooth.enable = true;
+  myConfig.modules.input.enable = true;
+  myConfig.modules.piper.enable = true;
+  myConfig.modules.g203-led.enable = true;
+  myConfig.modules.kanata = {
     enable = true;
     capsLockEscCtrl = true;
     spacebarSymbols = true;
@@ -60,17 +60,17 @@
       "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
     ];
   };
-  myConfig.glide.enable = true;
+  myConfig.modules.glide.enable = true;
 
   # ============ INDIVIDUAL MODULES ============
-  myConfig.git.enable = true;
-  myConfig.neovim.enable = true;
-  myConfig.zed.enable = true;
-  myConfig.claude.enable = true;
-  myConfig.postgresql.enable = true;
-  myConfig.direnv.enable = true;
-  myConfig.containers.enable = true;
-  myConfig.password.enable = true;
-  myConfig.mail.enable = true;
-  myConfig.mini-serve.enable = true;
+  myConfig.modules.git.enable = true;
+  myConfig.modules.neovim.enable = true;
+  myConfig.modules.zed.enable = true;
+  myConfig.modules.claude.enable = true;
+  myConfig.modules.postgresql.enable = true;
+  myConfig.modules.direnv.enable = true;
+  myConfig.modules.containers.enable = true;
+  myConfig.modules.password.enable = true;
+  myConfig.modules.mail.enable = true;
+  myConfig.modules.mini-serve.enable = true;
 }

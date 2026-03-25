@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.ssh = {
+  options.myConfig.modules.ssh = {
     enable = lib.mkEnableOption "SSH server";
   };
 

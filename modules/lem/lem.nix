@@ -1,8 +1,8 @@
 { config, lib, pkgs, inputs, ... }:
 
 let
-  cfg = config.myConfig.lem;
-  username = config.myConfig.users.username;
+  cfg = config.myConfig.modules.lem;
+  username = config.myConfig.modules.users.username;
   # Patch out lem-terminal dependency — its terminal.so path gets baked into
   # the SBCL image but isn't a runtime dependency, so nix GCs it and SBCL
   # crashes on startup. Terminal emulation inside Lem isn't needed anyway.

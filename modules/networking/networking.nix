@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.networking;
+  cfg = config.myConfig.modules.networking;
 in
 {
   config = lib.mkIf cfg.enable {

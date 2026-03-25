@@ -1,6 +1,6 @@
 { config, lib, pkgs, flakeRoot, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
   settingsBase = {
     vim_mode = true;
     ui_font_size = 16;
@@ -22,7 +22,7 @@ let
   };
 in
 {
-  config = lib.mkIf config.myConfig.zed.enable {
+  config = lib.mkIf config.myConfig.modules.zed.enable {
     environment.systemPackages = with pkgs; [
       unstable.zed-editor
     ];

@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.dotnet;
+  cfg = config.myConfig.modules.dotnet;
 in
 {
   config = lib.mkIf cfg.enable {

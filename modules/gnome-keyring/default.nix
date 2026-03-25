@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.gnome-keyring = {
+  options.myConfig.modules.gnome-keyring = {
     enable = lib.mkEnableOption "GNOME Keyring (secrets storage + Seahorse GUI)";
   };
 

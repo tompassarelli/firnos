@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.postgresql = {
+  options.myConfig.modules.postgresql = {
     enable = lib.mkEnableOption "PostgreSQL database server for local development";
   };
 

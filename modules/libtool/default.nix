@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.libtool.enable = lib.mkEnableOption "GNU Libtool";
+  options.myConfig.modules.libtool.enable = lib.mkEnableOption "GNU Libtool";
   imports = [ ./libtool.nix ];
 }

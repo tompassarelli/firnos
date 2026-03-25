@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.eza = {
+  options.myConfig.modules.eza = {
     enable = lib.mkEnableOption "Enable eza (modern ls replacement)";
   };
 

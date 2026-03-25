@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.kitty = {
+  options.myConfig.modules.kitty = {
     enable = lib.mkEnableOption "Kitty terminal configuration";
   };
 

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.media = {
+  options.myConfig.bundles.media = {
     enable = lib.mkEnableOption "media applications and entertainment";
     discord.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Discord"; };
     zoom.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Zoom"; };

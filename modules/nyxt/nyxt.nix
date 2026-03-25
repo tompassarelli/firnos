@@ -1,16 +1,16 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.nyxt.enable {
+  config = lib.mkIf config.myConfig.modules.nyxt.enable {
     environment.systemPackages = [ pkgs.nyxt4 ];
 
     # AppImages need FUSE
-    myConfig.fuse.enable = lib.mkDefault true;
+    myConfig.modules.fuse.enable = lib.mkDefault true;
     programs.appimage.enable = true;
 
-    xdg.mime.defaultApplications = lib.mkIf config.myConfig.nyxt.default {
+    xdg.mime.defaultApplications = lib.mkIf config.myConfig.modules.nyxt.default {
       "text/html" = "nyxt.desktop";
       "x-scheme-handler/http" = "nyxt.desktop";
       "x-scheme-handler/https" = "nyxt.desktop";

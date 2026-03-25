@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.bluetooth.enable {
+  config = lib.mkIf config.myConfig.modules.bluetooth.enable {
     # Enable Bluetooth hardware support
     hardware.bluetooth = {
       enable = true;

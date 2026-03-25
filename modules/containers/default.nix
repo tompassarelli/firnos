@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.containers = {
+  options.myConfig.modules.containers = {
     enable = lib.mkEnableOption "Podman containers with Distrobox";
   };
 

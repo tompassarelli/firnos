@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.cargo.enable = lib.mkEnableOption "Rust package manager";
+  options.myConfig.modules.cargo.enable = lib.mkEnableOption "Rust package manager";
   imports = [ ./cargo.nix ];
 }

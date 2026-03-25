@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.productivity = {
+  options.myConfig.bundles.productivity = {
     enable = lib.mkEnableOption "personal productivity applications";
     obsidian.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Obsidian"; };
     todoist.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Todoist"; };

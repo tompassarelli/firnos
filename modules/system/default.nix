@@ -1,10 +1,10 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.system;
+  cfg = config.myConfig.modules.system;
 in
 {
-  options.myConfig.system = {
+  options.myConfig.modules.system = {
     stateVersion = lib.mkOption {
       type = lib.types.str;
       description = ''

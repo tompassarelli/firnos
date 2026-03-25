@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.fuse.enable = lib.mkEnableOption "FUSE filesystem support";
+  options.myConfig.modules.fuse.enable = lib.mkEnableOption "FUSE filesystem support";
   imports = [ ./fuse.nix ];
 }

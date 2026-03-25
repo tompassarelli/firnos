@@ -91,7 +91,7 @@
           networking.hostName = hostname;
 
           # sops-nix: use age key from user's home for both CLI editing and activation
-          sops.age.keyFile = "/home/${config.myConfig.users.username}/.config/sops/age/keys.txt";
+          sops.age.keyFile = "/home/${config.myConfig.modules.users.username}/.config/sops/age/keys.txt";
 
           # sops + age CLI tools for creating/editing encrypted secrets
           environment.systemPackages = with pkgs; [ sops age ];
@@ -111,8 +111,8 @@
           home-manager.extraSpecialArgs = {
             inputs = { inherit nur walker elephant lem quickshell; };
           } // extraSpecialArgs;
-          home-manager.users.${config.myConfig.users.username} = {
-            home.stateVersion = config.myConfig.system.stateVersion;
+          home-manager.users.${config.myConfig.modules.users.username} = {
+            home.stateVersion = config.myConfig.modules.system.stateVersion;
             nixpkgs.config.allowUnfree = true;
           };
         })

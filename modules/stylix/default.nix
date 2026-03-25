@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.stylix = {
+  options.myConfig.modules.stylix = {
     enable = lib.mkEnableOption "Stylix base16 theming";
     chosenTheme = lib.mkOption {
       type = lib.types.str;

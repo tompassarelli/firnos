@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.mako = {
+  options.myConfig.modules.mako = {
     enable = lib.mkEnableOption "Mako notification daemon";
   };
 

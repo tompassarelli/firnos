@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.development = {
+  options.myConfig.bundles.development = {
     enable = lib.mkEnableOption "development tools and programming utilities";
     vim.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Vim"; };
     claude.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Claude Code"; };

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.nerd-fonts.enable {
+  config = lib.mkIf config.myConfig.modules.nerd-fonts.enable {
     fonts.packages = [ pkgs.nerd-fonts.symbols-only ];
   };
 }

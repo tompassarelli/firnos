@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.ssh;
+  cfg = config.myConfig.modules.ssh;
 in
 {
   config = lib.mkIf cfg.enable {

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.upower = {
+  options.myConfig.modules.upower = {
     enable = lib.mkEnableOption "UPower power management";
   };
 

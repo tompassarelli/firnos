@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.pipewire = {
+  options.myConfig.modules.pipewire = {
     enable = lib.mkEnableOption "PipeWire audio configuration";
   };
 

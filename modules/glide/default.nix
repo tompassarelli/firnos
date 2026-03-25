@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.glide = {
+  options.myConfig.modules.glide = {
     enable = lib.mkEnableOption "Glide touchpad motion detection daemon";
 
     device = lib.mkOption {

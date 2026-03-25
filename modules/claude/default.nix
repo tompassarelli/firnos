@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.claude = {
+  options.myConfig.modules.claude = {
     enable = lib.mkEnableOption "Claude Code CLI configuration";
   };
 

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.polkit = {
+  options.myConfig.modules.polkit = {
     enable = lib.mkEnableOption "Polkit security configuration";
   };
 

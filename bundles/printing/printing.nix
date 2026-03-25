@@ -1,7 +1,7 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.printing;
+  cfg = config.myConfig.bundles.printing;
 in
 {
   config = lib.mkIf cfg.enable {
@@ -14,7 +14,7 @@ in
       openFirewall = true;
     };
 
-    myConfig.gutenprint.enable = lib.mkDefault cfg.gutenprint.enable;
-    myConfig.hplip.enable = lib.mkDefault cfg.hplip.enable;
+    myConfig.modules.gutenprint.enable = lib.mkDefault cfg.gutenprint.enable;
+    myConfig.modules.hplip.enable = lib.mkDefault cfg.hplip.enable;
   };
 }

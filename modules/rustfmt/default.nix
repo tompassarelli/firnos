@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.rustfmt.enable = lib.mkEnableOption "Rust formatter";
+  options.myConfig.modules.rustfmt.enable = lib.mkEnableOption "Rust formatter";
   imports = [ ./rustfmt.nix ];
 }

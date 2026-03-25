@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.piper.enable {
+  config = lib.mkIf config.myConfig.modules.piper.enable {
     # ratbagd daemon for configuring gaming mice
     services.ratbagd.enable = true;
 

@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 let
-  username = config.myConfig.users.username;
+  username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.niri.enable {
+  config = lib.mkIf config.myConfig.modules.niri.enable {
     home-manager.users.${username} = { config, ... }: {
       systemd.user.services.swayidle = {
         Unit = {

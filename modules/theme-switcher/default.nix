@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.theme-switcher = {
+  options.myConfig.modules.theme-switcher = {
     enable = lib.mkEnableOption "theme switcher script";
   };
 

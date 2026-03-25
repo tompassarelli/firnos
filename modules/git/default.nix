@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.git = {
+  options.myConfig.modules.git = {
     enable = lib.mkEnableOption "Git configuration";
   };
 

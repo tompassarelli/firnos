@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.wireguard = {
+  options.myConfig.modules.wireguard = {
     enable = lib.mkEnableOption "WireGuard VPN support";
   };
 

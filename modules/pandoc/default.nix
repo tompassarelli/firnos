@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.pandoc.enable = lib.mkEnableOption "Pandoc document converter";
+  options.myConfig.modules.pandoc.enable = lib.mkEnableOption "Pandoc document converter";
   imports = [ ./pandoc.nix ];
 }

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.neovim = {
+  options.myConfig.modules.neovim = {
     enable = lib.mkEnableOption "Neovim text editor";
   };
 

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.ironbar = {
+  options.myConfig.modules.ironbar = {
     enable = lib.mkEnableOption "Ironbar status bar for Wayland";
   };
 

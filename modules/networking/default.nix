@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.networking = {
+  options.myConfig.modules.networking = {
     enable = lib.mkEnableOption "network configuration";
   };
 

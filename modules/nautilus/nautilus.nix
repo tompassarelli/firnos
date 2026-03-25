@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.nautilus.enable {
+  config = lib.mkIf config.myConfig.modules.nautilus.enable {
     environment.systemPackages = [ pkgs.nautilus ];
   };
 }

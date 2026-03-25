@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.yazi = {
+  options.myConfig.modules.yazi = {
     enable = lib.mkEnableOption "Yazi file manager";
   };
 

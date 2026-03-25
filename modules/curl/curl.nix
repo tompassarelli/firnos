@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.curl.enable {
+  config = lib.mkIf config.myConfig.modules.curl.enable {
     environment.systemPackages = [ pkgs.curl ];
   };
 }

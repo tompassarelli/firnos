@@ -1,12 +1,12 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.gaming;
+  cfg = config.myConfig.bundles.gaming;
 in
 {
   config = lib.mkIf cfg.enable {
-    myConfig.steam.enable = lib.mkDefault cfg.steam.enable;
-    myConfig.lutris.enable = lib.mkDefault cfg.lutris.enable;
-    myConfig.wowup.enable = lib.mkDefault cfg.wowup.enable;
+    myConfig.modules.steam.enable = lib.mkDefault cfg.steam.enable;
+    myConfig.modules.lutris.enable = lib.mkDefault cfg.lutris.enable;
+    myConfig.modules.wowup.enable = lib.mkDefault cfg.wowup.enable;
   };
 }

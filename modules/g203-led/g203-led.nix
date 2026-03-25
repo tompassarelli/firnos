@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.g203-led.enable {
+  config = lib.mkIf config.myConfig.modules.g203-led.enable {
     environment.systemPackages = [ pkgs.g203-led ];
 
     # Turn off G102/G203 Lightsync LED on connect

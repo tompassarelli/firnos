@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.kanata;
+  cfg = config.myConfig.modules.kanata;
 in
 {
   config = lib.mkIf cfg.enable {
@@ -28,7 +28,7 @@ in
     keyboards = lib.mkIf (cfg.devices != []) {
       main = {
         devices = cfg.devices;
-        port = lib.mkIf config.myConfig.glide.enable 7070;
+        port = lib.mkIf config.myConfig.modules.glide.enable 7070;
         extraDefCfg = "process-unmapped-keys yes"; # req for tap-hold-press, or need a set of explicit passthrough keys
         config = let
           # Always define full keyboard for layer switching (ISO layout)
@@ -62,7 +62,7 @@ in
           (defalias m5ctrl (tap-hold-order 0 0 mfwd lctl))
           (defalias bracketpair (macro [ ] left))
 
-          ${lib.optionalString config.myConfig.glide.enable ''
+          ${lib.optionalString config.myConfig.modules.glide.enable ''
           ;; Touchpad contact virtual key
           (defvirtualkeys pad-touch (layer-while-held pad-layer))
           ''}
@@ -98,7 +98,7 @@ in
           )
           ''}
 
-          ${lib.optionalString config.myConfig.glide.enable ''
+          ${lib.optionalString config.myConfig.modules.glide.enable ''
           ;; Pad layer - active while finger is on touchpad
           ;; d = left click, f = right click
           (deflayer pad-layer

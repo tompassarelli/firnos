@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.nyxt = {
+  options.myConfig.modules.nyxt = {
     enable = lib.mkEnableOption "Enable Nyxt browser";
 
     default = lib.mkOption {

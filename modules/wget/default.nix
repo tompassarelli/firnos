@@ -1,5 +1,5 @@
 { lib, ... }:
 {
-  options.myConfig.wget.enable = lib.mkEnableOption "wget download tool";
+  options.myConfig.modules.wget.enable = lib.mkEnableOption "wget download tool";
   imports = [ ./wget.nix ];
 }

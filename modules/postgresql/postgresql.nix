@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.postgresql;
+  cfg = config.myConfig.modules.postgresql;
   # PostgreSQL with extensions
   postgresWithExtensions = pkgs.postgresql_17.withPackages (ps: [
     ps.pg_uuidv7

@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  options.myConfig.brightnessctl = {
+  options.myConfig.modules.brightnessctl = {
     enable = lib.mkEnableOption "screen brightness control";
   };
 
