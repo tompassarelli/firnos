@@ -38,20 +38,61 @@ in
             cd ~
           end
 
-          # NixOS rebuild with optional config argument, tags HEAD with generation number
-          function fi-rebuild
-            if test (count $argv) -eq 0
-              sudo nixos-rebuild switch --flake ~/code/nixos-config/
-            else
-              sudo nixos-rebuild switch --flake ~/code/nixos-config/#$argv[1]
-            end
-            or return 1
+          # FirnOS CLI
+          function firn
+            switch $argv[1]
+              case rebuild
+                if test (count $argv) -le 1
+                  sudo nixos-rebuild switch --flake ~/code/nixos-config/
+                else
+                  sudo nixos-rebuild switch --flake ~/code/nixos-config/#$argv[2]
+                end
+                or return 1
+                set -l gen (nixos-rebuild list-generations 2>/dev/null | grep current | string trim | cut -d' ' -f1)
+                if test -n "$gen"
+                  git -C ~/code/nixos-config tag -f "gen-$gen" HEAD 2>/dev/null
+                  echo "Tagged: gen-$gen"
+                end
 
-            # Tag HEAD with the new generation number
-            set -l gen (nixos-rebuild list-generations 2>/dev/null | grep current | string trim | cut -d' ' -f1)
-            if test -n "$gen"
-              git -C ~/code/nixos-config tag -f "gen-$gen" HEAD 2>/dev/null
-              echo "Tagged: gen-$gen"
+              case list
+                set -l modules (ls -1 ~/code/nixos-config/modules/)
+                set -l bundles (ls -1 ~/code/nixos-config/bundles/)
+                echo "Bundles ("(count $bundles)"):"
+                for b in $bundles
+                  echo "  myConfig.bundles.$b"
+                end
+                echo ""
+                echo "Modules ("(count $modules)"):"
+                for m in $modules
+                  echo "  myConfig.modules.$m"
+                end
+
+              case refs
+                if test (count $argv) -le 1
+                  echo "Usage: firn refs <name>"
+                  return 1
+                end
+                set -l name $argv[2]
+                echo "Bundles:"
+                rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
+                rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
+                echo ""
+                echo "Hosts:"
+                rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
+                rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
+
+              case gen
+                set -l current (nixos-rebuild list-generations 2>/dev/null | grep current | string trim | cut -d' ' -f1)
+                echo "current: $current"
+                echo "next:    "(math $current + 1)
+
+              case '*'
+                echo "firn <command>"
+                echo ""
+                echo "  rebuild [host]   nixos-rebuild switch + tag generation"
+                echo "  list             list all modules and bundles"
+                echo "  refs <name>      show what references a module/bundle"
+                echo "  gen              show current and next generation numbers"
             end
           end
 
@@ -382,43 +423,6 @@ json.dump(d, open(f, \"w\"), indent=2)
             echo "Opacity: $argv[1]"
           end
 
-          # List all available modules and bundles
-          function fi-list
-            set -l modules (ls -1 ~/code/nixos-config/modules/)
-            set -l bundles (ls -1 ~/code/nixos-config/bundles/)
-            echo "Bundles ("(count $bundles)"):"
-            for b in $bundles
-              echo "  myConfig.bundles.$b"
-            end
-            echo ""
-            echo "Modules ("(count $modules)"):"
-            for m in $modules
-              echo "  myConfig.modules.$m"
-            end
-          end
-
-          # Show what bundles/hosts reference a module
-          function fi-refs
-            if test (count $argv) -eq 0
-              echo "Usage: fi-refs <module-name>"
-              return 1
-            end
-            set -l name $argv[1]
-            echo "Bundles:"
-            rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
-            rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
-            echo ""
-            echo "Hosts:"
-            rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
-            rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
-          end
-
-          # Show current and next NixOS generation numbers
-          function nixgen
-            set current (nixos-rebuild list-generations | grep current | cut -d' ' -f1)
-            echo "current: $current"
-            echo "next:    "(math $current + 1)
-          end
         '';
       };
 

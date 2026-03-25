@@ -109,9 +109,10 @@ Modules and bundles are auto-imported from directory listings — adding a new o
 ## CLI Tools
 
 ```bash
-fi-rebuild              # nixos-rebuild switch + auto-tag with generation number
-fi-list                 # list all available modules and bundles
-fi-refs <name>          # show what bundles/hosts reference a module
+firn rebuild [host]     # nixos-rebuild switch + auto-tag with generation number
+firn list               # list all available modules and bundles
+firn refs <name>        # show what bundles/hosts reference a module
+firn gen                # show current and next generation numbers
 ```
 
 ## lib.mkSystem Options
