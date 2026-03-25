@@ -6,6 +6,36 @@
   myConfig.modules.users.enable = true;
   myConfig.modules.users.username = "tom";
 
+  # ============ HARDWARE ============
+  myConfig.modules.framework.enable = true;
+  myConfig.modules.fwupd.enable = true;
+  myConfig.modules.pipewire.enable = true;
+  myConfig.modules.bluetooth.enable = true;
+  myConfig.modules.input.enable = true;
+  myConfig.modules.piper.enable = true;
+  myConfig.modules.g203-led.enable = true;
+  myConfig.modules.kanata = {
+    enable = true;
+    capsLockEscCtrl = true;
+    spacebarSymbols = true;
+    devices = [
+      "/dev/input/event0"  # AT Translated Set 2 keyboard
+      "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
+      "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
+    ];
+  };
+  myConfig.modules.glide.enable = true;
+
+  # ============ SYSTEM ============
+  myConfig.modules.nix-settings.enable = true;
+  myConfig.modules.boot.enable = true;
+  myConfig.modules.networking.enable = true;
+  myConfig.modules.wireguard.enable = true;
+  myConfig.modules.remmina.enable = true;
+  myConfig.modules.timezone.enable = true;
+  myConfig.modules.ssh.enable = true;
+  myConfig.modules.auto-upgrade.enable = true;
+
   # ============ BUNDLES ============
   myConfig.bundles.terminal.enable = true;
   myConfig.bundles.cli-tools.enable = true;
@@ -32,37 +62,7 @@
   myConfig.bundles.printing.enable = true;
   myConfig.bundles.protonvpn.enable = true;
 
-  # ============ SYSTEM ============
-  myConfig.modules.nix-settings.enable = true;
-  myConfig.modules.boot.enable = true;
-  myConfig.modules.networking.enable = true;
-  myConfig.modules.wireguard.enable = true;
-  myConfig.modules.remmina.enable = true;
-  myConfig.modules.timezone.enable = true;
-  myConfig.modules.ssh.enable = true;
-  myConfig.modules.auto-upgrade.enable = true;
-
-  # ============ HARDWARE ============
-  myConfig.modules.framework.enable = true;
-  myConfig.modules.fwupd.enable = true;
-  myConfig.modules.pipewire.enable = true;
-  myConfig.modules.bluetooth.enable = true;
-  myConfig.modules.input.enable = true;
-  myConfig.modules.piper.enable = true;
-  myConfig.modules.g203-led.enable = true;
-  myConfig.modules.kanata = {
-    enable = true;
-    capsLockEscCtrl = true;
-    spacebarSymbols = true;
-    devices = [
-      "/dev/input/event0"  # AT Translated Set 2 keyboard
-      "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
-      "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
-    ];
-  };
-  myConfig.modules.glide.enable = true;
-
-  # ============ INDIVIDUAL MODULES ============
+  # ============ MODULES ============
   myConfig.modules.git.enable = true;
   myConfig.modules.neovim.enable = true;
   myConfig.modules.zed.enable = true;
