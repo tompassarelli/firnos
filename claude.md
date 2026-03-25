@@ -102,6 +102,23 @@ myConfig.bundles.python.enable = lib.mkDefault cfg.python.enable;
 - Assume new modules only get added to whiterabbit host.
 - New files must be git-added before nix can see them (flake uses git tree).
 
+## Firn CLI
+
+User's fish shell defines `firn`, a CLI for managing this config. Defined in `modules/fish/fish.nix`.
+
+| Command | What it does |
+|---|---|
+| `firn rebuild [host]` | `nixos-rebuild switch` + tags the commit with `gen-<N>` |
+| `firn list` | List all modules and bundles |
+| `firn list --used` | Show which modules/bundles are enabled and where |
+| `firn list --unused` | Show modules/bundles not referenced anywhere |
+| `firn refs <name>` | Show what hosts/bundles reference a module or bundle |
+| `firn mod <name>` | Scaffold a new module (creates dir + git adds) |
+| `firn bundle <name> <mods...>` | Scaffold a new bundle with given modules |
+| `firn gen` | Show current and next generation numbers |
+
+Other fish helpers: `gitc` (commit with nvim), `wlc <file>` (copy to clipboard), `movess` (move latest screenshot to cwd), `gif <name> [secs]` (record screen region to GIF), `makedev` (podman dev containers with Claude Code), `wgon`/`wgoff` (WireGuard + kill switch + logging), `niri-opacity`.
+
 ## Verification
 
 ```

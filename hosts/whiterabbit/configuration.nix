@@ -76,4 +76,5 @@
   myConfig.modules.password.enable = true;
   myConfig.modules.mail.enable = true;
   myConfig.modules.mini-serve.enable = true;
+  myConfig.modules.awscli.enable = true;
 }
