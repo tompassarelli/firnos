@@ -121,19 +121,59 @@ PanelWindow {
                     font.family: colors.fontFamily
                     font.pointSize: 10
 
+                    property string batteryCapacity: ""
+                    property string batteryStatus: ""
+
+                    function updateDisplay() {
+                        if (batteryCapacity === "" || batteryStatus === "") return;
+                        let cap = parseInt(batteryCapacity);
+                        let icon;
+                        if (batteryStatus === "Charging" || batteryStatus === "Full") {
+                            icon = "\u{f0084}"; // battery-charging
+                        } else if (cap >= 90) {
+                            icon = "\u{f0079}"; // battery full
+                        } else if (cap >= 60) {
+                            icon = "\u{f0082}"; // battery-70
+                        } else if (cap >= 40) {
+                            icon = "\u{f007e}"; // battery-50
+                        } else if (cap >= 15) {
+                            icon = "\u{f007a}"; // battery-30
+                        } else {
+                            icon = "\u{f008e}"; // battery-alert-variant-outline
+                        }
+                        batteryText.text = icon + " " + batteryCapacity + "%";
+                    }
+
                     Timer {
                         interval: 5000
                         running: true
                         repeat: true
                         triggeredOnStart: true
-                        onTriggered: batteryProc.running = true
+                        onTriggered: {
+                            batteryCapacityProc.running = true;
+                            batteryStatusProc.running = true;
+                        }
                     }
 
                     Process {
-                        id: batteryProc
+                        id: batteryCapacityProc
                         command: ["cat", "/sys/class/power_supply/BAT1/capacity"]
                         stdout: SplitParser {
-                            onRead: data => batteryText.text = "\u{f0079} " + data.trim() + "%"
+                            onRead: data => {
+                                batteryText.batteryCapacity = data.trim();
+                                batteryText.updateDisplay();
+                            }
+                        }
+                    }
+
+                    Process {
+                        id: batteryStatusProc
+                        command: ["cat", "/sys/class/power_supply/BAT1/status"]
+                        stdout: SplitParser {
+                            onRead: data => {
+                                batteryText.batteryStatus = data.trim();
+                                batteryText.updateDisplay();
+                            }
                         }
                     }
                 }

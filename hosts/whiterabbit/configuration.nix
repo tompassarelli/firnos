@@ -67,7 +67,7 @@
   myConfig.walker.enable = false;
   myConfig.waybar.enable = false;
   myConfig.quickshell.enable = true;
-  myConfig.mako.enable = true;
+  myConfig.mako.enable = false;
 
   # Theming
   myConfig.gtk.enable = true;
@@ -100,6 +100,7 @@
   };
   myConfig.chrome.enable = true;
   myConfig.nyxt.enable = true;
+  myConfig.ladybird.enable = true;
   myConfig.steam = {
     enable = true;
     wowup.enable = true;
@@ -113,4 +114,5 @@
   # Virtualization
   myConfig.windows-vm.enable = true;
   myConfig.containers.enable = true;
+  myConfig.mini-serve.enable = true;
 }

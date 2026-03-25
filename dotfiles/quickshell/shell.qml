@@ -8,4 +8,5 @@ ShellRoot {
 
     Bar {}
     WorkspacePopup {}
+    NotificationPopup {}
 }

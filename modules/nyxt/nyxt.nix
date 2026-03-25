@@ -4,9 +4,13 @@ let
 in
 {
   config = lib.mkIf config.myConfig.nyxt.enable {
-    environment.systemPackages = with pkgs; [
-      nyxt
+    environment.systemPackages = [
+      pkgs.nyxt4
+      pkgs.fuse
     ];
+
+    # AppImages need FUSE
+    programs.appimage.enable = true;
 
     xdg.mime.defaultApplications = lib.mkIf config.myConfig.nyxt.default {
       "text/html" = "nyxt.desktop";

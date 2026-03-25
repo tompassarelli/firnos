@@ -121,29 +121,76 @@ If empty or omitted, today is used."
       :desc "Log time to task"
       "n t" #'+org/log-time)
 
-;; Rename org-roam node: update title and rename file to match
+;; UUIDv7 generator
+(defun +org/uuidv7 ()
+  "Generate a UUIDv7 string (48-bit ms timestamp + random, per RFC 9562)."
+  (let* ((ms (truncate (* 1000 (float-time))))
+         (rand-a (random 4096))
+         (rand-b-hi (logior #x8000 (random #x4000)))
+         (rand-b-lo (logior (ash (random #x1000000) 24)
+                            (random #x1000000))))
+    (format "%08x-%04x-7%03x-%04x-%012x"
+            (ash ms -16)
+            (logand ms #xffff)
+            rand-a
+            rand-b-hi
+            rand-b-lo)))
+
+;; Rename org-roam node: update title and EXPORT_FILE_NAME (file stays as UUIDv7)
 (defun +org/rename-node (new-title)
-  "Rename the current org-roam node: update #+title and rename the file."
+  "Rename the current org-roam node: update #+title and #+EXPORT_FILE_NAME."
   (interactive "sNew title: ")
   (unless (org-roam-file-p)
     (user-error "Not an org-roam file"))
-  (let* ((old-file (buffer-file-name))
-         (dir (file-name-directory old-file))
-         (slug (org-roam--title-to-slug new-title))
-         (new-file (expand-file-name (concat slug ".org") dir)))
+  (let ((slug (org-roam--title-to-slug new-title)))
     (save-excursion
       (goto-char (point-min))
       (if (re-search-forward "^#\\+title:.*$" nil t)
           (replace-match (concat "#+title: " new-title))
-        (user-error "No #+title found")))
+        (user-error "No #+title found"))
+      (goto-char (point-min))
+      (if (re-search-forward "^#\\+EXPORT_FILE_NAME:.*$" nil t)
+          (replace-match (concat "#+EXPORT_FILE_NAME: " slug))
+        (when (re-search-forward "^:END:" nil t)
+          (end-of-line)
+          (insert (format "\n#+EXPORT_FILE_NAME: %s" slug)))))
     (save-buffer)
-    (unless (string= old-file new-file)
-      (rename-file old-file new-file)
-      (set-visited-file-name new-file t t)
-      (org-roam-db-sync))))
+    (org-roam-db-sync)))
 (map! :leader
       :desc "Rename org-roam node"
       "n R" #'+org/rename-node)
+
+;; Migrate existing org-roam files to UUIDv7 filenames
+(defun +org/migrate-to-uuidv7 ()
+  "Rename all org-roam files to UUIDv7 filenames, adding EXPORT_FILE_NAME."
+  (interactive)
+  (require 'org-roam)
+  (let ((files (org-roam-list-files))
+        (count 0))
+    (dolist (f files)
+      (let* ((old-name (file-name-nondirectory f))
+             (slug (file-name-sans-extension old-name))
+             (export-name (if (string= slug "start_here") "readme" slug))
+             (new-name (concat (+org/uuidv7) ".org"))
+             (new-path (expand-file-name new-name (file-name-directory f))))
+        ;; Skip files already using UUIDv7 names
+        (unless (string-match-p "^[0-9a-f]\\{8\\}-[0-9a-f]\\{4\\}-7" old-name)
+          (with-current-buffer (find-file-noselect f)
+            (save-excursion
+              (goto-char (point-min))
+              (unless (re-search-forward "^#\\+EXPORT_FILE_NAME:" nil t)
+                (goto-char (point-min))
+                (when (re-search-forward "^:END:" nil t)
+                  (end-of-line)
+                  (insert (format "\n#+EXPORT_FILE_NAME: %s" export-name)))))
+            (save-buffer)
+            (rename-file f new-path)
+            (set-visited-file-name new-path t t)
+            (save-buffer))
+          (cl-incf count)
+          (sleep-for 0.002))))
+    (org-roam-db-sync)
+    (message "Migrated %d files to UUIDv7. Database synced." count)))
 
 ;; Markdown mode configuration
 (after! markdown-mode
@@ -200,22 +247,28 @@ Also refreshes the agenda file cache."
 (after! org-roam
   (+org/refresh-agenda-files))
 
-;; Capture templates for org-roam
+;; Capture templates for org-roam (UUIDv7 filenames)
 (after! org-roam
   (setq org-roam-capture-templates
         '(("d" "default" plain "%?"
-           :target (file+head "${slug}.org"
-                              "#+title: ${title}\n#+date: %U\n")
+           :target (file+head "%(+org/uuidv7).org"
+                              "#+title: ${title}\n#+date: %U\n#+EXPORT_FILE_NAME: ${slug}\n")
            :unnarrowed t)
           ("p" "public" plain "%?"
-           :target (file+head "${slug}.org"
-                              "#+title: ${title}\n#+date: %U\n#+filetags: :public:\n")
+           :target (file+head "%(+org/uuidv7).org"
+                              "#+title: ${title}\n#+date: %U\n#+EXPORT_FILE_NAME: ${slug}\n#+filetags: :public:\n")
            :unnarrowed t))))
 
 ;; ox-hugo configuration
 (after! ox-hugo
-  (setq org-hugo-base-dir "~/org-roam-site"
-        org-hugo-default-section-directory "posts"))
+  (setq org-hugo-base-dir "~/code/blog"
+        org-hugo-default-section-directory "")
+
+  ;; Only export #+hugo_tags: to Hugo front matter, never filetags
+  (defadvice! +org/hugo-no-filetags-as-tags (orig-fn &rest args)
+    :around #'org-hugo--get-tags
+    (let ((org-use-tag-inheritance nil))
+      (apply orig-fn args))))
 
 ;; Export all public org-roam files to Hugo
 (defun +org/hugo-publish-all ()

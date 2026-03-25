@@ -42,6 +42,9 @@ in
       xdg.configFile."quickshell/LayoutConfig.qml".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/LayoutConfig.qml";
 
+      xdg.configFile."quickshell/NotificationPopup.qml".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NotificationPopup.qml";
+
       # Generate stylix colors for quickshell
       xdg.configFile."quickshell/StylixColors.qml".text = with config.lib.stylix.colors; ''
         import QtQuick

@@ -26,6 +26,7 @@ in
     # Sudo configuration - extend timeout to 30 minutes
     security.sudo.extraConfig = ''
       Defaults timestamp_timeout=30
+      Defaults timestamp_type=global
     '';
 
     # Create user directories on boot

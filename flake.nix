@@ -143,6 +143,7 @@
             "${firnModules}/firefox"
             "${firnModules}/chrome"
             "${firnModules}/nyxt"
+            "${firnModules}/ladybird"
             "${firnModules}/steam"
             "${firnModules}/neovim"
             "${firnModules}/doom-emacs"
@@ -172,6 +173,7 @@
             "${firnModules}/dotnet"
             "${firnModules}/windows-vm"
             "${firnModules}/containers"
+            "${firnModules}/mini-serve"
           ];
 
           # Home-manager configuration
@@ -211,6 +213,67 @@
                 version = "git";
                 src = glide;
                 cargoLock.lockFile = "${glide}/Cargo.lock";
+              };
+              nyxt4 = let
+                nyxt-tarball = final.fetchurl {
+                  url = "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz";
+                  hash = "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ=";
+                };
+                # Extract the outer Nyxt AppImage
+                nyxt-appimage = final.runCommand "nyxt.AppImage" {} ''
+                  tar xzf ${nyxt-tarball} -O > $out
+                  chmod +x $out
+                '';
+                nyxt-extracted = final.appimageTools.extractType2 {
+                  pname = "nyxt";
+                  version = "4.0.0";
+                  src = nyxt-appimage;
+                };
+                # Extract the inner cl-electron-server AppImage
+                cl-electron-extracted = final.appimageTools.extractType2 {
+                  pname = "cl-electron-server";
+                  version = "4.0.0";
+                  src = "${nyxt-extracted}/usr/bin/cl-electron-server";
+                };
+                # Assemble the final /app/Nyxt tree
+                nyxt-unwrapped = final.runCommand "nyxt-unwrapped-4.0.0" {} ''
+                  mkdir -p $out/app/Nyxt/_build/cl-electron $out/share/applications $out/share/icons/hicolor/256x256/apps
+
+                  # Nyxt binary and libs
+                  cp ${nyxt-extracted}/usr/bin/nyxt $out/app/Nyxt/
+                  cp -r ${nyxt-extracted}/usr/lib/* $out/app/Nyxt/ 2>/dev/null || true
+
+                  # cl-electron (full Electron distribution)
+                  cp -r ${cl-electron-extracted}/* $out/app/Nyxt/_build/cl-electron/
+
+                  # Desktop integration
+                  cp ${nyxt-extracted}/nyxt.desktop $out/share/applications/ 2>/dev/null || true
+                  cp ${nyxt-extracted}/nyxt.png $out/share/icons/hicolor/256x256/apps/ 2>/dev/null || true
+                  sed -i "s|Exec=.*|Exec=nyxt %u|" $out/share/applications/nyxt.desktop 2>/dev/null || true
+                '';
+
+              in final.buildFHSEnv {
+                pname = "nyxt";
+                version = "4.0.0";
+                targetPkgs = p: with p; [
+                  nyxt-unwrapped
+                  glib gobject-introspection gdk-pixbuf cairo pango gtk3
+                  webkitgtk_4_1 openssl libfixposix enchant2 sqlite
+                  glib-networking gsettings-desktop-schemas
+                  gst_all_1.gstreamer gst_all_1.gst-plugins-base gst_all_1.gst-plugins-good
+                  xdg-utils wl-clipboard fuse
+                  nss nspr atk cups dbus expat libdrm mesa
+                  alsa-lib at-spi2-core libxkbcommon
+                ];
+                extraBwrapArgs = [
+                  "--bind ${nyxt-unwrapped}/app /app"
+                ];
+                runScript = "/app/Nyxt/nyxt";
+                extraInstallCommands = ''
+                  mkdir -p $out/share
+                  ln -s ${nyxt-unwrapped}/share/applications $out/share/applications
+                  ln -s ${nyxt-unwrapped}/share/icons $out/share/icons
+                '';
               };
             })
           ] ++ extraOverlays;
