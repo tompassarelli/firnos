@@ -5,6 +5,7 @@
   # Hardware
   # - framework laptop
   myConfig.framework.enable = true;
+  myConfig.fwupd.enable = true;
   # - custom keyboard qmk firmware
   myConfig.via.enable = false;
   # - everything else
@@ -14,8 +15,10 @@
   myConfig.input.enable = true;
   myConfig.wl-clipboard.enable = true;
   myConfig.brightnessctl.enable = true;
+  myConfig.libnotify.enable = true;
   myConfig.wl-gammarelay.enable = true;
   myConfig.piper.enable = true;
+  myConfig.g203-led.enable = true;
   myConfig.kanata = {
     enable = true;
     capsLockEscCtrl = true;

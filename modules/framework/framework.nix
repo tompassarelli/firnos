@@ -5,10 +5,7 @@ let
 in
 {
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      framework-tool       # swiss army knife
-      fwupd                # update drivers/bios
-    ];
+    environment.systemPackages = [ pkgs.framework-tool ];
 
     # Disable suspend on lid close (sleep/wake issues)
     services.logind = {
