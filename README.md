@@ -6,7 +6,7 @@
   </picture>
 </p>
 
-<p align="center">A modular, shareable NixOS configuration framework.</p>
+<p align="center">Atomic modules. Coherent systems.</p>
 
 ## What is FirnOS?
 
