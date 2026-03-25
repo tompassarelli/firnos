@@ -38,12 +38,20 @@ in
             cd ~
           end
 
-          # NixOS rebuild with optional config argument
+          # NixOS rebuild with optional config argument, tags HEAD with generation number
           function fi-rebuild
             if test (count $argv) -eq 0
               sudo nixos-rebuild switch --flake ~/code/nixos-config/
             else
               sudo nixos-rebuild switch --flake ~/code/nixos-config/#$argv[1]
+            end
+            or return 1
+
+            # Tag HEAD with the new generation number
+            set -l gen (nixos-rebuild list-generations 2>/dev/null | grep current | string trim | cut -d' ' -f1)
+            if test -n "$gen"
+              git -C ~/code/nixos-config tag -f "gen-$gen" HEAD 2>/dev/null
+              echo "Tagged: gen-$gen"
             end
           end
 
