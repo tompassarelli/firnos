@@ -39,7 +39,7 @@ in
           end
 
           # NixOS rebuild with optional config argument
-          function rebuild
+          function fi-rebuild
             if test (count $argv) -eq 0
               sudo nixos-rebuild switch --flake ~/code/nixos-config/
             else
