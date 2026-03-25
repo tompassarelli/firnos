@@ -1,10 +1,21 @@
 # My machine configuration
 # Enable the modules you want from FirnOS
-{ lib, ... }:
 {
   # ============ REQUIRED ============
   myConfig.system.stateVersion = "25.05";  # Set to your NixOS install version
   myConfig.users.username = "yourname";   # Change this!
+
+  # ============ BUNDLES ============
+  # Groups of modules under one toggle. Override individual members as needed.
+  myConfig.auth.enable = true;
+  myConfig.development.enable = true;
+  # myConfig.development = {
+  #   enable = true;
+  #   dbeaver.enable = false;  # everything except this
+  # };
+  myConfig.media.enable = true;
+  myConfig.productivity.enable = true;
+  # myConfig.creative.enable = true;
 
   # ============ SYSTEM ============
   myConfig.nix-settings.enable = true;
@@ -34,7 +45,6 @@
     enable = true;
     capsLockEscCtrl = true;
     # spacebarSymbols = true;
-    # customFork = true;  # Use custom kanata fork with tap-hold-order
     # devices = [          # Find yours: ls /dev/input/by-id/
     #   "/dev/input/event0"
     # ];
@@ -43,7 +53,6 @@
   # ============ DESKTOP ============
   myConfig.niri.enable = true;
   myConfig.upower.enable = true;
-  myConfig.auth.enable = true;
   myConfig.walker.enable = true;
   myConfig.waybar.enable = true;
   myConfig.mako.enable = true;
@@ -79,30 +88,15 @@
   # myConfig.lem.enable = true;
   # myConfig.zed.enable = true;
 
-  # ============ DEVELOPMENT ============
-  myConfig.development.enable = true;
-  # myConfig.rust.enable = true;
-  # myConfig.claude.enable = true;
-  # myConfig.direnv.enable = true;
-  # myConfig.postgresql.enable = true;
-
   # ============ APPLICATIONS ============
   myConfig.firefox = {
     enable = true;
     fennec.enable = true;
   };
   # myConfig.chrome.enable = true;
-  myConfig.productivity.enable = true;
-  myConfig.media.enable = true;
-  # Override individual modules within a bundle:
-  # myConfig.media = {
-  #   enable = true;
-  #   lutris.enable = false;  # everything except this
-  # };
   myConfig.password.enable = true;
   # myConfig.mail.enable = true;
   # myConfig.steam.enable = true;
-  # myConfig.creative.enable = true;
 
   # ============ VIRTUALIZATION ============
   # myConfig.windows-vm.enable = true;
