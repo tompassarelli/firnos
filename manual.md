@@ -52,6 +52,8 @@ This works through NixOS priorities: bundles propagate enables with `mkDefault` 
 
 **Auto-import**: `flake.nix` discovers all modules and bundles from directory listings. Adding a new module = create the directory and `git add`. No flake.nix edits.
 
+See [`template/`](template/) for a complete starting config to copy.
+
 ## mkOutOfStoreSymlink: Live-Editing Configs
 
 For configs you actively iterate on — keybinds, editor settings, window manager tweaks — FirnOS symlinks directly to your dotfiles instead of going through the store:
