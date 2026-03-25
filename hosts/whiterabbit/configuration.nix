@@ -26,8 +26,8 @@
   myConfig.modules.g203-led.enable = true;
   myConfig.modules.kanata = {
     enable = true;
-    capsLockEscCtrl = true;
-    spacebarSymbols = true;
+    configFile = ../../dotfiles/kanata/kanata.kbd;
+    port = 7070;
     devices = [
       "/dev/input/event0"  # AT Translated Set 2 keyboard
       "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
