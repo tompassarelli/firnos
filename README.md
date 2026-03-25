@@ -10,21 +10,41 @@
 
 ## What is FirnOS?
 
-A NixOS configuration framework. 138 atomic modules, 18 bundles. Import it as a flake input and build on top of it.
+A NixOS configuration framework. 139 atomic modules, 18 bundles. Import it as a flake input and build on top of it.
 
 - `myConfig.modules.*` for individual packages/services
 - `myConfig.bundles.*` for composed groups with per-module overrides
 - Auto-discovery — add a module by creating a directory
 - Niri + Wayland, Stylix theming, home-manager
 
+## Quick Start
+
+```bash
+nix flake init -t github:tompassarelli/firnos
+```
+
+Then edit `hosts/my-machine/configuration.nix`, copy your `hardware-configuration.nix` in, and build:
+
+```bash
+sudo nixos-rebuild switch --flake .#my-machine
+```
+
 ## Using FirnOS
 
-### Option 1: Create Your Own Config (Recommended)
+### Option 1: Bootstrap with Template (Recommended)
 
-Create your own repo that imports FirnOS:
+```bash
+mkdir ~/code/my-config && cd ~/code/my-config
+nix flake init -t github:tompassarelli/firnos
+cp /etc/nixos/hardware-configuration.nix hosts/my-machine/
+# Edit hosts/my-machine/configuration.nix — set username, enable what you need
+sudo nixos-rebuild switch --flake .#my-machine
+```
+
+### Option 2: Import from Your Own Flake
 
 ```nix
-# ~/code/my-config/flake.nix
+# flake.nix
 {
   inputs.firnos.url = "github:tompassarelli/firnos";
 
@@ -38,44 +58,33 @@ Create your own repo that imports FirnOS:
 }
 ```
 
+### Option 3: Fork Directly
+
+Fork this repo and modify it directly. You'll manage merge conflicts yourself when pulling upstream changes.
+
+## Host Config Example
+
 ```nix
-# ~/code/my-config/hosts/my-machine/configuration.nix
 {
-  myConfig.system.stateVersion = "25.05";
-  myConfig.users.username = "yourname";
+  myConfig.modules.system.stateVersion = "25.05";
+  myConfig.modules.users.username = "yourname";
 
   # Bundles — groups of modules, individually overridable
-  myConfig.development.enable = true;
-  myConfig.media = {
+  myConfig.bundles.terminal.enable = true;
+  myConfig.bundles.development.enable = true;
+  myConfig.bundles.browsers = {
+    enable = true;
+    firefox.fennec.enable = true;
+  };
+  myConfig.bundles.media = {
     enable = true;
     lutris.enable = false;  # everything except this
   };
 
   # Modules — individual features
-  myConfig.niri.enable = true;
-  myConfig.kitty.enable = true;
-  myConfig.fish.enable = true;
-  myConfig.neovim.enable = true;
-}
-```
-
-See [`template/`](template/) for a complete starting point.
-
-### Option 2: Fork Directly
-
-Fork this repo and modify it directly. You'll manage merge conflicts yourself when pulling upstream changes.
-
-## lib.mkSystem Options
-
-```nix
-firnos.lib.mkSystem {
-  hostname = "my-machine";           # Required: your hostname
-  hostConfig = ./configuration.nix;  # Required: your host config
-  hardwareConfig = ./hardware.nix;   # Required: hardware-configuration.nix
-  system = "x86_64-linux";           # Optional: default x86_64-linux
-  extraModules = [ ./my-module ];    # Optional: additional modules
-  extraOverlays = [ myOverlay ];     # Optional: additional overlays
-  extraSpecialArgs = { foo = 1; };   # Optional: extra args for modules
+  myConfig.modules.niri.enable = true;
+  myConfig.modules.git.enable = true;
+  myConfig.modules.neovim.enable = true;
 }
 ```
 
@@ -84,50 +93,44 @@ firnos.lib.mkSystem {
 ```
 .
 ├── flake.nix           # Exposes lib.mkSystem, auto-discovers modules + bundles
-├── modules/            # Atomic modules (one feature each)
+├── modules/            # Atomic modules (one package/service each)
 ├── bundles/            # Bundles (compose modules under one toggle)
 ├── hosts/              # Host-specific configurations
-├── template/           # Starting point for your own config
+├── template/           # Starting point (used by nix flake init -t)
 └── dotfiles/           # Out-of-store configs (live editing)
 ```
 
-**Module** = atom. One package or feature. `modules/<name>/{default.nix, <name>.nix}`.
+**Module** = atom. One package or service. `modules/<name>/{default.nix, <name>.nix}`.
 
-**Bundle** = molecule. Pure composition. Enables a group of modules, never installs packages directly. Each module in a bundle can be individually toggled:
-
-```nix
-# Enable the whole media bundle
-myConfig.media.enable = true;
-
-# But opt out of one module
-myConfig.media = {
-  enable = true;
-  lutris.enable = false;
-};
-```
+**Bundle** = molecule. Pure composition. Enables a group of modules, never installs packages directly. Each module in a bundle can be individually toggled.
 
 Modules and bundles are auto-imported from directory listings — adding a new one is just creating the directory. No `flake.nix` edits needed.
 
-## Modules & Bundles
+## CLI Tools
 
-Browse `modules/` and `bundles/` to see what's available. Enable with `myConfig.<name>.enable = true`.
+```bash
+fi-rebuild              # nixos-rebuild switch + auto-tag with generation number
+fi-list                 # list all available modules and bundles
+fi-refs <name>          # show what bundles/hosts reference a module
+```
+
+## lib.mkSystem Options
+
+```nix
+firnos.lib.mkSystem {
+  hostname = "my-machine";           # Required
+  hostConfig = ./configuration.nix;  # Required
+  hardwareConfig = ./hardware.nix;   # Required
+  system = "x86_64-linux";           # Optional: default x86_64-linux
+  extraModules = [ ./my-module ];    # Optional
+  extraOverlays = [ myOverlay ];     # Optional
+  extraSpecialArgs = { foo = 1; };   # Optional
+}
+```
 
 ## Documentation
 
 - [docs.md](docs.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
-
-## Quick Reference
-
-```bash
-# Rebuild
-sudo nixos-rebuild switch --flake .#hostname
-
-# Update dependencies
-nix flake update
-
-# Rollback
-sudo nixos-rebuild switch --rollback
-```
 
 ## Inspired by
 
