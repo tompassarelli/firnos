@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.mpv.enable = lib.mkEnableOption "mpv media player";
-  imports = [ ./mpv.nix ];
+
+  config = lib.mkIf config.myConfig.modules.mpv.enable {
+    environment.systemPackages = [ pkgs.mpv ];
+  };
 }

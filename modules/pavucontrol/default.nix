@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.pavucontrol.enable = lib.mkEnableOption "PulseAudio volume control";
-  imports = [ ./pavucontrol.nix ];
+
+  config = lib.mkIf config.myConfig.modules.pavucontrol.enable {
+    environment.systemPackages = [ pkgs.pavucontrol ];
+  };
 }

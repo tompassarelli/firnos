@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.uv.enable = lib.mkEnableOption "uv Python package manager";
-  imports = [ ./uv.nix ];
+
+  config = lib.mkIf config.myConfig.modules.uv.enable {
+    environment.systemPackages = [ pkgs.uv ];
+  };
 }

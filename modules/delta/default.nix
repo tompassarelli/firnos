@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.delta.enable = lib.mkEnableOption "delta git diff viewer";
-  imports = [ ./delta.nix ];
+
+  config = lib.mkIf config.myConfig.modules.delta.enable {
+    environment.systemPackages = [ pkgs.delta ];
+  };
 }

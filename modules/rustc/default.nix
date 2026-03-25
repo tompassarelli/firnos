@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.rustc.enable = lib.mkEnableOption "Rust compiler";
-  imports = [ ./rustc.nix ];
+
+  config = lib.mkIf config.myConfig.modules.rustc.enable {
+    environment.systemPackages = [ pkgs.unstable.rustc ];
+  };
 }

@@ -1,10 +1,12 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   options.myConfig.modules.ladybird = {
     enable = lib.mkEnableOption "Enable Ladybird browser (bleeding edge from git)";
   };
 
-  imports = [
-    ./ladybird.nix
-  ];
+  config = lib.mkIf config.myConfig.modules.ladybird.enable {
+    environment.systemPackages = [
+      pkgs.unstable.ladybird
+    ];
+  };
 }

@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.emacs.enable = lib.mkEnableOption "GNU Emacs editor";
-  imports = [ ./emacs.nix ];
+
+  config = lib.mkIf config.myConfig.modules.emacs.enable {
+    environment.systemPackages = [ pkgs.emacs ];
+  };
 }

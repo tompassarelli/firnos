@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.nautilus.enable = lib.mkEnableOption "Nautilus file manager";
-  imports = [ ./nautilus.nix ];
+
+  config = lib.mkIf config.myConfig.modules.nautilus.enable {
+    environment.systemPackages = [ pkgs.nautilus ];
+  };
 }

@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.libtool.enable = lib.mkEnableOption "GNU Libtool";
-  imports = [ ./libtool.nix ];
+
+  config = lib.mkIf config.myConfig.modules.libtool.enable {
+    environment.systemPackages = [ pkgs.libtool ];
+  };
 }

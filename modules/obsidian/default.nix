@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.obsidian.enable = lib.mkEnableOption "Obsidian note-taking";
-  imports = [ ./obsidian.nix ];
+
+  config = lib.mkIf config.myConfig.modules.obsidian.enable {
+    environment.systemPackages = [ pkgs.obsidian ];
+  };
 }

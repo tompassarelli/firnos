@@ -1,10 +1,24 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+let
+  cfg = config.myConfig.modules.remmina;
+  username = config.myConfig.modules.users.username;
+in
 {
   options.myConfig.modules.remmina = {
     enable = lib.mkEnableOption "Remmina remote desktop client";
   };
 
-  imports = [
-    ./remmina.nix
-  ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      remmina
+    ];
+
+    # Disable Remmina autostart by managing a hidden desktop file
+    home-manager.users.${username} = {
+      xdg.configFile."autostart/remmina-applet.desktop".text = ''
+        [Desktop Entry]
+        Hidden=true
+      '';
+    };
+  };
 }

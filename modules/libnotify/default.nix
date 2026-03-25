@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.libnotify.enable = lib.mkEnableOption "libnotify notification client";
-  imports = [ ./libnotify.nix ];
+
+  config = lib.mkIf config.myConfig.modules.libnotify.enable {
+    environment.systemPackages = [ pkgs.libnotify ];
+  };
 }

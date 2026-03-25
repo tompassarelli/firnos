@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.todoist.enable = lib.mkEnableOption "Todoist task manager";
-  imports = [ ./todoist.nix ];
+
+  config = lib.mkIf config.myConfig.modules.todoist.enable {
+    environment.systemPackages = [ pkgs.todoist-electron ];
+  };
 }

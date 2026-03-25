@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.blender.enable = lib.mkEnableOption "Blender 3D editor";
-  imports = [ ./blender.nix ];
+
+  config = lib.mkIf config.myConfig.modules.blender.enable {
+    environment.systemPackages = [ pkgs.blender ];
+  };
 }

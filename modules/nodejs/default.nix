@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.nodejs.enable = lib.mkEnableOption "Node.js runtime";
-  imports = [ ./nodejs.nix ];
+
+  config = lib.mkIf config.myConfig.modules.nodejs.enable {
+    environment.systemPackages = [ pkgs.nodejs ];
+  };
 }

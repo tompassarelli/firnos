@@ -16,27 +16,21 @@ Two namespaces: `myConfig.modules.*` (atoms) and `myConfig.bundles.*` (molecules
 
 ### Module pattern (1 package or 1 service, no exceptions)
 
-```
-modules/<name>/default.nix   — option declaration
-modules/<name>/<name>.nix    — implementation behind mkIf
-```
+Most modules are a single `default.nix`:
 
 ```nix
-# default.nix
-{ lib, ... }:
-{
-  options.myConfig.modules.<name>.enable = lib.mkEnableOption "<description>";
-  imports = [ ./<name>.nix ];
-}
-
-# <name>.nix
+# modules/<name>/default.nix
 { config, lib, pkgs, ... }:
 {
+  options.myConfig.modules.<name>.enable = lib.mkEnableOption "<description>";
+
   config = lib.mkIf config.myConfig.modules.<name>.enable {
     environment.systemPackages = [ pkgs.<package> ];
   };
 }
 ```
+
+When a module has complex options (multiple `mkOption` beyond `enable`), split into two files — `default.nix` for options, `<name>.nix` for implementation. Currently: `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, `users`.
 
 ### Bundle pattern (pure composition, never installs packages)
 

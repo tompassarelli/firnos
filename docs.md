@@ -37,7 +37,23 @@ Each level builds on the previous. You can mix them — flakes for infrastructur
 
 FirnOS sits at the top of that spectrum with two namespaces:
 
-**`myConfig.modules.*`** = atoms. One package or service each. Always `modules/<name>/{default.nix, <name>.nix}`.
+**`myConfig.modules.*`** = atoms. One package or service each. Each lives in `modules/<name>/default.nix`.
+
+Most modules are a single file with both `options` and `config`:
+
+```nix
+# modules/awscli/default.nix
+{ config, lib, pkgs, ... }:
+{
+  options.myConfig.modules.awscli.enable = lib.mkEnableOption "awscli";
+
+  config = lib.mkIf config.myConfig.modules.awscli.enable {
+    environment.systemPackages = [ pkgs.awscli2 ];
+  };
+}
+```
+
+When a module has complex options (multiple `mkOption` declarations beyond `enable`), split into `default.nix` for options and `<name>.nix` for implementation. This keeps the interface readable when there are many knobs. Currently `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, and `users` use this split.
 
 **`myConfig.bundles.*`** = molecules. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled:
 

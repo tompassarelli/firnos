@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.gnome-screenshot.enable = lib.mkEnableOption "GNOME Screenshot tool";
-  imports = [ ./gnome-screenshot.nix ];
+
+  config = lib.mkIf config.myConfig.modules.gnome-screenshot.enable {
+    environment.systemPackages = [ pkgs.gnome-screenshot ];
+  };
 }

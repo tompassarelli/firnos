@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.rustfmt.enable = lib.mkEnableOption "Rust formatter";
-  imports = [ ./rustfmt.nix ];
+
+  config = lib.mkIf config.myConfig.modules.rustfmt.enable {
+    environment.systemPackages = [ pkgs.unstable.rustfmt ];
+  };
 }

@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.hplip.enable = lib.mkEnableOption "HP printer drivers";
-  imports = [ ./hplip.nix ];
+
+  config = lib.mkIf config.myConfig.modules.hplip.enable {
+    services.printing.drivers = [ pkgs.hplip ];
+  };
 }

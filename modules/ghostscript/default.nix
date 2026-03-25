@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.ghostscript.enable = lib.mkEnableOption "Ghostscript PostScript interpreter";
-  imports = [ ./ghostscript.nix ];
+
+  config = lib.mkIf config.myConfig.modules.ghostscript.enable {
+    environment.systemPackages = [ pkgs.ghostscript ];
+  };
 }

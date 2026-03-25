@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.dbeaver.enable = lib.mkEnableOption "DBeaver database GUI";
-  imports = [ ./dbeaver.nix ];
+
+  config = lib.mkIf config.myConfig.modules.dbeaver.enable {
+    environment.systemPackages = [ pkgs.dbeaver-bin ];
+  };
 }

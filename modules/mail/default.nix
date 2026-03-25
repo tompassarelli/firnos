@@ -1,10 +1,15 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+let
+  cfg = config.myConfig.modules.mail;
+in
 {
   options.myConfig.modules.mail = {
     enable = lib.mkEnableOption "email applications";
   };
 
-  imports = [
-    ./mail.nix
-  ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      unstable.protonmail-desktop   # encrypted mail
+    ];
+  };
 }

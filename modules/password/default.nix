@@ -1,10 +1,15 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+let
+  cfg = config.myConfig.modules.password;
+in
 {
   options.myConfig.modules.password = {
     enable = lib.mkEnableOption "password management tools";
   };
 
-  imports = [
-    ./password.nix
-  ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      bitwarden            # password manager
+    ];
+  };
 }

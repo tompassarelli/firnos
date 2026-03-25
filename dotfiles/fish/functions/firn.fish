@@ -98,17 +98,14 @@ function firn --description "FirnOS config management CLI"
         return 1
       end
       mkdir -p $dir
-      echo '{ lib, ... }:
-{
-  options.myConfig.modules.'$name'.enable = lib.mkEnableOption "'$name'";
-  imports = [ ./'$name'.nix ];
-}' > $dir/default.nix
       echo '{ config, lib, pkgs, ... }:
 {
+  options.myConfig.modules.'$name'.enable = lib.mkEnableOption "'$name'";
+
   config = lib.mkIf config.myConfig.modules.'$name'.enable {
     # TODO: add configuration
   };
-}' > $dir/$name.nix
+}' > $dir/default.nix
       git -C ~/code/nixos-config add $dir
       echo "Created modules/$name/ (git added)"
 

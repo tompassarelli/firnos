@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.discord.enable = lib.mkEnableOption "Discord chat client";
-  imports = [ ./discord.nix ];
+
+  config = lib.mkIf config.myConfig.modules.discord.enable {
+    environment.systemPackages = [ pkgs.discord ];
+  };
 }

@@ -1,10 +1,14 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   options.myConfig.modules.piper = {
     enable = lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)";
   };
 
-  imports = [
-    ./piper.nix
-  ];
+  config = lib.mkIf config.myConfig.modules.piper.enable {
+    # ratbagd daemon for configuring gaming mice
+    services.ratbagd.enable = true;
+
+    # Piper - GTK GUI for ratbagd
+    environment.systemPackages = [ pkgs.piper ];
+  };
 }

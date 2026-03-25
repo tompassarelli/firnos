@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.imagemagick.enable = lib.mkEnableOption "ImageMagick image processing";
-  imports = [ ./imagemagick.nix ];
+
+  config = lib.mkIf config.myConfig.modules.imagemagick.enable {
+    environment.systemPackages = [ pkgs.imagemagick ];
+  };
 }

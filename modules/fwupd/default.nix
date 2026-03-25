@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.fwupd.enable = lib.mkEnableOption "fwupd firmware updater";
-  imports = [ ./fwupd.nix ];
+
+  config = lib.mkIf config.myConfig.modules.fwupd.enable {
+    environment.systemPackages = [ pkgs.fwupd ];
+  };
 }

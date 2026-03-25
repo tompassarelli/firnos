@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.wget.enable = lib.mkEnableOption "wget download tool";
-  imports = [ ./wget.nix ];
+
+  config = lib.mkIf config.myConfig.modules.wget.enable {
+    environment.systemPackages = [ pkgs.wget ];
+  };
 }

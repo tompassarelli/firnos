@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.rustdesk.enable = lib.mkEnableOption "RustDesk remote desktop";
-  imports = [ ./rustdesk.nix ];
+
+  config = lib.mkIf config.myConfig.modules.rustdesk.enable {
+    environment.systemPackages = [ pkgs.rustdesk-flutter ];
+  };
 }

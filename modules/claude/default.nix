@@ -1,10 +1,25 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+let
+  username = config.myConfig.modules.users.username;
+in
 {
   options.myConfig.modules.claude = {
     enable = lib.mkEnableOption "Claude Code CLI configuration";
   };
 
-  imports = [
-    ./claude.nix
-  ];
+  config = lib.mkIf config.myConfig.modules.claude.enable {
+    environment.systemPackages = [ pkgs.master.claude-code ];
+
+    # ============ HOME-MANAGER CONFIGURATION ============
+
+    home-manager.users.${username} = { config, ... }: {
+      # Claude settings.json
+      home.file.".claude/settings.json".source = config.lib.file.mkOutOfStoreSymlink
+        "${config.home.homeDirectory}/code/nixos-config/dotfiles/claude/settings.json";
+
+      # Claude custom commands directory (global commands)
+      home.file.".claude/commands".source = config.lib.file.mkOutOfStoreSymlink
+        "${config.home.homeDirectory}/code/nixos-config/dotfiles/claude/commands";
+    };
+  };
 }

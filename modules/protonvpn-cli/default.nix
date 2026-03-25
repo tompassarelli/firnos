@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.protonvpn-cli.enable = lib.mkEnableOption "ProtonVPN CLI client";
-  imports = [ ./protonvpn-cli.nix ];
+
+  config = lib.mkIf config.myConfig.modules.protonvpn-cli.enable {
+    environment.systemPackages = [ pkgs.protonvpn-cli ];
+  };
 }

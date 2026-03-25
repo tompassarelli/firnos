@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.swaylock.enable = lib.mkEnableOption "swaylock screen locker";
-  imports = [ ./swaylock.nix ];
+
+  config = lib.mkIf config.myConfig.modules.swaylock.enable {
+    environment.systemPackages = [ pkgs.swaylock ];
+  };
 }

@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.grim.enable = lib.mkEnableOption "Grim screenshot tool";
-  imports = [ ./grim.nix ];
+
+  config = lib.mkIf config.myConfig.modules.grim.enable {
+    environment.systemPackages = [ pkgs.grim ];
+  };
 }

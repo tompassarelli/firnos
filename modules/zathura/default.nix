@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.zathura.enable = lib.mkEnableOption "Zathura PDF viewer";
-  imports = [ ./zathura.nix ];
+
+  config = lib.mkIf config.myConfig.modules.zathura.enable {
+    environment.systemPackages = [ pkgs.zathura ];
+  };
 }

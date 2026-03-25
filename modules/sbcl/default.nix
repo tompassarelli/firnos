@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.sbcl.enable = lib.mkEnableOption "Steel Bank Common Lisp compiler";
-  imports = [ ./sbcl.nix ];
+
+  config = lib.mkIf config.myConfig.modules.sbcl.enable {
+    environment.systemPackages = [ pkgs.sbcl ];
+  };
 }

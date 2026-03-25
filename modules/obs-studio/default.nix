@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.obs-studio.enable = lib.mkEnableOption "OBS Studio screen recording";
-  imports = [ ./obs-studio.nix ];
+
+  config = lib.mkIf config.myConfig.modules.obs-studio.enable {
+    environment.systemPackages = [ pkgs.obs-studio ];
+  };
 }

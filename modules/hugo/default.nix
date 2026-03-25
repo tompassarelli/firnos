@@ -1,5 +1,9 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
+
 {
   options.myConfig.modules.hugo.enable = lib.mkEnableOption "Hugo static site generator";
-  imports = [ ./hugo.nix ];
+
+  config = lib.mkIf config.myConfig.modules.hugo.enable {
+    environment.systemPackages = [ pkgs.hugo ];
+  };
 }
