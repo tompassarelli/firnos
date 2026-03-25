@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  config = lib.mkIf config.myConfig.theming.enable {
+  config = lib.mkIf config.myConfig.stylix.enable {
     # Desktop Portal for app integration
     xdg.portal.enable = true;
     xdg.portal.extraPortals = [

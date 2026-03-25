@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   username = config.myConfig.users.username;
-  chosenTheme = config.myConfig.theming.chosenTheme;
+  chosenTheme = config.myConfig.stylix.chosenTheme;
 
 in
 {

@@ -57,7 +57,7 @@ let
     ${pkgs.coreutils}/bin/cp "$HOST_CONFIG" "$HOST_CONFIG.bak"
 
     # Update the chosenTheme line in host configuration
-    ${pkgs.gnused}/bin/sed -i "s/myConfig\.theming\.chosenTheme = \"$CURRENT_THEME\"/myConfig.theming.chosenTheme = \"$SELECTED\"/" "$HOST_CONFIG"
+    ${pkgs.gnused}/bin/sed -i "s/myConfig\.theming\.chosenTheme = \"$CURRENT_THEME\"/myConfig.stylix.chosenTheme = \"$SELECTED\"/" "$HOST_CONFIG"
 
     # Verify the change
     if ! ${pkgs.gnugrep}/bin/grep -q "myConfig\.theming\.chosenTheme = \"$SELECTED\"" "$HOST_CONFIG"; then

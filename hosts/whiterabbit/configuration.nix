@@ -13,8 +13,8 @@
     enable = true;
     mako.enable = false;
   };
-  myConfig.look-and-feel.enable = true;
-  myConfig.theming.chosenTheme = "everforest-dark-hard";
+  myConfig.theming.enable = true;
+  myConfig.stylix.chosenTheme = "everforest-dark-hard";
   myConfig.auth.enable = true;
   myConfig.development.enable = true;
   myConfig.rust = {

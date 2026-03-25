@@ -2,7 +2,7 @@
 let
   cfg = config.myConfig.doom-emacs;
   username = config.myConfig.users.username;
-  chosenTheme = config.myConfig.theming.chosenTheme;
+  chosenTheme = config.myConfig.stylix.chosenTheme;
 in
 {
   config = lib.mkIf cfg.enable {
