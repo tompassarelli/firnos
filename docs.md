@@ -35,14 +35,14 @@ Each level builds on the previous. You can mix them — flakes for infrastructur
 
 ## What FirnOS Chose
 
-FirnOS sits at the top of that spectrum and adds two organizing concepts:
+FirnOS sits at the top of that spectrum with two namespaces:
 
-**Module** = atom. One package or feature. Always `modules/<name>/{default.nix, <name>.nix}`. The `default.nix` declares the option, the implementation file does the work behind `mkIf`.
+**`myConfig.modules.*`** = atoms. One package or service each. Always `modules/<name>/{default.nix, <name>.nix}`.
 
-**Bundle** = molecule. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled:
+**`myConfig.bundles.*`** = molecules. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled:
 
 ```nix
-myConfig.media = {
+myConfig.bundles.media = {
   enable = true;           # turns on 13 modules
   lutris.enable = false;   # except this one
 };
@@ -53,6 +53,33 @@ This works through NixOS priorities: bundles propagate enables with `mkDefault` 
 **Auto-import**: `flake.nix` discovers all modules and bundles from directory listings. Adding a new module = create the directory and `git add`. No flake.nix edits.
 
 See [`template/`](template/) for a complete starting config to copy.
+
+## Adding a New Host
+
+1. Create `hosts/new-hostname/configuration.nix`:
+   ```nix
+   { ... }:
+   {
+     myConfig.modules.system.stateVersion = "25.05";
+     myConfig.modules.users.enable = true;
+     myConfig.modules.users.username = "yourname";
+     myConfig.modules.boot.enable = true;
+     myConfig.modules.networking.enable = true;
+     myConfig.bundles.development.enable = true;
+     # ... enable what you need
+   }
+   ```
+
+2. Add a `nixosConfigurations` entry in `flake.nix`:
+   ```nix
+   new-hostname = self.lib.mkSystem {
+     hostname = "new-hostname";
+     hostConfig = ./hosts/new-hostname/configuration.nix;
+     hardwareConfig = ./hosts/new-hostname/hardware-configuration.nix;
+   };
+   ```
+
+Modules and bundles are auto-imported — only the host entry needs adding.
 
 ## mkOutOfStoreSymlink: Live-Editing Configs
 
