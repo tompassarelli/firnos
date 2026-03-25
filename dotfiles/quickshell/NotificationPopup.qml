@@ -218,9 +218,20 @@ PanelWindow {
 
                     Row {
                         spacing: 8
-                        visible: model.notif.actions.length > 0
+                        visible: {
+                            let acts = model.notif.actions;
+                            for (let i = 0; i < acts.length; i++)
+                                if (acts[i].identifier !== "default") return true;
+                            return false;
+                        }
                         Repeater {
-                            model: notifRect.parent ? notificationModel.get(index)?.notif.actions ?? [] : []
+                            model: {
+                                let raw = notifRect.parent ? notificationModel.get(index)?.notif.actions ?? [] : [];
+                                let filtered = [];
+                                for (let i = 0; i < raw.length; i++)
+                                    if (raw[i].identifier !== "default") filtered.push(raw[i]);
+                                return filtered;
+                            }
                             delegate: Rectangle {
                                 width: actionText.implicitWidth + 16
                                 height: actionText.implicitHeight + 8
