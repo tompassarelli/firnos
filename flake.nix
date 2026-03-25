@@ -242,6 +242,12 @@
       };
     };
 
+    # Flake template: nix flake init -t github:tompassarelli/firnos
+    templates.default = {
+      description = "FirnOS starter configuration";
+      path = ./template;
+    };
+
     devShells.x86_64-linux.default = let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     in pkgs.mkShell {

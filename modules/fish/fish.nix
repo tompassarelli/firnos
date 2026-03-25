@@ -374,18 +374,35 @@ json.dump(d, open(f, \"w\"), indent=2)
             echo "Opacity: $argv[1]"
           end
 
+          # List all available modules and bundles
+          function fi-list
+            set -l modules (ls -1 ~/code/nixos-config/modules/)
+            set -l bundles (ls -1 ~/code/nixos-config/bundles/)
+            echo "Bundles ("(count $bundles)"):"
+            for b in $bundles
+              echo "  myConfig.bundles.$b"
+            end
+            echo ""
+            echo "Modules ("(count $modules)"):"
+            for m in $modules
+              echo "  myConfig.modules.$m"
+            end
+          end
+
           # Show what bundles/hosts reference a module
-          function firnos-refs
+          function fi-refs
             if test (count $argv) -eq 0
-              echo "Usage: firnos-refs <module-name>"
+              echo "Usage: fi-refs <module-name>"
               return 1
             end
             set -l name $argv[1]
             echo "Bundles:"
-            rg "myConfig\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
+            rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
+            rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/bundles/ --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u
             echo ""
             echo "Hosts:"
-            rg "myConfig\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
+            rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
+            rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
           end
 
           # Show current and next NixOS generation numbers
