@@ -88,10 +88,10 @@
     bevy = true;
   };
   myConfig.claude.enable = true;
+  myConfig.csharp.enable = true;
   myConfig.postgresql.enable = true;
-  myConfig.sqlcmd.enable = true;
   myConfig.direnv.enable = true;
-  myConfig.dotnet.enable = true;
+  myConfig.containers.enable = true;
 
   # Applications
   myConfig.firefox = {
@@ -110,9 +110,5 @@
   myConfig.media.enable = true;
   myConfig.password.enable = true;
   myConfig.mail.enable = true;
-
-  # Virtualization
-  myConfig.windows-vm.enable = true;
-  myConfig.containers.enable = true;
   myConfig.mini-serve.enable = true;
 }

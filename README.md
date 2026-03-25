@@ -1,6 +1,8 @@
-# FirnOS
+<p align="center">
+  <img src="firnos-logo.png" alt="FirnOS" width="400">
+</p>
 
-A modular, shareable NixOS configuration framework.
+<p align="center">A modular, shareable NixOS configuration framework.</p>
 
 ## What is FirnOS?
 
