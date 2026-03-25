@@ -137,7 +137,7 @@ Bundles group modules under one toggle. All modules default to enabled; override
 
 ## Documentation
 
-- [docs/nix-basics.md](docs/nix-basics.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
+- [manual.md](manual.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
 
 ## Quick Reference
 
