@@ -116,7 +116,7 @@ Browse `modules/` and `bundles/` to see what's available. Enable with `myConfig.
 
 ## Documentation
 
-- [manual.md](manual.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
+- [docs.md](docs.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
 
 ## Quick Reference
 
