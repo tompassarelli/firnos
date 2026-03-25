@@ -4,12 +4,10 @@ let
 in
 {
   config = lib.mkIf config.myConfig.nyxt.enable {
-    environment.systemPackages = [
-      pkgs.nyxt4
-      pkgs.fuse
-    ];
+    environment.systemPackages = [ pkgs.nyxt4 ];
 
     # AppImages need FUSE
+    myConfig.fuse.enable = lib.mkDefault true;
     programs.appimage.enable = true;
 
     xdg.mime.defaultApplications = lib.mkIf config.myConfig.nyxt.default {

@@ -1,30 +1,25 @@
 { config, lib, pkgs, flakeRoot, ... }:
 let
+  cfg = config.myConfig.doom-emacs;
   username = config.myConfig.users.username;
   chosenTheme = config.myConfig.theming.chosenTheme;
 in
 {
-  config = lib.mkIf config.myConfig.doom-emacs.enable {
-    # Fonts required by Doom
-    fonts.packages = [ pkgs.nerd-fonts.symbols-only ];
-
-    # Install emacs and doom dependencies
-    environment.systemPackages = with pkgs; [
-      emacs           # Emacs 30.2
-      git             # Required by Doom
-      ripgrep         # Required by Doom
-      fd              # Required by Doom
-      coreutils       # Basic GNU utilities
-      clang           # For vterm and some packages
-      cmake           # For vterm compilation
-      gnumake         # For vterm compilation
-      gcc             # C compiler for vterm
-      libtool         # For vterm compilation
-      sbcl            # Common Lisp compiler
-      gnome-screenshot # doom doctor
-      graphviz         # doom doctor
-      shellcheck       # doom doctor
-    ];
+  config = lib.mkIf cfg.enable {
+    # Enable atomic modules
+    myConfig.emacs.enable = lib.mkDefault cfg.emacs.enable;
+    myConfig.nerd-fonts.enable = lib.mkDefault cfg.nerd-fonts.enable;
+    myConfig.ripgrep.enable = lib.mkDefault cfg.ripgrep.enable;
+    myConfig.fd.enable = lib.mkDefault cfg.fd.enable;
+    myConfig.clang.enable = lib.mkDefault cfg.clang.enable;
+    myConfig.cmake.enable = lib.mkDefault cfg.cmake.enable;
+    myConfig.gnumake.enable = lib.mkDefault cfg.gnumake.enable;
+    myConfig.gcc.enable = lib.mkDefault cfg.gcc.enable;
+    myConfig.libtool.enable = lib.mkDefault cfg.libtool.enable;
+    myConfig.sbcl.enable = lib.mkDefault cfg.sbcl.enable;
+    myConfig.gnome-screenshot.enable = lib.mkDefault cfg.gnome-screenshot.enable;
+    myConfig.graphviz.enable = lib.mkDefault cfg.graphviz.enable;
+    myConfig.shellcheck.enable = lib.mkDefault cfg.shellcheck.enable;
 
     # Clockify API key (decrypted to /run/secrets/msa-clockify-api-key)
     sops.secrets."msa-clockify-api-key" = {
@@ -65,7 +60,7 @@ in
       services.emacs = {
         enable = true;
         package = pkgs.emacs;
-        startWithUserSession = "graphical";  # Wait for graphical session to get display vars
+        startWithUserSession = "graphical";
       };
     };
   };

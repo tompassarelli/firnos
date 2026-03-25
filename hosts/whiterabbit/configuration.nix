@@ -104,10 +104,8 @@
   myConfig.chrome.enable = true;
   myConfig.nyxt.enable = true;
   myConfig.ladybird.enable = true;
-  myConfig.steam = {
-    enable = true;
-    wowup.enable = true;
-  };
+  myConfig.steam.enable = true;
+  myConfig.wowup.enable = true;
   myConfig.productivity.enable = true;
   myConfig.creative.enable = true;
   myConfig.media.enable = true;
