@@ -1,9 +1,11 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   username = config.myConfig.users.username;
 in
 {
   config = lib.mkIf config.myConfig.claude.enable {
+    environment.systemPackages = [ pkgs.master.claude-code ];
+
     # ============ HOME-MANAGER CONFIGURATION ============
 
     home-manager.users.${username} = { config, ... }: {

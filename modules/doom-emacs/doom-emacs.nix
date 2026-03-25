@@ -5,6 +5,9 @@ let
 in
 {
   config = lib.mkIf config.myConfig.doom-emacs.enable {
+    # Fonts required by Doom
+    fonts.packages = [ pkgs.nerd-fonts.symbols-only ];
+
     # Install emacs and doom dependencies
     environment.systemPackages = with pkgs; [
       emacs           # Emacs 30.2
@@ -18,6 +21,9 @@ in
       gcc             # C compiler for vterm
       libtool         # For vterm compilation
       sbcl            # Common Lisp compiler
+      gnome-screenshot # doom doctor
+      graphviz         # doom doctor
+      shellcheck       # doom doctor
     ];
 
     # Clockify API key (decrypted to /run/secrets/msa-clockify-api-key)

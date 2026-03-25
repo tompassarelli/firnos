@@ -1,7 +1,11 @@
 { config, lib, ... }:
+
+let
+  cfg = config.myConfig.auth;
+in
 {
-  config = lib.mkIf config.myConfig.auth.enable {
-    myConfig.polkit.enable = lib.mkDefault true;
-    myConfig.gnome-keyring.enable = lib.mkDefault true;
+  config = lib.mkIf cfg.enable {
+    myConfig.polkit.enable = lib.mkDefault cfg.polkit.enable;
+    myConfig.gnome-keyring.enable = lib.mkDefault cfg.gnome-keyring.enable;
   };
 }

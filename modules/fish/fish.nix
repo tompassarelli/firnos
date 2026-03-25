@@ -35,7 +35,7 @@ in
         interactiveShellInit = ''
           # Change to default directory (skip in Emacs vterm)
           if not set -q INSIDE_EMACS
-            cd ~/code
+            cd ~
           end
 
           # NixOS rebuild with optional config argument

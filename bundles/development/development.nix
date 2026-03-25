@@ -1,42 +1,24 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 let
   cfg = config.myConfig.development;
 in
 {
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-    # Editor / Search
-    vim                  # default general purpose text editor
-    master.claude-code   # bleeding edge from master branch
-    ripgrep              # search
-    fd                   # find files
-    unzip                # relax and decompress
-    parted               # disk partitioning
-
-    # Data Transfer & Requests
-    wget                 # download things
-    curl                 # test APIs, debug HTTP, pipe stuff
-
-    # Convert images
-    imagemagick          # work with images
-    ghostscript          # for adobe
-
-    # Web
-    nodejs               # for webjoyers
-    #ungoogled-chromium  # fallback
-
-    # Python
-    python3              # i'm a snake
-    uv                   # fast python package manager
-
-    # Database
-    sqlite               # lightweight SQL database
-    dbeaver-bin          # database GUI
-
-    # Version Control
-    gh                   # github cli
-    delta                # beautiful git diffs
-    ];
+    myConfig.vim.enable = lib.mkDefault cfg.vim.enable;
+    myConfig.claude.enable = lib.mkDefault cfg.claude.enable;
+    myConfig.ripgrep.enable = lib.mkDefault cfg.ripgrep.enable;
+    myConfig.fd.enable = lib.mkDefault cfg.fd.enable;
+    myConfig.unzip.enable = lib.mkDefault cfg.unzip.enable;
+    myConfig.parted.enable = lib.mkDefault cfg.parted.enable;
+    myConfig.wget.enable = lib.mkDefault cfg.wget.enable;
+    myConfig.curl.enable = lib.mkDefault cfg.curl.enable;
+    myConfig.imagemagick.enable = lib.mkDefault cfg.imagemagick.enable;
+    myConfig.nodejs.enable = lib.mkDefault cfg.nodejs.enable;
+    myConfig.python.enable = lib.mkDefault cfg.python.enable;
+    myConfig.sqlite.enable = lib.mkDefault cfg.sqlite.enable;
+    myConfig.dbeaver.enable = lib.mkDefault cfg.dbeaver.enable;
+    myConfig.gh.enable = lib.mkDefault cfg.gh.enable;
+    myConfig.delta.enable = lib.mkDefault cfg.delta.enable;
   };
 }

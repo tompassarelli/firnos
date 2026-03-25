@@ -39,6 +39,15 @@ PanelWindow {
             }
 
             notification.tracked = true;
+
+            // Replace existing notification with same ID
+            for (let i = 0; i < notificationModel.count; i++) {
+                if (notificationModel.get(i).notif.id === notification.id) {
+                    notificationModel.set(i, { notif: notification });
+                    return;
+                }
+            }
+
             notificationModel.insert(0, { notif: notification });
 
             // Auto-dismiss after 5 seconds unless timeout is 0 (sticky)
@@ -47,7 +56,6 @@ PanelWindow {
             if (timeout > 0) {
                 dismissTimer.createObject(popup, {
                     interval: timeout,
-                    notifIndex: 0,
                     notifObj: notification
                 });
             }
@@ -57,7 +65,6 @@ PanelWindow {
     Component {
         id: dismissTimer
         Timer {
-            property int notifIndex
             property var notifObj
             running: true
             repeat: false
@@ -78,6 +85,11 @@ PanelWindow {
         id: notificationModel
     }
 
+    Process {
+        id: focusAppProc
+        property var command: []
+    }
+
     Column {
         id: notificationColumn
         anchors.left: parent.left
@@ -94,6 +106,29 @@ PanelWindow {
                 implicitHeight: contentLayout.implicitHeight + 20
                 radius: LayoutConfig.cornerRadius
                 color: Qt.rgba(colors.base00.r, colors.base00.g, colors.base00.b, 0.9)
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        let n = model.notif;
+                        // Invoke default action if available
+                        for (let i = 0; i < n.actions.length; i++) {
+                            if (n.actions[i].identifier === "default") {
+                                n.actions[i].invoke();
+                                notificationModel.remove(index);
+                                return;
+                            }
+                        }
+                        // Otherwise try to focus the app that sent the notification
+                        if (n.appName !== "") {
+                            focusAppProc.command = ["niri", "msg", "action", "focus-window", "--app-id", n.appName.toLowerCase()];
+                            focusAppProc.running = true;
+                        }
+                        n.dismiss();
+                        notificationModel.remove(index);
+                    }
+                }
 
                 ColumnLayout {
                     id: contentLayout

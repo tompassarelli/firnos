@@ -79,7 +79,7 @@
   # Development
   myConfig.git.enable = true;
   myConfig.neovim.enable = true;
-  myConfig.doom.enable = true;
+  myConfig.doom-emacs.enable = true;
   myConfig.lem.enable = true;
   myConfig.development.enable = true;
   myConfig.zed.enable = true;
