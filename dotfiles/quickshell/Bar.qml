@@ -56,6 +56,7 @@ PanelWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: statusRow.implicitWidth + 26
+            onWidthChanged: BarState.rightBarWidth = width
             radius: LayoutConfig.cornerRadius
             color: Qt.rgba(colors.base00.r, colors.base00.g, colors.base00.b, 0.7)
 

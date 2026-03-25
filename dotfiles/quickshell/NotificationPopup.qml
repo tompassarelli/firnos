@@ -10,15 +10,15 @@ PanelWindow {
 
     anchors {
         top: true
-        left: true
+        right: true
     }
     margins {
         top: LayoutConfig.gap
-        left: LayoutConfig.gap
+        right: BarState.rightBarWidth + 2 * LayoutConfig.gap
     }
 
-    implicitWidth: 350
-    implicitHeight: notificationColumn.implicitHeight + 2 * LayoutConfig.gap
+    implicitWidth: 210
+    implicitHeight: notificationColumn.implicitHeight
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     visible: notificationModel.count > 0
@@ -41,15 +41,29 @@ PanelWindow {
 
             notification.tracked = true;
 
-            // Replace existing notification with same ID
+            let replaced = false;
+
+            // Replace existing notification with same ID or same transient app
             for (let i = 0; i < notificationModel.count; i++) {
-                if (notificationModel.get(i).notif.id === notification.id) {
+                let existing = notificationModel.get(i).notif;
+                if (existing.id === notification.id
+                    || (notification.appName === "notify-send"
+                        && existing.appName === "notify-send")) {
                     notificationModel.set(i, { notif: notification });
-                    return;
+                    replaced = true;
+                    break;
                 }
             }
 
-            notificationModel.insert(0, { notif: notification });
+            if (!replaced)
+                notificationModel.insert(0, { notif: notification });
+
+            // Reset the shared transient timer for notify-send replacements
+            if (notification.appName === "notify-send") {
+                transientTimer.notifObj = notification;
+                transientTimer.restart();
+                return;
+            }
 
             // Auto-dismiss after 5 seconds unless timeout is 0 (sticky)
             let timeout = notification.expireTimeout;
@@ -86,6 +100,24 @@ PanelWindow {
         id: notificationModel
     }
 
+    Timer {
+        id: transientTimer
+        property var notifObj: null
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            if (!notifObj) return;
+            for (let i = 0; i < notificationModel.count; i++) {
+                if (notificationModel.get(i).notif === notifObj) {
+                    notifObj.dismiss();
+                    notificationModel.remove(i);
+                    break;
+                }
+            }
+            notifObj = null;
+        }
+    }
+
     Process {
         id: focusAppProc
         property var command: []
@@ -93,10 +125,7 @@ PanelWindow {
 
     Column {
         id: notificationColumn
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: LayoutConfig.gap
+        anchors.fill: parent
         spacing: LayoutConfig.gap
 
         Repeater {
@@ -104,7 +133,7 @@ PanelWindow {
             delegate: Rectangle {
                 id: notifRect
                 width: notificationColumn.width
-                implicitHeight: contentLayout.implicitHeight + 20
+                implicitHeight: Math.max(30, contentLayout.implicitHeight + 12)
                 radius: LayoutConfig.cornerRadius
                 color: Qt.rgba(colors.base00.r, colors.base00.g, colors.base00.b, 0.9)
 
@@ -134,7 +163,10 @@ PanelWindow {
                 ColumnLayout {
                     id: contentLayout
                     anchors.fill: parent
-                    anchors.margins: 10
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    anchors.topMargin: 6
+                    anchors.bottomMargin: 6
                     spacing: 4
 
                     RowLayout {
