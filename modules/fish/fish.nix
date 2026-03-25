@@ -55,16 +55,62 @@ in
                 end
 
               case list
+                set -l flag $argv[2]
                 set -l modules (ls -1 ~/code/nixos-config/modules/)
                 set -l bundles (ls -1 ~/code/nixos-config/bundles/)
-                echo "Bundles ("(count $bundles)"):"
-                for b in $bundles
-                  echo "  myConfig.bundles.$b"
-                end
-                echo ""
-                echo "Modules ("(count $modules)"):"
-                for m in $modules
-                  echo "  myConfig.modules.$m"
+                set -l hosts_dir ~/code/nixos-config/hosts
+                set -l bundles_dir ~/code/nixos-config/bundles
+
+                switch "$flag"
+                  case --used
+                    echo "Used bundles:"
+                    for b in $bundles
+                      set -l hosts (rg "myConfig\.bundles\.$b\.enable\s*=\s*true" $hosts_dir --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
+                      if test -n "$hosts"
+                        echo "  $b  ($hosts)"
+                      end
+                    end
+                    echo ""
+                    echo "Used modules:"
+                    for m in $modules
+                      set -l hosts (rg "myConfig\.modules\.$m\.enable\s*=\s*true" $hosts_dir --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
+                      set -l via_bundles (rg "myConfig\.modules\.$m\.enable" $bundles_dir --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u)
+                      if test -n "$hosts" -o -n "$via_bundles"
+                        set -l sources
+                        test -n "$hosts"; and set sources $sources $hosts
+                        test -n "$via_bundles"; and set sources $sources (string join ", " -- (for vb in $via_bundles; echo "via $vb"; end))
+                        echo "  $m  ($sources)"
+                      end
+                    end
+
+                  case --unused
+                    echo "Unused bundles:"
+                    for b in $bundles
+                      set -l used (rg "myConfig\.bundles\.$b\.enable" $hosts_dir $bundles_dir --files-with-matches 2>/dev/null)
+                      if test -z "$used"
+                        echo "  $b"
+                      end
+                    end
+                    echo ""
+                    echo "Unused modules (not in any host or bundle):"
+                    for m in $modules
+                      set -l in_host (rg "myConfig\.modules\.$m\.enable" $hosts_dir --files-with-matches 2>/dev/null)
+                      set -l in_bundle (rg "myConfig\.modules\.$m\.enable" $bundles_dir --files-with-matches 2>/dev/null)
+                      if test -z "$in_host" -a -z "$in_bundle"
+                        echo "  $m"
+                      end
+                    end
+
+                  case '*'
+                    echo "Bundles ("(count $bundles)"):"
+                    for b in $bundles
+                      echo "  myConfig.bundles.$b"
+                    end
+                    echo ""
+                    echo "Modules ("(count $modules)"):"
+                    for m in $modules
+                      echo "  myConfig.modules.$m"
+                    end
                 end
 
               case refs
@@ -89,10 +135,12 @@ in
               case '*'
                 echo "firn <command>"
                 echo ""
-                echo "  rebuild [host]   nixos-rebuild switch + tag generation"
-                echo "  list             list all modules and bundles"
-                echo "  refs <name>      show what references a module/bundle"
-                echo "  gen              show current and next generation numbers"
+                echo "  rebuild [host]     nixos-rebuild switch + tag generation"
+                echo "  list               list all modules and bundles"
+                echo "  list --used        show modules/bundles in use and where"
+                echo "  list --unused      show modules/bundles not referenced anywhere"
+                echo "  refs <name>        show what references a module/bundle"
+                echo "  gen                show current and next generation numbers"
             end
           end
 
