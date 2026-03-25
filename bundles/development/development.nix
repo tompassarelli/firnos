@@ -16,8 +16,7 @@ in
     myConfig.imagemagick.enable = lib.mkDefault cfg.imagemagick.enable;
     myConfig.ghostscript.enable = lib.mkDefault cfg.ghostscript.enable;
     myConfig.nodejs.enable = lib.mkDefault cfg.nodejs.enable;
-    myConfig.python.enable = lib.mkDefault cfg.python.enable;
-    myConfig.uv.enable = lib.mkDefault cfg.uv.enable;
+    myConfig.python-dev.enable = lib.mkDefault cfg.python-dev.enable;
     myConfig.sqlite.enable = lib.mkDefault cfg.sqlite.enable;
     myConfig.dbeaver.enable = lib.mkDefault cfg.dbeaver.enable;
     myConfig.gh.enable = lib.mkDefault cfg.gh.enable;

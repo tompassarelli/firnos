@@ -110,52 +110,9 @@ myConfig.media = {
 
 Modules and bundles are auto-imported from directory listings — adding a new one is just creating the directory. No `flake.nix` edits needed.
 
-## Modules
+## Modules & Bundles
 
-Enable with `myConfig.<module>.enable = true` in your host config.
-
-| Category | Modules |
-|----------|---------|
-| System | `boot`, `users`, `networking`, `wireguard`, `remmina`, `timezone`, `ssh`, `nix-settings`, `auto-upgrade`, `system`, `fwupd` |
-| Desktop | `niri`, `waybar`, `quickshell`, `ironbar`, `rofi`, `walker`, `mako`, `upower` |
-| Hardware | `pipewire`, `bluetooth`, `input`, `wl-clipboard`, `brightnessctl`, `wl-gammarelay`, `piper`, `g203-led`, `kanata`, `glide`, `framework`, `via` |
-| Auth | `polkit`, `gnome-keyring`, `password` |
-| Theming | `styling`, `theming`, `gtk`, `theme-switcher`, `nerd-fonts` |
-| Terminal | `kitty`, `fish`, `zoxide`, `atuin`, `starship` |
-| Editors | `neovim`, `emacs`, `lem`, `zed`, `vim` |
-| Rust | `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `bevy` |
-| C/Build | `gcc`, `clang`, `cmake`, `gnumake`, `libtool`, `pkg-config` |
-| Languages | `nodejs`, `python`, `uv`, `sbcl`, `dotnet` |
-| CLI Tools | `git`, `yazi`, `btop`, `eza`, `dust`, `tree`, `procs`, `tealdeer`, `fastfetch`, `direnv`, `ripgrep`, `fd`, `delta`, `shellcheck` |
-| Dev Tools | `claude`, `sqlite`, `dbeaver`, `gh`, `imagemagick`, `ghostscript`, `graphviz`, `postgresql`, `sqlcmd`, `containers`, `mini-serve` |
-| Utilities | `wget`, `curl`, `unzip`, `unrar`, `parted`, `pandoc`, `hugo`, `ffmpeg`, `fuse`, `libnotify`, `gnome-screenshot` |
-| Browsers | `firefox`, `chrome`, `nyxt`, `ladybird` |
-| Media | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `pavucontrol` |
-| Creative | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `eyedropper` |
-| Productivity | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `slack` |
-| Desktop Tools | `nautilus`, `swaylock`, `grim` |
-| Gaming | `steam`, `lutris`, `wowup` |
-| VPN | `protonvpn-gui`, `protonvpn-cli` |
-| Printing | `gutenprint`, `hplip` |
-| Mail | `mail` |
-| VM | `windows-vm` |
-
-## Bundles
-
-Bundles group modules under one toggle. All modules default to enabled; override individually.
-
-| Bundle | Modules included |
-|--------|-----------------|
-| `auth` | `polkit`, `gnome-keyring` |
-| `development` | `vim`, `claude`, `ripgrep`, `fd`, `unzip`, `parted`, `wget`, `curl`, `imagemagick`, `ghostscript`, `nodejs`, `python`, `uv`, `sqlite`, `dbeaver`, `gh`, `delta` |
-| `rust` | `rustc`, `cargo`, `rust-analyzer`, `clippy`, `rustfmt`, `pkg-config`, `gcc`, `bevy` (off by default) |
-| `csharp` | `dotnet`, `sqlcmd`, `windows-vm` |
-| `doom-emacs` | `emacs`, `nerd-fonts`, `ripgrep`, `fd`, `clang`, `cmake`, `gnumake`, `gcc`, `libtool`, `sbcl`, `gnome-screenshot`, `graphviz`, `shellcheck` |
-| `creative` | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `ffmpeg`, `eyedropper` |
-| `media` | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `lutris`, `nautilus`, `swaylock`, `grim`, `slurp`, `pavucontrol` |
-| `productivity` | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `unrar`, `slack`, `hugo`, `pandoc` |
-| `printing` | CUPS service + `gutenprint`, `hplip` |
-| `protonvpn` | `protonvpn-gui`, `protonvpn-cli` |
+Browse `modules/` and `bundles/` to see what's available. Enable with `myConfig.<name>.enable = true`.
 
 ## Documentation
 

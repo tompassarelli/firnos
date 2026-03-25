@@ -13,8 +13,7 @@
     imagemagick.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ImageMagick"; };
     ghostscript.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Ghostscript"; };
     nodejs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Node.js"; };
-    python.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Python"; };
-    uv.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable uv"; };
+    python-dev.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Python bundle"; };
     sqlite.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable SQLite"; };
     dbeaver.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable DBeaver"; };
     gh.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GitHub CLI"; };
