@@ -4,10 +4,10 @@ A modular, shareable NixOS configuration framework.
 
 ## What is FirnOS?
 
-FirnOS is a NixOS configuration that you can use as a foundation for your own system. Instead of forking and dealing with merge conflicts, you import FirnOS as a flake input and build on top of it.
+FirnOS is a NixOS configuration you can use as a foundation for your own system. Import it as a flake input and build on top of it.
 
 **Features:**
-- 65+ modules covering desktop, development, theming, and applications
+- 113 modules + 5 bundles covering desktop, development, theming, and applications
 - `myConfig.*` namespace for clean, declarative configuration
 - Niri window manager with Wayland support
 - Stylix theming integration
@@ -50,15 +50,9 @@ Create your own repo that imports FirnOS:
 
 See [`template/`](template/) for a complete starting point.
 
-**To update FirnOS:**
-```bash
-nix flake update firnos
-rebuild
-```
-
 ### Option 2: Fork Directly
 
-If you want full control, fork this repo and modify it directly. You'll manage merge conflicts yourself when pulling upstream changes.
+Fork this repo and modify it directly. You'll manage merge conflicts yourself when pulling upstream changes.
 
 ## lib.mkSystem Options
 
@@ -74,58 +68,89 @@ firnos.lib.mkSystem {
 }
 ```
 
-## Project Structure
+## Architecture
 
 ```
 .
-├── flake.nix           # Exposes lib.mkSystem for external use
-├── modules/            # All available modules (myConfig.*)
-├── hosts/              # Example host configurations
+├── flake.nix           # Exposes lib.mkSystem, auto-discovers modules + bundles
+├── modules/            # Atomic modules (one feature each)
+├── bundles/            # Bundles (compose modules under one toggle)
+├── hosts/              # Host-specific configurations
 ├── template/           # Starting point for your own config
 ├── dotfiles/           # Out-of-store configs (live editing)
 └── docs/               # Documentation
 ```
 
-## Available Modules
+**Module** = atom. One package or feature. `modules/<name>/{default.nix, <name>.nix}`.
 
-Enable modules in your host config with `myConfig.<module>.enable = true`:
+**Bundle** = molecule. Pure composition. Enables a group of modules, never installs packages directly. Each module in a bundle can be individually toggled:
+
+```nix
+# Enable the whole media bundle
+myConfig.media.enable = true;
+
+# But opt out of one module
+myConfig.media = {
+  enable = true;
+  lutris.enable = false;
+};
+```
+
+Modules and bundles are auto-imported from directory listings — adding a new one is just creating the directory. No `flake.nix` edits needed.
+
+## Modules
+
+Enable with `myConfig.<module>.enable = true` in your host config.
 
 | Category | Modules |
 |----------|---------|
 | System | `boot`, `users`, `networking`, `wireguard`, `remmina`, `protonvpn`, `timezone`, `ssh`, `nix-settings`, `auto-upgrade`, `system` |
-| Desktop | `niri`, `waybar`, `ironbar`, `rofi`, `walker`, `mako` |
-| Hardware | `pipewire`, `bluetooth`, `input`, `wl-clipboard`, `brightnessctl`, `wl-gammarelay`, `piper`, `kanata`, `upower`, `framework`, `via`, `printing` |
+| Desktop | `niri`, `waybar`, `quickshell`, `ironbar`, `rofi`, `walker`, `mako`, `upower` |
+| Hardware | `pipewire`, `bluetooth`, `input`, `wl-clipboard`, `brightnessctl`, `wl-gammarelay`, `piper`, `kanata`, `glide`, `framework`, `via`, `printing` |
+| Auth | `polkit`, `gnome-keyring`, `password` |
 | Theming | `styling`, `theming`, `gtk`, `theme-switcher` |
 | Terminal | `kitty`, `fish`, `zoxide`, `atuin`, `starship` |
-| Editors | `neovim`, `doom-emacs`, `lem`, `zed` |
-| CLI Tools | `git`, `yazi`, `btop`, `eza`, `dust`, `tree`, `procs`, `tealdeer`, `fastfetch`, `direnv` |
-| Development | `development`, `rust`, `claude`, `postgresql`, `containers`, `windows-vm` |
-| Applications | `firefox`, `chrome`, `steam`, `password`, `mail` |
-| Security | `polkit`, `gnome-keyring` |
-| Bundles | `auth`, `development`, `productivity`, `creative`, `media` |
+| Editors | `neovim`, `doom-emacs`, `lem`, `zed`, `vim` |
+| CLI Tools | `git`, `yazi`, `btop`, `eza`, `dust`, `tree`, `procs`, `tealdeer`, `fastfetch`, `direnv`, `ripgrep`, `fd`, `delta` |
+| Dev Tools | `claude`, `rust`, `nodejs`, `python`, `sqlite`, `dbeaver`, `gh`, `imagemagick`, `postgresql`, `sqlcmd`, `dotnet`, `containers`, `mini-serve` |
+| Utilities | `wget`, `curl`, `unzip`, `unrar`, `parted`, `pandoc`, `hugo`, `ffmpeg` |
+| Browsers | `firefox`, `chrome`, `nyxt`, `ladybird` |
+| Media | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `pavucontrol` |
+| Creative | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `eyedropper` |
+| Productivity | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `slack` |
+| Desktop Tools | `nautilus`, `swaylock`, `grim` |
+| Gaming | `steam`, `lutris` |
+| Mail | `mail` |
+| Virtualization | `windows-vm` |
+
+## Bundles
+
+Bundles group modules under one toggle. All modules default to enabled; override individually.
+
+| Bundle | Modules included |
+|--------|-----------------|
+| `auth` | `polkit`, `gnome-keyring` |
+| `development` | `vim`, `claude`, `ripgrep`, `fd`, `unzip`, `parted`, `wget`, `curl`, `imagemagick`, `nodejs`, `python`, `sqlite`, `dbeaver`, `gh`, `delta` |
+| `creative` | `godot`, `blender`, `gimp`, `obs-studio`, `wf-recorder`, `slurp`, `ffmpeg`, `eyedropper` |
+| `media` | `discord`, `zoom`, `spotify`, `youtube-music`, `imv`, `mpv`, `zathura`, `lutris`, `nautilus`, `swaylock`, `grim`, `slurp`, `pavucontrol` |
+| `productivity` | `obsidian`, `todoist`, `pomodoro`, `rustdesk`, `unrar`, `slack`, `hugo`, `pandoc` |
 
 ## Documentation
 
-- [docs/nix-basics.md](docs/nix-basics.md) - How NixOS works, /nix/store, symlinks
+- [docs/nix-basics.md](docs/nix-basics.md) - /nix/store, symlinks, mkOutOfStoreSymlink
 - [docs/module-system.md](docs/module-system.md) - Module system deep dive
-- [docs/applications.md](docs/applications.md) - Application-specific notes
 
 ## Quick Reference
 
-**Rebuild:**
 ```bash
+# Rebuild
 sudo nixos-rebuild switch --flake .#hostname
-```
 
-**Update dependencies:**
-```bash
+# Update dependencies
 nix flake update
-```
 
-**Rollback:**
-```bash
+# Rollback
 sudo nixos-rebuild switch --rollback
-# Or select old generation from boot menu
 ```
 
 ## Inspired by

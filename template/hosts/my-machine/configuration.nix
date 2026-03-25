@@ -94,6 +94,11 @@
   # myConfig.chrome.enable = true;
   myConfig.productivity.enable = true;
   myConfig.media.enable = true;
+  # Override individual modules within a bundle:
+  # myConfig.media = {
+  #   enable = true;
+  #   lutris.enable = false;  # everything except this
+  # };
   myConfig.password.enable = true;
   # myConfig.mail.enable = true;
   # myConfig.steam.enable = true;

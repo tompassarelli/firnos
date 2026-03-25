@@ -1,46 +1,40 @@
 # Host Configurations
 
-This directory contains host-specific configurations for each machine in your NixOS fleet.
+Each machine gets a directory here with a `configuration.nix` that enables the modules it needs.
 
 ## Structure
 
 ```
 hosts/
-├── whiterabbit/          # Framework laptop
+├── whiterabbit/          # Framework 13 laptop (primary)
 │   └── configuration.nix
-├── thinkpad-x1e/         # old thinkpad
-│   └── configuration.nix
-└── README.md
+└── thinkpad-x1e/         # Old thinkpad
+    └── configuration.nix
 ```
 
 ## How It Works
 
-FirnOS uses a **flat namespace** for modules:
+Host configs use the `myConfig.*` namespace to enable modules and bundles:
 
 ```nix
 myConfig.niri.enable = true;
-myConfig.git.enable = true;
-myConfig.boot.enable = true;
-myConfig.users.username = "tom";
-myConfig.theming.chosenTheme = "tokyo-night-dark";
+myConfig.fish.enable = true;
+myConfig.development.enable = true;
+myConfig.media = {
+  enable = true;
+  lutris.enable = false;  # opt out of individual bundle members
+};
 ```
 
-Everything is set in your host's `configuration.nix` — username, theme, which modules to enable.
-
-## Building a Specific Host
+## Building
 
 ```bash
-# Build whiterabbit (Framework laptop)
 sudo nixos-rebuild switch --flake .#whiterabbit
-
-# Build thinkpad-x1e (Thinkpad laptop)
-sudo nixos-rebuild switch --flake .#thinkpad-x1e
 ```
 
 ## Adding a New Host
 
-1. Create directory: `mkdir -p hosts/new-hostname`
-2. Create config: `hosts/new-hostname/configuration.nix`
+1. Create `hosts/new-hostname/configuration.nix`:
    ```nix
    { ... }:
    {
@@ -49,52 +43,17 @@ sudo nixos-rebuild switch --flake .#thinkpad-x1e
      myConfig.users.username = "yourname";
      myConfig.boot.enable = true;
      myConfig.networking.enable = true;
-     myConfig.theming.chosenTheme = "tokyo-night-dark";
      # ... enable what you need
    }
    ```
-3. Add to `flake.nix`:
+
+2. Add a `nixosConfigurations` entry in `flake.nix`:
    ```nix
-   nixosConfigurations = {
-     new-hostname = self.lib.mkSystem {
-       hostname = "new-hostname";
-       hostConfig = ./hosts/new-hostname/configuration.nix;
-       hardwareConfig = ./hosts/new-hostname/hardware-configuration.nix;
-     };
+   new-hostname = self.lib.mkSystem {
+     hostname = "new-hostname";
+     hostConfig = ./hosts/new-hostname/configuration.nix;
+     hardwareConfig = ./hosts/new-hostname/hardware-configuration.nix;
    };
    ```
 
-## Host-Specific Examples
-
-### Framework Laptop (whiterabbit)
-- Framework-specific hardware support
-- Auto-upgrade enabled (for travel)
-- Full development setup (Zed, Neovim, Doom Emacs)
-- Power management optimized
-
-### Old Laptop (thinkpad-x1e)
-- Custom keyboard (VIA enabled)
-- Steam and game development tools
-- Manual updates (no auto-upgrade)
-- Bevy game engine libraries
-
-## Module Enable/Disable Philosophy
-
-Each host configuration is a **declarative list of enabled features**:
-
-```nix
-# Example: Minimal server config
-{ ... }:
-{
-  myConfig.system.stateVersion = "25.05";
-  myConfig.users.enable = true;
-  myConfig.users.username = "yourname";
-  myConfig.boot.enable = true;
-  myConfig.networking.enable = true;
-  myConfig.ssh.enable = true;
-  myConfig.kitty.enable = true;
-  myConfig.fish.enable = true;
-}
-```
-
-This makes it easy to see at a glance what each machine does.
+Modules and bundles are auto-imported — only the host entry needs adding.

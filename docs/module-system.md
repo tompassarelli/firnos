@@ -263,14 +263,3 @@ The module system achieves:
 
 The tradeoff is complexity - understanding fixpoint evaluation, merge semantics, and lazy evaluation requires functional programming sophistication.
 
-## Your Refactor in This Context
-
-By moving from `specialArgs` to module options, you:
-
-- Moved `username` from external injection into the configuration graph
-- Enabled type checking, validation, and composition
-- Made it introspectable and documentable
-- Allowed host configs to override it declaratively
-- Followed the principle: **configuration data belongs in the module system, not in function parameters**
-
-`chosenTheme` should follow the same path for the same reasons - it's configuration data that should participate in the module system's composition and validation machinery, not bypass it via `specialArgs`.
