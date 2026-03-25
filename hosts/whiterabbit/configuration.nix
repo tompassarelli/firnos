@@ -83,10 +83,8 @@
   myConfig.lem.enable = true;
   myConfig.development.enable = true;
   myConfig.zed.enable = true;
-  myConfig.rust = {
-    enable = true;
-    bevy = true;
-  };
+  myConfig.rust.enable = true;
+  myConfig.bevy.enable = true;
   myConfig.claude.enable = true;
   myConfig.csharp.enable = true;
   myConfig.postgresql.enable = true;
