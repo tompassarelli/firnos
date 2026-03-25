@@ -40,18 +40,18 @@ Create your own repo that imports FirnOS:
   myConfig.system.stateVersion = "25.05";
   myConfig.users.username = "yourname";
 
-  # Modules — individual features
-  myConfig.niri.enable = true;
-  myConfig.kitty.enable = true;
-  myConfig.fish.enable = true;
-  myConfig.neovim.enable = true;
-
   # Bundles — groups of modules, individually overridable
   myConfig.development.enable = true;
   myConfig.media = {
     enable = true;
     lutris.enable = false;  # everything except this
   };
+
+  # Modules — individual features
+  myConfig.niri.enable = true;
+  myConfig.kitty.enable = true;
+  myConfig.fish.enable = true;
+  myConfig.neovim.enable = true;
 }
 ```
 
