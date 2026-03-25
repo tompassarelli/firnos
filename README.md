@@ -137,8 +137,7 @@ Bundles group modules under one toggle. All modules default to enabled; override
 
 ## Documentation
 
-- [docs/nix-basics.md](docs/nix-basics.md) - /nix/store, symlinks, mkOutOfStoreSymlink
-- [docs/module-system.md](docs/module-system.md) - Module system deep dive
+- [docs/nix-basics.md](docs/nix-basics.md) - Getting started: the store, abstraction spectrum, what FirnOS chose
 
 ## Quick Reference
 
