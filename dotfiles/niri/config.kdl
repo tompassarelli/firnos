@@ -241,7 +241,7 @@ layout {
     struts {
         // left 64
         // right 64
-        // top 64
+        top 24
         // bottom 64
     }
 }
@@ -340,7 +340,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.84
+  opacity 0.79
 }
 
 binds {
