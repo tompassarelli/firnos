@@ -127,6 +127,60 @@ in
                 rg "myConfig\.modules\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
                 rg "myConfig\.bundles\.$name\.enable" ~/code/nixos-config/hosts/ --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u
 
+              case mod
+                if test (count $argv) -le 1
+                  echo "Usage: firn mod <name>"
+                  return 1
+                end
+                set -l name $argv[2]
+                set -l dir ~/code/nixos-config/modules/$name
+                if test -d $dir
+                  echo "Module $name already exists"
+                  return 1
+                end
+                mkdir -p $dir
+                echo '{ lib, ... }:
+{
+  options.myConfig.modules.'$name'.enable = lib.mkEnableOption "'$name'";
+  imports = [ ./'$name'.nix ];
+}' > $dir/default.nix
+                echo '{ config, lib, pkgs, ... }:
+{
+  config = lib.mkIf config.myConfig.modules.'$name'.enable {
+    # TODO: add configuration
+  };
+}' > $dir/$name.nix
+                git -C ~/code/nixos-config add $dir
+                echo "Created modules/$name/ (git added)"
+
+              case bundle
+                if test (count $argv) -le 2
+                  echo "Usage: firn bundle <name> <mod1> <mod2> ..."
+                  return 1
+                end
+                set -l name $argv[2]
+                set -l mods $argv[3..]
+                set -l dir ~/code/nixos-config/bundles/$name
+                if test -d $dir
+                  echo "Bundle $name already exists"
+                  return 1
+                end
+                mkdir -p $dir
+                # default.nix
+                set -l opts ""
+                for m in $mods
+                  set opts $opts"    $m.enable = lib.mkOption { type = lib.types.bool; default = true; description = \"Enable $m\"; };\n"
+                end
+                printf '{ lib, ... }:\n{\n  options.myConfig.bundles.%s = {\n    enable = lib.mkEnableOption "%s";\n%s  };\n\n  imports = [ ./%s.nix ];\n}\n' $name $name $opts $name > $dir/default.nix
+                # <name>.nix
+                set -l enables ""
+                for m in $mods
+                  set enables $enables"    myConfig.modules.$m.enable = lib.mkDefault cfg.$m.enable;\n"
+                end
+                printf '{ config, lib, ... }:\n\nlet\n  cfg = config.myConfig.bundles.%s;\nin\n{\n  config = lib.mkIf cfg.enable {\n%s  };\n}\n' $name $enables > $dir/$name.nix
+                git -C ~/code/nixos-config add $dir
+                echo "Created bundles/$name/ with "(count $mods)" modules (git added)"
+
               case gen
                 set -l current (nixos-rebuild list-generations 2>/dev/null | grep current | string trim | cut -d' ' -f1)
                 echo "current: $current"
@@ -140,6 +194,8 @@ in
                 echo "  list --used        show modules/bundles in use and where"
                 echo "  list --unused      show modules/bundles not referenced anywhere"
                 echo "  refs <name>        show what references a module/bundle"
+                echo "  mod <name>         scaffold a new module"
+                echo "  bundle <name> <mods...>  scaffold a new bundle"
                 echo "  gen                show current and next generation numbers"
             end
           end
