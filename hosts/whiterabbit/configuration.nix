@@ -6,6 +6,16 @@
   myConfig.modules.users.enable = true;
   myConfig.modules.users.username = "tom";
 
+  # ============ SYSTEM ============
+  myConfig.modules.nix-settings.enable = true;
+  myConfig.modules.boot.enable = true;
+  myConfig.modules.networking.enable = true;
+  myConfig.modules.wireguard.enable = true;
+  myConfig.modules.remmina.enable = true;
+  myConfig.modules.timezone.enable = true;
+  myConfig.modules.ssh.enable = true;
+  myConfig.modules.auto-upgrade.enable = true;
+
   # ============ HARDWARE ============
   myConfig.modules.framework.enable = true;
   myConfig.modules.fwupd.enable = true;
@@ -25,16 +35,6 @@
     ];
   };
   myConfig.modules.glide.enable = true;
-
-  # ============ SYSTEM ============
-  myConfig.modules.nix-settings.enable = true;
-  myConfig.modules.boot.enable = true;
-  myConfig.modules.networking.enable = true;
-  myConfig.modules.wireguard.enable = true;
-  myConfig.modules.remmina.enable = true;
-  myConfig.modules.timezone.enable = true;
-  myConfig.modules.ssh.enable = true;
-  myConfig.modules.auto-upgrade.enable = true;
 
   # ============ BUNDLES ============
   myConfig.bundles.terminal.enable = true;
