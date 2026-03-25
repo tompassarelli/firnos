@@ -55,17 +55,17 @@ in
                 end
 
               case list
-                set -l flag $argv[2]
+                set -l flag ""
+                test (count $argv) -ge 2; and set flag $argv[2]
                 set -l modules (ls -1 ~/code/nixos-config/modules/)
                 set -l bundles (ls -1 ~/code/nixos-config/bundles/)
                 set -l hosts_dir ~/code/nixos-config/hosts
                 set -l bundles_dir ~/code/nixos-config/bundles
 
-                switch "$flag"
-                  case --used
+                if test "$flag" = --used
                     echo "Used bundles:"
                     for b in $bundles
-                      set -l hosts (rg "myConfig\.bundles\.$b\.enable\s*=\s*true" $hosts_dir --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
+                      set -l hosts (rg -l "myConfig\.bundles\.$b\.enable" $hosts_dir 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
                       if test -n "$hosts"
                         echo "  $b  ($hosts)"
                       end
@@ -73,20 +73,20 @@ in
                     echo ""
                     echo "Used modules:"
                     for m in $modules
-                      set -l hosts (rg "myConfig\.modules\.$m\.enable\s*=\s*true" $hosts_dir --files-with-matches 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
-                      set -l via_bundles (rg "myConfig\.modules\.$m\.enable" $bundles_dir --files-with-matches 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u)
-                      if test -n "$hosts" -o -n "$via_bundles"
-                        set -l sources
-                        test -n "$hosts"; and set sources $sources $hosts
-                        test -n "$via_bundles"; and set sources $sources (string join ", " -- (for vb in $via_bundles; echo "via $vb"; end))
-                        echo "  $m  ($sources)"
+                      set -l sources
+                      set -l hosts (rg -l "myConfig\.modules\.$m\.enable" $hosts_dir 2>/dev/null | sed 's|.*/hosts/||;s|/.*||' | sort -u)
+                      set -l via (rg -l "myConfig\.modules\.$m\.enable" $bundles_dir 2>/dev/null | sed 's|.*/bundles/||;s|/.*||' | sort -u)
+                      for h in $hosts; set -a sources $h; end
+                      for v in $via; set -a sources "via $v"; end
+                      if test (count $sources) -gt 0
+                        echo "  $m  ("(string join ", " $sources)")"
                       end
                     end
 
-                  case --unused
+                else if test "$flag" = --unused
                     echo "Unused bundles:"
                     for b in $bundles
-                      set -l used (rg "myConfig\.bundles\.$b\.enable" $hosts_dir $bundles_dir --files-with-matches 2>/dev/null)
+                      set -l used (rg -l "myConfig\.bundles\.$b\.enable" $hosts_dir $bundles_dir 2>/dev/null)
                       if test -z "$used"
                         echo "  $b"
                       end
@@ -94,14 +94,14 @@ in
                     echo ""
                     echo "Unused modules (not in any host or bundle):"
                     for m in $modules
-                      set -l in_host (rg "myConfig\.modules\.$m\.enable" $hosts_dir --files-with-matches 2>/dev/null)
-                      set -l in_bundle (rg "myConfig\.modules\.$m\.enable" $bundles_dir --files-with-matches 2>/dev/null)
+                      set -l in_host (rg -l "myConfig\.modules\.$m\.enable" $hosts_dir 2>/dev/null)
+                      set -l in_bundle (rg -l "myConfig\.modules\.$m\.enable" $bundles_dir 2>/dev/null)
                       if test -z "$in_host" -a -z "$in_bundle"
                         echo "  $m"
                       end
                     end
 
-                  case '*'
+                else
                     echo "Bundles ("(count $bundles)"):"
                     for b in $bundles
                       echo "  myConfig.bundles.$b"
