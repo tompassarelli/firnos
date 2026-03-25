@@ -69,7 +69,6 @@
   # ============ MODULES ============
   myConfig.modules.git.enable = true;
   myConfig.modules.neovim.enable = true;
-  myConfig.modules.zed.enable = true;
   myConfig.modules.claude.enable = true;
   myConfig.modules.postgresql.enable = true;
   myConfig.modules.direnv.enable = true;

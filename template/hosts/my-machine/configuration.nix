@@ -86,7 +86,6 @@
   myConfig.modules.neovim.enable = true;
   # myConfig.bundles.doom-emacs.enable = true;
   # myConfig.modules.lem.enable = true;
-  # myConfig.modules.zed.enable = true;
 
   # ============ APPLICATIONS ============
   myConfig.modules.firefox = {
