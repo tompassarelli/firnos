@@ -1,4 +1,4 @@
-function niri-opacity
+function opacity
   set -l cfg ~/code/nixos-config/dotfiles/niri/config.kdl
   set -l current (grep -P '^\s+opacity' $cfg | grep -oP '[\d.]+')
   if test (count $argv) -eq 0

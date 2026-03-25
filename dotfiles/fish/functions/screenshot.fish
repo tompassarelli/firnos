@@ -1,4 +1,4 @@
-function movess
+function screenshot
   set -l files ~/Pictures/Screenshots/*.png
   if test (count $files) -eq 0
     echo "No screenshots found"
@@ -8,8 +8,6 @@ function movess
   for file in $files
     test $file -nt $newest; and set newest $file
   end
-  set -l ext (string match -r '\.[^.]+$' $newest)
-  set -l name (basename $newest)
-  mv $newest ./screenshot$ext
-  echo "Moved: $name → ./screenshot$ext"
+  set -gx SCREENSHOT $newest
+  echo $newest
 end

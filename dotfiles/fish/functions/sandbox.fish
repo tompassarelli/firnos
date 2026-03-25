@@ -1,14 +1,14 @@
-function makedev
+function sandbox
   # Help
   if test "$argv[1]" = "--help"; or test "$argv[1]" = "-h"
-    echo "makedev - sandboxed dev containers with Claude Code"
+    echo "sandbox - sandboxed dev containers with Claude Code"
     echo ""
-    echo "  makedev <name> [dirs...]  create or enter a container"
+    echo "  sandbox <name> [dirs...]  create or enter a container"
     echo "                            dirs are mounted as /work/<basename>"
-    echo "  makedev --no-backup       skip project backup on create"
-    echo "  makedev --list            list all containers"
-    echo "  makedev --rm <name>       delete a container"
-    echo "  makedev --rebuild         rebuild the base image"
+    echo "  sandbox --no-backup       skip project backup on create"
+    echo "  sandbox --list            list all containers"
+    echo "  sandbox --rm <name>       delete a container"
+    echo "  sandbox --rebuild         rebuild the base image"
     return
   end
 
@@ -48,7 +48,7 @@ function makedev
 
   # Require a name
   if test (count $args) -eq 0
-    echo "Usage: makedev <name> [dirs...]"
+    echo "Usage: sandbox <name> [dirs...]"
     return 1
   end
 
