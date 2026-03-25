@@ -2,6 +2,7 @@
 {
   options.myConfig.bundles.doom-emacs = {
     enable = lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)";
+    doom-emacs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Doom Emacs config"; };
     emacs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Emacs"; };
     nerd-fonts.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Nerd Fonts"; };
     ripgrep.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ripgrep"; };
