@@ -215,3 +215,88 @@ systemd.services.my-service.serviceConfig.EnvironmentFile = "/run/secrets/my-ser
 3. Wire the decrypted paths into your service/environment
 4. `git add secrets/<name>.yaml` (the encrypted file — never commit plaintext)
 5. Build: `nix build .#nixosConfigurations.whiterabbit.config.system.build.toplevel`
+
+## Sandboxed Dev Containers
+
+FirnOS includes a container system for running Claude Code in isolated environments. The idea: give Claude full tool access inside a throwaway container where it can't damage your host system.
+
+### How it works
+
+```
+claude-sandbox.nix          Nix builds an OCI container image
+        ↓                   (bash, git, node, python, nix, claude-code)
+sandbox <name>              Creates a podman container from that image
+        ↓                   Mounts your project into /work
+        ↓                   Copies your Claude credentials in
+        ↓                   Drops you into a bash shell
+claude                      Run Claude Code inside the container
+```
+
+The container has everything Claude needs to work autonomously — git, gh, node, python, ripgrep, fd, curl, jq, and even nix itself (so Claude can install additional packages). Your project files are mounted read-write at `/work`, but nothing else on your host is accessible.
+
+### First-time setup
+
+```bash
+sandbox --rebuild
+```
+
+This runs `nix build .#claude-sandbox`, producing an OCI image tarball, then loads it into podman. The build output is a `result` symlink in the repo root (gitignored) pointing to the image in `/nix/store`. A stable copy is kept at `builds/claude-sandbox` so future rebuilds don't depend on `result`.
+
+### Creating a sandbox
+
+```bash
+# Sandbox the current directory
+cd ~/code/my-project
+sandbox myproject
+
+# Sandbox specific directories (mounted as /work/<dirname>)
+sandbox myproject ~/code/frontend ~/code/backend
+```
+
+On first create, `sandbox`:
+1. Builds the container image if it doesn't exist yet
+2. Copies your `~/.claude` credentials into a per-sandbox data directory (`~/.local/share/makedev/<name>/`)
+3. Pre-trusts `/work` so Claude skips the trust dialog
+4. Backs up your project files (disable with `--no-backup`)
+5. Creates the podman container with your project mounted at `/work`
+6. Drops you into bash inside the container
+
+### Re-entering a sandbox
+
+```bash
+sandbox myproject
+```
+
+If the container already exists, it just starts it and attaches — no rebuild, no re-copy. Your previous state (installed packages, file changes) is preserved.
+
+### Inside the container
+
+```bash
+claude          # Start Claude Code — it sees /work and can edit freely
+```
+
+Claude has full autonomy inside the container. It can:
+- Edit any file in `/work` (your mounted project)
+- Run tests, build, lint
+- Use git and gh to commit, push, create PRs
+- Install packages with nix (`nix profile install nixpkgs#whatever`)
+
+Changes to `/work` are real — they're your actual project files via the mount. Everything else (installed packages, temp files) lives only in the container.
+
+### Managing sandboxes
+
+```bash
+sandbox --list              # List all sandboxes and their status
+sandbox --rm myproject      # Delete a sandbox and its data
+sandbox --rebuild           # Rebuild the base image (after changing claude-sandbox.nix)
+```
+
+### The `result` symlink
+
+You'll see a `result` symlink in the repo root. This is a standard nix artifact — every `nix build` creates one pointing to the build output in `/nix/store`. It gets overwritten by whatever you build next (system build, container image, etc.). It's in `.gitignore` and can be safely deleted at any time.
+
+### Customizing the container image
+
+Edit `modules/containers/claude-sandbox.nix` to add packages to the image. The container also includes a starter `flake.nix` at `~/flake.nix` inside the container, so Claude can declaratively add packages without rebuilding the base image.
+
+After editing, run `sandbox --rebuild` to pick up changes.
