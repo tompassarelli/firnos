@@ -108,19 +108,7 @@ Modules and bundles are auto-imported from directory listings — adding a new o
 
 ## CLI Tools
 
-```bash
-firn rebuild [host]      # nixos-rebuild switch + auto-tag with generation number
-firn list                # list all available modules and bundles
-firn list --used         # show modules/bundles in use and where
-firn list --unused       # show modules/bundles not referenced anywhere
-firn refs <name>         # show what bundles/hosts reference a module
-firn mod <name>          # scaffold a new module
-firn bundle <name> <mods...>  # scaffold a new bundle
-firn secret <name>       # create/edit an encrypted secret (sops)
-firn secret list         # list secret files
-firn secret show <name>  # decrypt and display a secret
-firn gen                 # show current and next generation numbers
-```
+`firn` is the CLI for managing your config — modules, bundles, secrets, rebuilds. Run `firn` with no args to see all commands.
 
 ## lib.mkSystem Options
 
