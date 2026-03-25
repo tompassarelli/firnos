@@ -1,22 +1,53 @@
 # Host-specific config for whiterabbit (Framework 13 laptop)
-# This matches exactly what was in flake.nix before refactor
 { lib, ... }:
 {
-  # Hardware
-  # - framework laptop
+  # ============ REQUIRED ============
+  myConfig.system.stateVersion = "25.05";
+  myConfig.users.enable = true;
+  myConfig.users.username = "tom";
+
+  # ============ BUNDLES ============
+  myConfig.terminal.enable = true;
+  myConfig.cli-tools.enable = true;
+  myConfig.desktop = {
+    enable = true;
+    mako.enable = false;
+  };
+  myConfig.look-and-feel.enable = true;
+  myConfig.theming.chosenTheme = "everforest-dark-hard";
+  myConfig.auth.enable = true;
+  myConfig.development.enable = true;
+  myConfig.rust = {
+    enable = true;
+    bevy.enable = true;
+  };
+  myConfig.csharp.enable = true;
+  myConfig.lisp.enable = true;
+  myConfig.browsers.enable = true;
+  myConfig.firefox.fennec.enable = true;
+  myConfig.gaming.enable = true;
+  myConfig.creative.enable = true;
+  myConfig.media.enable = true;
+  myConfig.productivity.enable = true;
+  myConfig.printing.enable = true;
+  myConfig.protonvpn.enable = true;
+
+  # ============ SYSTEM ============
+  myConfig.nix-settings.enable = true;
+  myConfig.boot.enable = true;
+  myConfig.networking.enable = true;
+  myConfig.wireguard.enable = true;
+  myConfig.remmina.enable = true;
+  myConfig.timezone.enable = true;
+  myConfig.ssh.enable = true;
+  myConfig.auto-upgrade.enable = true;
+
+  # ============ HARDWARE ============
   myConfig.framework.enable = true;
   myConfig.fwupd.enable = true;
-  # - custom keyboard qmk firmware
-  myConfig.via.enable = false;
-  # - everything else
   myConfig.pipewire.enable = true;
   myConfig.bluetooth.enable = true;
-  myConfig.printing.enable = true;
   myConfig.input.enable = true;
-  myConfig.wl-clipboard.enable = true;
-  myConfig.brightnessctl.enable = true;
-  myConfig.libnotify.enable = true;
-  myConfig.wl-gammarelay.enable = true;
   myConfig.piper.enable = true;
   myConfig.g203-led.enable = true;
   myConfig.kanata = {
@@ -31,84 +62,14 @@
   };
   myConfig.glide.enable = true;
 
-  # System
-  myConfig.system.stateVersion = "25.05";
-  myConfig.nix-settings.enable = true;
-  myConfig.boot.enable = true;
-  myConfig.users.enable = true;
-  myConfig.users.username = "tom";
-  myConfig.networking.enable = true;
-  myConfig.wireguard.enable = true;
-  myConfig.remmina.enable = true;
-  myConfig.protonvpn.enable = true;
-  myConfig.timezone.enable = true;
-  myConfig.ssh.enable = true;
-  myConfig.auto-upgrade.enable = true;
-
-  # Terminal
-  myConfig.kitty.enable = true;
-  myConfig.fish.enable = true;
-  myConfig.zoxide.enable = true;
-  myConfig.atuin.enable = true;
-  myConfig.starship.enable = true;
-
-  # Utils
-  myConfig.yazi.enable = true;
-  myConfig.tree.enable = true;
-  myConfig.dust.enable = true;
-  myConfig.eza.enable = true;
-  myConfig.procs.enable = true;
-  myConfig.tealdeer.enable = true;
-  myConfig.fastfetch.enable = true;
-  myConfig.btop.enable = true;
-
-  # Desktop Environment
-  myConfig.niri.enable = true;
-  myConfig.upower.enable = true;
-  myConfig.auth.enable = true;
-  myConfig.rofi.enable = true;
-  myConfig.walker.enable = false;
-  myConfig.waybar.enable = false;
-  myConfig.quickshell.enable = true;
-  myConfig.mako.enable = false;
-
-  # Theming
-  myConfig.gtk.enable = true;
-  myConfig.styling.enable = true;
-  myConfig.theming.enable = true;
-  myConfig.theming.chosenTheme = "everforest-dark-hard";
-  myConfig.theme-switcher.enable = true;
-
-  # Development
+  # ============ INDIVIDUAL MODULES ============
   myConfig.git.enable = true;
   myConfig.neovim.enable = true;
-  myConfig.doom-emacs.enable = true;
-  myConfig.lem.enable = true;
-  myConfig.development.enable = true;
   myConfig.zed.enable = true;
-  myConfig.rust = {
-    enable = true;
-    bevy.enable = true;
-  };
   myConfig.claude.enable = true;
-  myConfig.csharp.enable = true;
   myConfig.postgresql.enable = true;
   myConfig.direnv.enable = true;
   myConfig.containers.enable = true;
-
-  # Applications
-  myConfig.firefox = {
-    enable = true;
-    fennec.enable = true;
-  };
-  myConfig.chrome.enable = true;
-  myConfig.nyxt.enable = true;
-  myConfig.ladybird.enable = true;
-  myConfig.steam.enable = true;
-  myConfig.wowup.enable = true;
-  myConfig.productivity.enable = true;
-  myConfig.creative.enable = true;
-  myConfig.media.enable = true;
   myConfig.password.enable = true;
   myConfig.mail.enable = true;
   myConfig.mini-serve.enable = true;
