@@ -114,3 +114,104 @@ Every `nixos-rebuild switch` creates a new **generation** — a bootable snapsho
 | Deleted files | Btrfs snapshot restore |
 
 Commit after every successful rebuild to keep git history synchronized with generations.
+
+## Secrets Management
+
+NixOS configs end up in the world-readable `/nix/store`, so you can't put passwords or API keys in `.nix` files directly. FirnOS uses [sops-nix](https://github.com/Mic92/sops-nix) to encrypt secrets at rest in the repo and decrypt them at system activation.
+
+### How it works
+
+```
+You write:       secrets/aws.yaml (plaintext via sops CLI)
+                           ↓  (sops encrypts with your age key)
+Repo stores:     secrets/aws.yaml (encrypted ciphertext)
+                           ↓  (sops-nix decrypts at activation)
+System uses:     /run/secrets/aws-access-key-id (plaintext, owner-only)
+```
+
+Encryption uses [age](https://age-encryption.org/). Your age key lives at `~/.config/sops/age/keys.txt` — this file is **not** in the repo.
+
+### Setup (already done in FirnOS)
+
+The flake handles the plumbing:
+- `sops-nix` is a flake input and its NixOS module is imported
+- `sops.age.keyFile` points to your age key
+- `sops` and `age` CLI tools are in `environment.systemPackages`
+- `.sops.yaml` at the repo root defines which age key encrypts which paths
+
+### Creating an encrypted secrets file
+
+```bash
+sops secrets/my-service.yaml
+```
+
+This opens your `$EDITOR` with a plaintext YAML file. Add your secrets as key-value pairs:
+
+```yaml
+api-key: sk-abc123...
+api-secret: def456...
+```
+
+Save and close — sops encrypts the file automatically. The `.sops.yaml` creation rule matches `secrets/*.yaml`:
+
+```yaml
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+        - *admin
+```
+
+To edit an existing encrypted file later: `sops secrets/my-service.yaml` (same command).
+
+### Declaring secrets in a module
+
+In your module's `.nix` file, declare each secret with `sops.secrets`:
+
+```nix
+{ config, lib, pkgs, flakeRoot, ... }:
+let
+  cfg = config.myConfig.modules.my-service;
+  username = config.myConfig.modules.users.username;
+in
+{
+  config = lib.mkIf cfg.enable {
+    sops.secrets."api-key" = {
+      sopsFile = flakeRoot + "/secrets/my-service.yaml";
+      owner = username;
+    };
+    sops.secrets."api-secret" = {
+      sopsFile = flakeRoot + "/secrets/my-service.yaml";
+      owner = username;
+    };
+
+    environment.systemPackages = [ pkgs.my-service ];
+  };
+}
+```
+
+At activation, sops-nix decrypts each secret to `/run/secrets/<key-name>`, owned by the specified user and readable only by them.
+
+### Using decrypted secrets
+
+Secrets land at `/run/secrets/<key-name>` as plain files. Common patterns:
+
+**Environment variables** (e.g. in fish config or shell init):
+```bash
+set -x API_KEY (cat /run/secrets/api-key)
+```
+
+**Service config** — point `ExecStartPre` or a wrapper script at the secret file:
+```nix
+systemd.services.my-service.serviceConfig.EnvironmentFile = "/run/secrets/my-service-env";
+```
+
+**Direct file read** — any program that accepts a path to a credentials file can point at `/run/secrets/...`.
+
+### Checklist for adding a new secret
+
+1. Create or edit the encrypted file: `sops secrets/<name>.yaml`
+2. Add `sops.secrets."<key>"` declarations in your module's `.nix` file
+3. Wire the decrypted paths into your service/environment
+4. `git add secrets/<name>.yaml` (the encrypted file — never commit plaintext)
+5. Build: `nix build .#nixosConfigurations.whiterabbit.config.system.build.toplevel`
