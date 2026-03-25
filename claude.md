@@ -1,6 +1,14 @@
+## Security
+
 NEVER put plaintext passwords, secrets, API keys, or credentials anywhere in this repo.
 All secrets must go through sops-nix as encrypted files in secrets/.
 If you need a secret value in a module, use sops.secrets."name" — never inline it.
+
+NEVER chain `git commit && git push` in one command. Always:
+1. `git commit` first
+2. Verify the pre-commit hook passed (gitleaks secret detection)
+3. If secrets are detected, fix the leak before proceeding
+4. Only then advise the user to push
 
 ## Architecture
 
