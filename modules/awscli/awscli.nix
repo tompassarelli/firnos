@@ -13,6 +13,28 @@ in
       owner = username;
     };
 
+    # Generate ~/.aws/credentials from decrypted sops secrets
+    sops.templates."aws-credentials" = {
+      content = ''
+        [default]
+        aws_access_key_id = ${config.sops.placeholder."aws-access-key-id"}
+        aws_secret_access_key = ${config.sops.placeholder."aws-secret-access-key"}
+      '';
+      owner = username;
+      path = "/home/${username}/.aws/credentials";
+    };
+
+    # Default region/output (same dir as credentials, so use sops.templates to avoid permission conflict)
+    sops.templates."aws-config" = {
+      content = ''
+        [default]
+        region = us-east-2
+        output = json
+      '';
+      owner = username;
+      path = "/home/${username}/.aws/config";
+    };
+
     environment.systemPackages = [ pkgs.awscli2 ];
   };
 }
