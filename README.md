@@ -6,7 +6,7 @@
   </picture>
 </p>
 
-<p align="center">Atomic modules. Coherent systems.</p>
+<p align="center">A coherent Nix workstation, compressed by deadlines</p>
 
 ## What is FirnOS?
 
