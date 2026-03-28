@@ -37,18 +37,30 @@ PanelWindow {
         Text {
             id: clock
             anchors.left: parent.left
-            anchors.leftMargin: 13
+            anchors.leftMargin: 20
             anchors.verticalCenter: parent.verticalCenter
             color: colors.base05
             font.family: colors.fontFamily
             font.pointSize: 10
+
+            property bool hovered: false
+            property string fmt: hovered ? "h:mm AP · ddd yyyy/MM/dd" : "h:mm AP"
 
             Timer {
                 interval: 1000
                 running: true
                 repeat: true
                 triggeredOnStart: true
-                onTriggered: clock.text = Qt.formatDateTime(new Date(), "ddd yyyy/MM/dd · h:mm AP")
+                onTriggered: clock.text = Qt.formatDateTime(new Date(), clock.fmt)
+            }
+
+            onFmtChanged: text = Qt.formatDateTime(new Date(), fmt)
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: clock.hovered = true
+                onExited: clock.hovered = false
             }
         }
 
@@ -104,7 +116,7 @@ PanelWindow {
         Row {
             id: statusRow
             anchors.right: parent.right
-            anchors.rightMargin: 13
+            anchors.rightMargin: 20
             anchors.verticalCenter: parent.verticalCenter
             onWidthChanged: BarState.rightBarWidth = width + 26
             spacing: 14

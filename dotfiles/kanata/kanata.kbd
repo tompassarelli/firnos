@@ -1,9 +1,8 @@
 ;; Tom's kanata config — ISO layout with custom layers
-;; Caps Lock = Tap Esc, Hold Ctrl
+;; Caps Lock = Ctrl (pure remap)
 ;; Spacebar = Tap Space, Hold Symbols layer
 
 ;; Aliases (tap-hold-order: pure event-driven, no timers)
-(defalias capesc (tap-hold-press 0 65535 esc lctl))
 (defalias spacesym (tap-hold-order 200 50 spc (layer-while-held symbols)))
 (defalias lshiftcaps (tap-dance-eager 200 (lsft caps)))
 (defalias slashshift (tap-hold-order 0 0 / lsft))
@@ -30,7 +29,7 @@
 (deflayer base
   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab  q    w    e    r    t    [    y    u    i    o    p    \
-  @capesc a    s    d    f    g    ]    h    j    k    l    ;    '    ret
+  lctl a    s    d    f    g    ]    h    j    k    l    ;    '    ret
   @lshiftcaps @slashshift z x    c    v    b    /    n    m    ,    .    rsft
   lctl lalt lmet      @spacesym           @enteralt ralt cmp  rctl
   @m4shift @m5ctrl XX
