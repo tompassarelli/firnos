@@ -10,7 +10,6 @@
   myConfig.modules.nix-settings.enable = true;
   myConfig.modules.boot.enable = true;
   myConfig.modules.networking.enable = true;
-  myConfig.modules.wireguard.enable = true;
   myConfig.modules.remmina.enable = true;
   myConfig.modules.timezone.enable = true;
   myConfig.modules.ssh.enable = true;
@@ -76,7 +75,7 @@
   myConfig.bundles.communication.enable = true;
   myConfig.bundles.productivity.enable = true;
   myConfig.bundles.printing.enable = true;
-  myConfig.bundles.protonvpn.enable = true;
+  myConfig.bundles.vpn.enable = true;
 
   # ============ MODULES ============
   myConfig.modules.neovim.enable = true;
