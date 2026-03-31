@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.myConfig.modules.postgresql;
-  # PostgreSQL with extensions
-  postgresWithExtensions = pkgs.postgresql_17.withPackages (ps: [
-    ps.pg_uuidv7
-  ]);
+  # PostgreSQL 18 from unstable — uuidv7() is built-in, no extension needed
+  postgresPackage = pkgs.unstable.postgresql_18;
 in
 {
   options.myConfig.modules.postgresql = {
@@ -15,7 +13,7 @@ in
     # PostgreSQL service
     services.postgresql = {
       enable = true;
-      package = postgresWithExtensions;
+      package = postgresPackage;
 
       # Trust local connections (dev only - no password needed)
       authentication = pkgs.lib.mkOverride 10 ''
@@ -38,8 +36,6 @@ in
     };
 
     # Add psql client and other useful tools to system packages
-    environment.systemPackages = with pkgs; [
-      postgresql_17      # includes psql client
-    ];
+    environment.systemPackages = [ postgresPackage ];
   };
 }
