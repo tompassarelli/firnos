@@ -56,7 +56,10 @@
     bevy.enable = true;
   };
   myConfig.bundles.csharp.enable = true;
-  myConfig.bundles.lisp.enable = true;
+  myConfig.bundles.lisp = {
+    enable = true;
+    lem.enable = false;
+  };
   myConfig.bundles.browsers = {
     enable = true;
     firefox.fennec.enable = true;
