@@ -25,22 +25,12 @@
 ;; (global-font-lock-mode -1)
 ;; (add-hook 'org-mode-hook #'font-lock-mode)
 
-;; Monaspace superfamily: mix variants for semantic distinction
-;; Argon (Ar) = body, Radon (Rn) = comments, Xenon (Xe) = strings, Krypton (Kr) = keywords
-(custom-set-faces!
-  '(font-lock-comment-face :family "MonaspiceRn Nerd Font")
-  '(font-lock-comment-delimiter-face :family "MonaspiceRn Nerd Font")
-  '(font-lock-doc-face :family "MonaspiceRn Nerd Font")
-  '(font-lock-string-face :family "MonaspiceXe Nerd Font")
-  '(font-lock-keyword-face :family "MonaspiceKr Nerd Font")
-  '(font-lock-builtin-face :family "MonaspiceKr Nerd Font"))
-
 ;; Font configuration
-(let ((mono (or (getenv "NIXOS_MONO_FONT") "MonaspiceAr Nerd Font"))
-      (sans (or (getenv "NIXOS_SANS_FONT") "iA Writer Quattro S")))
+(let ((mono (or (getenv "NIXOS_MONO_FONT") "Maple Mono NF"))
+      (serif (or (getenv "NIXOS_SERIF_FONT") "iA Writer Quattro S")))
   (setq doom-font (font-spec :family mono :size 16)
         doom-big-font (font-spec :family mono :size 20)
-        doom-variable-pitch-font (font-spec :family sans :size 16)))
+        doom-variable-pitch-font (font-spec :family serif :size 16)))
 
 ;; Disable automatic eldoc popups
 (setq eldoc-idle-delay most-positive-fixnum)

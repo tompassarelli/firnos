@@ -36,6 +36,7 @@ in
           gitp = "git push";
         };
         interactiveShellInit = ''
+          set -g fish_greeting
           # Change to default directory (skip in Emacs vterm)
           if not set -q INSIDE_EMACS
             cd ~

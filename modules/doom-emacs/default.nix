@@ -26,6 +26,7 @@ in
         DOOMDIR = "${config.home.homeDirectory}/.config/doom";
         NIXOS_MONO_FONT = config.stylix.fonts.monospace.name;
         NIXOS_SANS_FONT = config.stylix.fonts.sansSerif.name;
+        NIXOS_SERIF_FONT = config.stylix.fonts.serif.name;
       };
 
       # Generate stylix base16 theme for Doom Emacs

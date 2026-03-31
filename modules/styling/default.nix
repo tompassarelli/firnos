@@ -38,12 +38,12 @@ in
       # Font configuration
       fonts = {
         monospace = {
-          package = pkgs.nerd-fonts.monaspace;
-          name = "MonaspiceAr Nerd Font";
+          package = pkgs.maple-mono.NF;
+          name = "Maple Mono NF";
         };
         sansSerif = {
-          package = pkgs.ia-writer-quattro;
-          name = "iA Writer Quattro S";
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans";
         };
         serif = {
           package = pkgs.ia-writer-quattro;
