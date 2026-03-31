@@ -10,7 +10,6 @@ in
     myConfig.modules.ripgrep.enable = lib.mkDefault cfg.ripgrep.enable;
     myConfig.modules.fd.enable = lib.mkDefault cfg.fd.enable;
     myConfig.modules.unzip.enable = lib.mkDefault cfg.unzip.enable;
-    myConfig.modules.parted.enable = lib.mkDefault cfg.parted.enable;
     myConfig.modules.wget.enable = lib.mkDefault cfg.wget.enable;
     myConfig.modules.curl.enable = lib.mkDefault cfg.curl.enable;
     myConfig.modules.imagemagick.enable = lib.mkDefault cfg.imagemagick.enable;
@@ -21,5 +20,8 @@ in
     myConfig.modules.dbeaver.enable = lib.mkDefault cfg.dbeaver.enable;
     myConfig.modules.gh.enable = lib.mkDefault cfg.gh.enable;
     myConfig.modules.delta.enable = lib.mkDefault cfg.delta.enable;
+    myConfig.modules.git.enable = lib.mkDefault cfg.git.enable;
+    myConfig.modules.direnv.enable = lib.mkDefault cfg.direnv.enable;
+    myConfig.modules.containers.enable = lib.mkDefault cfg.containers.enable;
   };
 }

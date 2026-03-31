@@ -173,6 +173,9 @@ function firn --description "FirnOS config management CLI"
       echo "current: $current"
       echo "next:    "(math $current + 1)
 
+    case myfunctions
+      myfunctions
+
     case '*'
       echo "firn <command>"
       echo ""
@@ -187,5 +190,6 @@ function firn --description "FirnOS config management CLI"
       echo "  secret list        list secret files"
       echo "  secret show <name> decrypt and display a secret"
       echo "  gen                show current and next generation numbers"
+      echo "  myfunctions        list custom functions and aliases"
   end
 end

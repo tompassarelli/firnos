@@ -53,9 +53,9 @@
 (add-hook 'org-mode-hook #'font-lock-mode)
 
 ;; Font configuration
-(setq doom-font (font-spec :family "CommitMono Nerd Font" :size 32)
-      doom-big-font (font-spec :family "CommitMono Nerd Font" :size 40)
-      doom-variable-pitch-font (font-spec :family "DejaVu Sans" :size 32))
+(setq doom-font (font-spec :family "CommitMono Nerd Font" :size 16)
+      doom-big-font (font-spec :family "CommitMono Nerd Font" :size 20)
+      doom-variable-pitch-font (font-spec :family "DejaVu Sans" :size 16))
 
 ;; Disable automatic eldoc popups
 (setq eldoc-idle-delay most-positive-fixnum)

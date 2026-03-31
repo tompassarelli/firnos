@@ -58,23 +58,28 @@
   myConfig.bundles.browsers = {
     enable = true;
     firefox.fennec.enable = true;
+    nyxt.enable = false;
+    ladybird.enable = false;
   };
-  myConfig.bundles.gaming.enable = true;
-  myConfig.bundles.creative.enable = true;
+  myConfig.bundles.gaming = {
+    enable = true;
+    wowup.enable = false;
+  };
+  myConfig.bundles.creative = {
+    enable = true;
+    godot.enable = false;
+  };
   myConfig.bundles.media.enable = true;
+  myConfig.bundles.communication.enable = true;
   myConfig.bundles.productivity.enable = true;
   myConfig.bundles.printing.enable = true;
   myConfig.bundles.protonvpn.enable = true;
 
   # ============ MODULES ============
-  myConfig.modules.git.enable = true;
   myConfig.modules.neovim.enable = true;
-  myConfig.modules.claude.enable = true;
   myConfig.modules.postgresql.enable = true;
-  myConfig.modules.direnv.enable = true;
-  myConfig.modules.containers.enable = true;
   myConfig.modules.password.enable = true;
-  myConfig.modules.mail.enable = true;
   myConfig.modules.mini-serve.enable = true;
   myConfig.modules.awscli.enable = true;
+  myConfig.modules.parted.enable = true;
 }

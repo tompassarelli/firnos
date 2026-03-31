@@ -45,18 +45,18 @@
   # myConfig.bundles.creative.enable = true;
   myConfig.bundles.browsers.enable = true;
   myConfig.bundles.media.enable = true;
+  myConfig.bundles.communication.enable = true;
   myConfig.bundles.productivity.enable = true;
+  # myConfig.bundles.gaming.enable = true;
+
   # Override individual modules within a bundle:
-  # myConfig.bundles.media = {
+  # myConfig.bundles.desktop = {
   #   enable = true;
-  #   lutris.enable = false;  # everything except this
+  #   mako.enable = false;  # everything except this
   # };
 
   # ============ MODULES ============
-  myConfig.modules.git.enable = true;
   myConfig.modules.neovim.enable = true;
   myConfig.modules.password.enable = true;
-  # myConfig.modules.mail.enable = true;
-  # myConfig.bundles.gaming.enable = true;
   # myConfig.modules.containers.enable = true;
 }

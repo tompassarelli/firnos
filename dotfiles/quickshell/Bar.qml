@@ -44,7 +44,7 @@ PanelWindow {
             font.pointSize: 10
 
             property bool hovered: false
-            property string fmt: hovered ? "h:mm AP · ddd yyyy/MM/dd" : "h:mm AP"
+            property string fmt: hovered ? "h:mm AP - ddd yyyy/MM/dd" : "h:mm AP"
 
             Timer {
                 interval: 1000

@@ -340,7 +340,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.90
+  opacity 0.98
 }
 
 binds {

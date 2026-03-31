@@ -47,7 +47,7 @@ in
       # Enable Emacs daemon for instant startup with emacsclient
       services.emacs = {
         enable = true;
-        package = pkgs.emacs;
+        package = pkgs.emacs-pgtk;
         startWithUserSession = "graphical";
       };
     };

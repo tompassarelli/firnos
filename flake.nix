@@ -33,7 +33,7 @@
     # Quickshell - Qt6/QML shell toolkit
     quickshell = {
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     elephant.url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";

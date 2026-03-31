@@ -26,8 +26,8 @@ in
           ps = "procs";
           v = "nvim";
           # emacs client (connect to daemon for fast startup)
-          e = "emacsclient -t -a emacs";  # terminal emacs
-          eg = "emacsclient -n -c -a emacs";  # GUI emacs (-n = no-wait, -c = new frame)
+          e = "emacsclient -n -c -a emacs";  # GUI emacs (-n = no-wait, -c = new frame)
+          etui = "emacsclient -t -a emacs";  # terminal emacs
           # shorthands
           gits = "git status";
           gitd = "git diff";

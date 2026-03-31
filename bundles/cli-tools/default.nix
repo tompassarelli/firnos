@@ -10,6 +10,7 @@
     tealdeer.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable tealdeer"; };
     fastfetch.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fastfetch"; };
     btop.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable btop"; };
+    unrar.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable unrar"; };
   };
 
   imports = [ ./cli-tools.nix ];

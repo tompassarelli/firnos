@@ -13,5 +13,6 @@ in
     myConfig.modules.tealdeer.enable = lib.mkDefault cfg.tealdeer.enable;
     myConfig.modules.fastfetch.enable = lib.mkDefault cfg.fastfetch.enable;
     myConfig.modules.btop.enable = lib.mkDefault cfg.btop.enable;
+    myConfig.modules.unrar.enable = lib.mkDefault cfg.unrar.enable;
   };
 }

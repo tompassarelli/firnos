@@ -7,7 +7,6 @@
     ripgrep.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ripgrep"; };
     fd.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fd"; };
     unzip.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable unzip"; };
-    parted.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable parted"; };
     wget.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable wget"; };
     curl.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable curl"; };
     imagemagick.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ImageMagick"; };
@@ -18,6 +17,9 @@
     dbeaver.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable DBeaver"; };
     gh.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GitHub CLI"; };
     delta.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable delta"; };
+    git.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Git"; };
+    direnv.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable direnv"; };
+    containers.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable containers"; };
   };
 
   imports = [
