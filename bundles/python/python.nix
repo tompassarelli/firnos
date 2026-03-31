@@ -1,7 +1,7 @@
 { config, lib, ... }:
 
 let
-  cfg = config.myConfig.bundles.python-dev;
+  cfg = config.myConfig.bundles.python;
 in
 {
   config = lib.mkIf cfg.enable {

@@ -50,7 +50,7 @@
   myConfig.bundles.auth.enable = true;
   myConfig.bundles.development.enable = true;
   myConfig.bundles.javascript.enable = true;
-  myConfig.bundles.python-dev.enable = true;
+  myConfig.bundles.python.enable = true;
   myConfig.bundles.database.enable = true;
   myConfig.bundles.rust = {
     enable = true;
