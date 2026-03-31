@@ -38,16 +38,16 @@ in
       # Font configuration
       fonts = {
         monospace = {
-          package = pkgs.nerd-fonts.commit-mono;
-          name = "CommitMono Nerd Font";
+          package = pkgs.nerd-fonts.monaspace;
+          name = "MonaspiceAr Nerd Font";
         };
         sansSerif = {
-          package = pkgs.dejavu_fonts;
-          name = "DejaVu Sans";
+          package = pkgs.ia-writer-quattro;
+          name = "iA Writer Quattro S";
         };
         serif = {
-          package = pkgs.dejavu_fonts;
-          name = "DejaVu Serif";
+          package = pkgs.ia-writer-quattro;
+          name = "iA Writer Quattro S";
         };
         sizes = {
           terminal = 14;

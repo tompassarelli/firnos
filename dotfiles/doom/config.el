@@ -6,39 +6,12 @@
 (setq-default vterm-shell "/run/current-system/sw/bin/fish")
 (setq-default explicit-shell-file-name "/run/current-system/sw/bin/fish")
 
-;; Ensure straight-built themes are on the theme load path
-(let ((straight-dir (expand-file-name "straight" doom-local-dir)))
-  (dolist (dir (directory-files straight-dir t "^build"))
-    (let ((theme-dir (expand-file-name "doom-everforest-theme" dir)))
-      (when (file-directory-p theme-dir)
-        (add-to-list 'custom-theme-load-path theme-dir)))))
-
-;; Set doom theme based on NixOS chosenTheme
-(setq doom-theme
-      (let ((nixos-theme (or (getenv "NIXOS_THEME") "")))
-        (cond
-         ((string-match-p "everforest" nixos-theme) 'doom-everforest)
-         ((string-match-p "tokyo-night" nixos-theme) 'doom-tokyo-night)
-         ((string-match-p "gruvbox" nixos-theme) 'doom-gruvbox)
-         ((string-match-p "dracula" nixos-theme) 'doom-dracula)
-         ((string-match-p "nord" nixos-theme) 'doom-nord)
-         ((string-match-p "solarized-dark" nixos-theme) 'doom-solarized-dark)
-         ((string-match-p "solarized-light" nixos-theme) 'doom-solarized-light)
-         ((string-match-p "onedark" nixos-theme) 'doom-one)
-         (t 'doom-one))))
-
-;; Tokyo Night background overrides
-(when (eq doom-theme 'doom-tokyo-night)
-  (after! doom-themes
-    (custom-set-faces!
-      '(default :background "#1a1b26")
-      '(fringe :background "#1a1b26")
-      '(solaire-default-face :background "#1a1b26")
-      '(solaire-fringe-face :background "#1a1b26"))))
-
-;; Disable all syntax highlighting except comments
-(setq doom-themes-enable-bold nil
-      doom-themes-enable-italic nil)
+;; Load stylix-generated base16 theme (colors from NixOS stylix module)
+(add-to-list 'custom-theme-load-path "~/.config/doom-stylix")
+(setq doom-theme 'stylix-theme)
+;; Match mini.base16 (neovim): cursor uses foreground (base05), not red (base08)
+(add-hook! 'doom-load-theme-hook
+  (set-face-attribute 'cursor nil :background (face-foreground 'default)))
 ;; Disable line numbers
 (setq display-line-numbers-type nil)
 
@@ -48,14 +21,26 @@
 ;; Hide modeline by default
 (global-hide-mode-line-mode +1)
 
-;; Disable syntax highlighting globally, except org-mode
-(global-font-lock-mode -1)
-(add-hook 'org-mode-hook #'font-lock-mode)
+;; Uncomment to disable syntax highlighting globally (re-enable per mode as needed):
+;; (global-font-lock-mode -1)
+;; (add-hook 'org-mode-hook #'font-lock-mode)
+
+;; Monaspace superfamily: mix variants for semantic distinction
+;; Argon (Ar) = body, Radon (Rn) = comments, Xenon (Xe) = strings, Krypton (Kr) = keywords
+(custom-set-faces!
+  '(font-lock-comment-face :family "MonaspiceRn Nerd Font")
+  '(font-lock-comment-delimiter-face :family "MonaspiceRn Nerd Font")
+  '(font-lock-doc-face :family "MonaspiceRn Nerd Font")
+  '(font-lock-string-face :family "MonaspiceXe Nerd Font")
+  '(font-lock-keyword-face :family "MonaspiceKr Nerd Font")
+  '(font-lock-builtin-face :family "MonaspiceKr Nerd Font"))
 
 ;; Font configuration
-(setq doom-font (font-spec :family "CommitMono Nerd Font" :size 16)
-      doom-big-font (font-spec :family "CommitMono Nerd Font" :size 20)
-      doom-variable-pitch-font (font-spec :family "DejaVu Sans" :size 16))
+(let ((mono (or (getenv "NIXOS_MONO_FONT") "MonaspiceAr Nerd Font"))
+      (sans (or (getenv "NIXOS_SANS_FONT") "iA Writer Quattro S")))
+  (setq doom-font (font-spec :family mono :size 16)
+        doom-big-font (font-spec :family mono :size 20)
+        doom-variable-pitch-font (font-spec :family sans :size 16)))
 
 ;; Disable automatic eldoc popups
 (setq eldoc-idle-delay most-positive-fixnum)
