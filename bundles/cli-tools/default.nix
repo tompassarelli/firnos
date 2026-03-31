@@ -11,6 +11,11 @@
     fastfetch.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fastfetch"; };
     btop.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable btop"; };
     unrar.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable unrar"; };
+    curl.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable curl"; };
+    wget.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable wget"; };
+    unzip.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable unzip"; };
+    imagemagick.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ImageMagick"; };
+    ghostscript.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Ghostscript"; };
   };
 
   imports = [ ./cli-tools.nix ];

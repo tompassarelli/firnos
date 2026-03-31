@@ -49,6 +49,9 @@
   };
   myConfig.bundles.auth.enable = true;
   myConfig.bundles.development.enable = true;
+  myConfig.bundles.javascript.enable = true;
+  myConfig.bundles.python-dev.enable = true;
+  myConfig.bundles.database.enable = true;
   myConfig.bundles.rust = {
     enable = true;
     bevy.enable = true;
@@ -77,7 +80,6 @@
 
   # ============ MODULES ============
   myConfig.modules.neovim.enable = true;
-  myConfig.modules.postgresql.enable = true;
   myConfig.modules.password.enable = true;
   myConfig.modules.mini-serve.enable = true;
   myConfig.modules.awscli.enable = true;

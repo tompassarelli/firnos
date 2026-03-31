@@ -14,5 +14,10 @@ in
     myConfig.modules.fastfetch.enable = lib.mkDefault cfg.fastfetch.enable;
     myConfig.modules.btop.enable = lib.mkDefault cfg.btop.enable;
     myConfig.modules.unrar.enable = lib.mkDefault cfg.unrar.enable;
+    myConfig.modules.curl.enable = lib.mkDefault cfg.curl.enable;
+    myConfig.modules.wget.enable = lib.mkDefault cfg.wget.enable;
+    myConfig.modules.unzip.enable = lib.mkDefault cfg.unzip.enable;
+    myConfig.modules.imagemagick.enable = lib.mkDefault cfg.imagemagick.enable;
+    myConfig.modules.ghostscript.enable = lib.mkDefault cfg.ghostscript.enable;
   };
 }
