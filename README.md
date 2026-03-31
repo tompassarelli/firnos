@@ -10,7 +10,7 @@
 
 ## What is FirnOS?
 
-A NixOS configuration framework. 139 atomic modules, 18 bundles. Import it as a flake input and build on top of it.
+A NixOS configuration framework. Import it as a flake input and build on top of it.
 
 - `myConfig.modules.*` for individual packages/services
 - `myConfig.bundles.*` for composed groups with per-module overrides
