@@ -142,6 +142,7 @@ in
   config = lib.mkIf config.myConfig.modules.niri.enable {
     # Enable niri compositor at system level
     programs.niri.enable = true;
+    programs.niri.package = pkgs.unstable.niri;
 
     environment.systemPackages = [ niri-viewport-nav ];
 

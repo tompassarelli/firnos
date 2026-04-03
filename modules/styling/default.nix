@@ -38,8 +38,8 @@ in
       # Font configuration
       fonts = {
         monospace = {
-          package = pkgs.maple-mono.NF;
-          name = "Maple Mono NF";
+          package = pkgs.commit-mono;
+          name = "CommitMono";
         };
         sansSerif = {
           package = pkgs.dejavu_fonts;

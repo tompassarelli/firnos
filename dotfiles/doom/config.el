@@ -26,7 +26,7 @@
 ;; (add-hook 'org-mode-hook #'font-lock-mode)
 
 ;; Font configuration
-(let ((mono (or (getenv "NIXOS_MONO_FONT") "Maple Mono NF"))
+(let ((mono (or (getenv "NIXOS_MONO_FONT") "CommitMono"))
       (serif (or (getenv "NIXOS_SERIF_FONT") "iA Writer Quattro S")))
   (setq doom-font (font-spec :family mono :size 16)
         doom-big-font (font-spec :family mono :size 20)
