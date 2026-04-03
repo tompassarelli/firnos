@@ -63,7 +63,7 @@
   myConfig.bundles.browsers = {
     enable = true;
     firefox.fennec.enable = true;
-    nyxt.enable = false;
+    nyxt.enable = true;
     ladybird.enable = false;
   };
   myConfig.bundles.gaming = {

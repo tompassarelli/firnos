@@ -192,13 +192,20 @@
                   glib-networking gsettings-desktop-schemas
                   gst_all_1.gstreamer gst_all_1.gst-plugins-base gst_all_1.gst-plugins-good
                   xdg-utils wl-clipboard fuse
-                  nss nspr atk cups dbus expat libdrm mesa
-                  alsa-lib at-spi2-core libxkbcommon
+                  nss nspr atk cups dbus expat libdrm mesa libgbm
+                  alsa-lib at-spi2-core libxkbcommon pciutils
+                  xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext
+                  xorg.libXfixes xorg.libXrandr xorg.libxcb xorg.libXcursor
+                  xorg.libXi xorg.libXrender xorg.libXtst xorg.libXScrnSaver
                 ];
                 extraBwrapArgs = [
                   "--bind ${nyxt-unwrapped}/app /app"
                 ];
-                runScript = "/app/Nyxt/nyxt";
+                runScript = final.writeShellScript "nyxt-wrapper" ''
+                  export APPDIR=/app/Nyxt
+                  export PATH="/app/Nyxt/_build/cl-electron:$PATH"
+                  exec /app/Nyxt/nyxt "$@"
+                '';
                 extraInstallCommands = ''
                   mkdir -p $out/share
                   ln -s ${nyxt-unwrapped}/share/applications $out/share/applications
