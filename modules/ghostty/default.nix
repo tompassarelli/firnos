@@ -16,6 +16,7 @@ in
         settings = {
           window-padding-x = 6;
           window-padding-y = 4;
+          app-notifications = "no-clipboard-copy";
         };
       };
     };
