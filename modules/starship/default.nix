@@ -27,6 +27,12 @@ in
             truncate_to_repo = false;
           };
 
+          character = {
+            success_symbol = "[λ](bold green)";
+            error_symbol = "[λ](bold red)";
+            vimcmd_symbol = "[λ](bold green)";
+          };
+
           username.disabled = true;
           hostname.disabled = true;
         };

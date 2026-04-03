@@ -29,7 +29,7 @@ in
       xdg.desktopEntries.lem = {
         name = "Lem";
         comment = "Common Lisp Editor";
-        exec = "${pkgs.kitty}/bin/kitty ${lem-ncurses}/bin/lem";
+        exec = "${pkgs.unstable.ghostty}/bin/ghostty -e ${lem-ncurses}/bin/lem";
         terminal = false;
         type = "Application";
         categories = [ "Development" "TextEditor" ];

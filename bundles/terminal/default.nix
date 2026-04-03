@@ -3,7 +3,8 @@ let cfg = config.myConfig.bundles.terminal;
 in {
   options.myConfig.bundles.terminal = {
     enable = lib.mkEnableOption "terminal environment";
-    kitty.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Kitty"; };
+    kitty.enable = lib.mkOption { type = lib.types.bool; default = false; description = "Enable Kitty"; };
+    ghostty.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Ghostty"; };
     fish.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Fish"; };
     zoxide.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable zoxide"; };
     atuin.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Atuin"; };
@@ -12,6 +13,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     myConfig.modules.kitty.enable = lib.mkDefault cfg.kitty.enable;
+    myConfig.modules.ghostty.enable = lib.mkDefault cfg.ghostty.enable;
     myConfig.modules.fish.enable = lib.mkDefault cfg.fish.enable;
     myConfig.modules.zoxide.enable = lib.mkDefault cfg.zoxide.enable;
     myConfig.modules.atuin.enable = lib.mkDefault cfg.atuin.enable;

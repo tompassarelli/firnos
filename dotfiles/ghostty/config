@@ -1,0 +1,5 @@
+theme = stylix
+font-family = CommitMono
+font-size = 14
+window-padding-x = 4
+window-padding-y = 4,0

@@ -37,6 +37,7 @@ in
         };
         interactiveShellInit = ''
           set -g fish_greeting
+          fish_vi_key_bindings
           # Change to default directory (skip in Emacs vterm)
           if not set -q INSIDE_EMACS
             cd ~

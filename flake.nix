@@ -205,6 +205,7 @@
                 runScript = final.writeShellScript "nyxt-wrapper" ''
                   export APPDIR=/app/Nyxt
                   export PATH="/app/Nyxt/_build/cl-electron:$PATH"
+                  export ELECTRON_OZONE_PLATFORM_HINT=auto
                   exec /app/Nyxt/nyxt "$@"
                 '';
                 extraInstallCommands = ''

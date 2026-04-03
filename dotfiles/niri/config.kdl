@@ -340,7 +340,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.99
+  opacity 0.90
 }
 
 binds {
@@ -362,7 +362,7 @@ binds {
     Alt+Tab { focus-window-previous; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
-    Mod+T hotkey-overlay-title="Terminal" { spawn "kitty"; }
+    Mod+T hotkey-overlay-title="Terminal" { spawn "ghostty"; }
     Super+Space hotkey-overlay-title="Window Switcher" { spawn "rofi" "-show" "window"; }
     Super+S hotkey-overlay-title="App Switcher" { spawn "rofi" "-show" "combi" "-combi-modes" "window,drun"; }
     Super+Ctrl+Space hotkey-overlay-title="App Launcher" { spawn "rofi" "-show" "drun"; }
@@ -411,10 +411,10 @@ binds {
     Mod+H     { focus-column-left; }
     // Jump to previous viewport (tuple of windows that fit on screen)
     Mod+Alt+H { spawn "niri-viewport-nav" "prev"; }
-    Mod+J     { focus-workspace-down; }
-    Mod+K     { focus-workspace-up; }
-    Mod+Ctrl+J { focus-window-or-workspace-down; }
-    Mod+Ctrl+K { focus-window-or-workspace-up; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
+    Mod+Ctrl+J { focus-workspace-down; }
+    Mod+Ctrl+K { focus-workspace-up; }
     Mod+L     { focus-column-right; }
     // Jump to next viewport (tuple of windows that fit on screen)
     Mod+Alt+L { spawn "niri-viewport-nav" "next"; }
