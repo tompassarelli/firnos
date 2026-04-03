@@ -197,6 +197,7 @@
                   xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext
                   xorg.libXfixes xorg.libXrandr xorg.libxcb xorg.libXcursor
                   xorg.libXi xorg.libXrender xorg.libXtst xorg.libXScrnSaver
+                  systemd libGL libglvnd egl-wayland
                 ];
                 extraBwrapArgs = [
                   "--bind ${nyxt-unwrapped}/app /app"
