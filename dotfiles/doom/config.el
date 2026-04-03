@@ -62,6 +62,10 @@
   (setq org-log-done 'time)
   (setq org-agenda-hide-tags-regexp "agenda"))
 
+(map! :after org
+      :map org-mode-map
+      "C-S-<return>" #'org-insert-todo-subheading)
+
 ;; Log time to the task at point with a start time, duration, and optional date
 (defun +org/log-time (start-time minutes &optional date)
   "Add MINUTES of clocked time starting at START-TIME to the org heading at point.
@@ -111,13 +115,21 @@ If empty or omitted, today is used."
             rand-b-hi
             rand-b-lo)))
 
-;; Rename org-roam node: update title and EXPORT_FILE_NAME (file stays as UUIDv7)
+;; Rename org-roam node: update title, EXPORT_FILE_NAME, and filename on disk
 (defun +org/rename-node (new-title)
-  "Rename the current org-roam node: update #+title and #+EXPORT_FILE_NAME."
+  "Rename the current org-roam node: update #+title, #+EXPORT_FILE_NAME, and rename the file."
   (interactive "sNew title: ")
   (unless (org-roam-file-p)
     (user-error "Not an org-roam file"))
-  (let ((slug (org-roam--title-to-slug new-title)))
+  (let* ((slug (org-roam--title-to-slug new-title))
+         (old-path (buffer-file-name))
+         (old-name (file-name-nondirectory old-path))
+         ;; Preserve the timestamp prefix (e.g. "20260403123456-")
+         (prefix (if (string-match "^\\([0-9]\\{14\\}-\\)" old-name)
+                     (match-string 1 old-name)
+                   ""))
+         (new-name (concat prefix slug ".org"))
+         (new-path (expand-file-name new-name (file-name-directory old-path))))
     (save-excursion
       (goto-char (point-min))
       (if (re-search-forward "^#\\+title:.*$" nil t)
@@ -130,42 +142,50 @@ If empty or omitted, today is used."
           (end-of-line)
           (insert (format "\n#+EXPORT_FILE_NAME: %s" slug)))))
     (save-buffer)
+    (unless (string= old-path new-path)
+      (rename-file old-path new-path)
+      (set-visited-file-name new-path t t)
+      (save-buffer))
     (org-roam-db-sync)))
 (map! :leader
       :desc "Rename org-roam node"
       "n R" #'+org/rename-node)
 
-;; Migrate existing org-roam files to UUIDv7 filenames
-(defun +org/migrate-to-uuidv7 ()
-  "Rename all org-roam files to UUIDv7 filenames, adding EXPORT_FILE_NAME."
+;; Migrate UUIDv7 files back to timestamp-slug filenames
+(defun +org/migrate-from-uuidv7 ()
+  "Rename all UUIDv7-named org-roam files to TIMESTAMP-slug.org format.
+Extracts the timestamp from the UUIDv7 and the slug from EXPORT_FILE_NAME or title."
   (interactive)
   (require 'org-roam)
   (let ((files (org-roam-list-files))
         (count 0))
     (dolist (f files)
-      (let* ((old-name (file-name-nondirectory f))
-             (slug (file-name-sans-extension old-name))
-             (export-name (if (string= slug "start_here") "readme" slug))
-             (new-name (concat (+org/uuidv7) ".org"))
-             (new-path (expand-file-name new-name (file-name-directory f))))
-        ;; Skip files already using UUIDv7 names
-        (unless (string-match-p "^[0-9a-f]\\{8\\}-[0-9a-f]\\{4\\}-7" old-name)
-          (with-current-buffer (find-file-noselect f)
-            (save-excursion
-              (goto-char (point-min))
-              (unless (re-search-forward "^#\\+EXPORT_FILE_NAME:" nil t)
-                (goto-char (point-min))
-                (when (re-search-forward "^:END:" nil t)
-                  (end-of-line)
-                  (insert (format "\n#+EXPORT_FILE_NAME: %s" export-name)))))
-            (save-buffer)
-            (rename-file f new-path)
-            (set-visited-file-name new-path t t)
-            (save-buffer))
-          (cl-incf count)
-          (sleep-for 0.002))))
+      (let ((old-name (file-name-nondirectory f)))
+        ;; Only process UUIDv7 files
+        (when (string-match "^\\([0-9a-f]\\{8\\}\\)-\\([0-9a-f]\\{4\\}\\)-7" old-name)
+          (let* ((hex-hi (match-string 1 old-name))
+                 (hex-lo (match-string 2 old-name))
+                 (ms (+ (* (string-to-number hex-hi 16) 65536)
+                        (string-to-number hex-lo 16)))
+                 (timestamp (format-time-string "%Y%m%d%H%M%S"
+                                                (seconds-to-time (/ ms 1000)))))
+            (with-current-buffer (find-file-noselect f)
+              (let* ((slug (save-excursion
+                             (goto-char (point-min))
+                             (if (re-search-forward "^#\\+EXPORT_FILE_NAME:\\s-*\\(.+\\)" nil t)
+                                 (string-trim (match-string 1))
+                               (goto-char (point-min))
+                               (when (re-search-forward "^#\\+title:\\s-*\\(.+\\)" nil t)
+                                 (org-roam--title-to-slug (string-trim (match-string 1)))))))
+                     (new-name (concat timestamp "-" slug ".org"))
+                     (new-path (expand-file-name new-name (file-name-directory f))))
+                (save-buffer)
+                (rename-file f new-path)
+                (set-visited-file-name new-path t t)
+                (save-buffer)
+                (cl-incf count)))))))
     (org-roam-db-sync)
-    (message "Migrated %d files to UUIDv7. Database synced." count)))
+    (message "Migrated %d files from UUIDv7 to timestamp-slug. Database synced." count)))
 
 ;; Markdown mode configuration
 (after! markdown-mode
@@ -226,11 +246,11 @@ Also refreshes the agenda file cache."
 (after! org-roam
   (setq org-roam-capture-templates
         '(("d" "default" plain "%?"
-           :target (file+head "%(+org/uuidv7).org"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+date: %U\n#+EXPORT_FILE_NAME: ${slug}\n")
            :unnarrowed t)
           ("p" "public" plain "%?"
-           :target (file+head "%(+org/uuidv7).org"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                               "#+title: ${title}\n#+date: %U\n#+EXPORT_FILE_NAME: ${slug}\n#+filetags: :public:\n")
            :unnarrowed t))))
 

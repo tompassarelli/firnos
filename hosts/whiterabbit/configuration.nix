@@ -33,7 +33,7 @@
       "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
     ];
   };
-  myConfig.modules.glide.enable = true;
+  myConfig.modules.glide.enable = false;
 
   # ============ BUNDLES ============
   myConfig.bundles.terminal.enable = true;
