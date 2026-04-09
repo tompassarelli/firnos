@@ -16,19 +16,20 @@ in
     home-manager.users.${username} = {
       programs.git = {
         enable = true;
-        userName = "tompassarelli";
-        userEmail = "tom.passarelli@protonmail.com";
-        delta = {
-          enable = true;
-          options = {
-            navigate = true;
-          };
-        };
-        extraConfig = {
+        settings = {
+          user.name = "tompassarelli";
+          user.email = "tom.passarelli@protonmail.com";
           init.defaultBranch = "main";
           core.editor = "nvim";
           merge.conflictstyle = "diff3";
           diff.colorMoved = "default";
+        };
+      };
+      programs.delta = {
+        enable = true;
+        enableGitIntegration = true;
+        options = {
+          navigate = true;
         };
       };
     };

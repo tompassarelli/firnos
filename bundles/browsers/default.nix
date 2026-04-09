@@ -11,6 +11,8 @@ in {
     nyxt.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Nyxt"; };
     nyxt.default = lib.mkOption { type = lib.types.bool; default = false; description = "Set Nyxt as default browser"; };
     ladybird.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Ladybird"; };
+    qutebrowser.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Qutebrowser"; };
+    qutebrowser.default = lib.mkOption { type = lib.types.bool; default = false; description = "Set Qutebrowser as default browser"; };
   };
 
   config = lib.mkIf cfg.enable {
@@ -22,5 +24,7 @@ in {
     myConfig.modules.nyxt.enable = lib.mkDefault cfg.nyxt.enable;
     myConfig.modules.nyxt.default = lib.mkDefault cfg.nyxt.default;
     myConfig.modules.ladybird.enable = lib.mkDefault cfg.ladybird.enable;
+    myConfig.modules.qutebrowser.enable = lib.mkDefault cfg.qutebrowser.enable;
+    myConfig.modules.qutebrowser.default = lib.mkDefault cfg.qutebrowser.default;
   };
 }

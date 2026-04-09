@@ -14,6 +14,8 @@
   (set-face-attribute 'cursor nil :background (face-foreground 'default)))
 ;; Disable line numbers
 (setq display-line-numbers-type nil)
+;; Hide bookmark fringe marks (e.g. from org-refile)
+(setq bookmark-set-fringe-mark nil)
 
 ;; Auto-save files on idle
 (auto-save-visited-mode +1)
@@ -46,11 +48,6 @@
 (map! :leader
       :desc "Kill other window"
       "w o" #'kill-other-window)
-
-;; Swap SPC ; and SPC :
-(map! :leader
-      ";" #'execute-extended-command
-      ":" #'pp-eval-expression)
 
 ;; Org mode configuration
 (setq org-directory "~/org")
@@ -314,6 +311,72 @@ Also refreshes the agenda file cache."
              (format "---\ntitle: \"%s\"\n---\n"
                      (capitalize (file-name-nondirectory dir)))
              nil index)))))))
+
+;; ============ Billing ============
+
+(defun +billing/period-bounds (seed &optional override)
+  "Compute (anchor-abs . end-abs) for the current 14-day pay period.
+SEED is a date string of any known period end (a Tuesday).
+OVERRIDE, if non-empty, pins the period end to that date."
+  (let* ((seed-abs (time-to-days (org-time-string-to-time seed)))
+         (today-abs (time-to-days (current-time)))
+         (cycle-days 14)
+         (elapsed (- today-abs seed-abs))
+         (end-abs (if (and override (not (string-empty-p override)))
+                      (time-to-days (org-time-string-to-time override))
+                    (+ seed-abs (* cycle-days (max 1 (ceiling elapsed cycle-days))))))
+         (anchor-abs (- end-abs (1- cycle-days))))
+    (cons anchor-abs end-abs)))
+
+(defun +billing/collect-clocks (anchor-abs end-abs)
+  "Scan buffer for CLOCK entries within ANCHOR-ABS..END-ABS.
+Returns a hash table keyed by heading title, values are plists:
+  :minutes  - total minutes clocked
+  :marker   - buffer position of heading
+  :note     - BILLING_NOTE property or nil
+  :clocks   - list of (clock-element hash) for each clock line"
+  (let ((tree (org-element-parse-buffer))
+        (result (make-hash-table :test 'equal)))
+    (org-element-map tree 'clock
+      (lambda (cl)
+        (let* ((ts (org-element-property :value cl))
+               (dur (org-element-property :duration cl)))
+          (when (and dur (org-element-property :year-start ts))
+            (let* ((parts (split-string dur ":"))
+                   (mins (+ (* 60 (string-to-number (car parts)))
+                            (string-to-number (cadr parts))))
+                   (d (calendar-absolute-from-gregorian
+                       (list (org-element-property :month-start ts)
+                             (org-element-property :day-start ts)
+                             (org-element-property :year-start ts)))))
+              (when (and (>= d anchor-abs) (<= d end-abs))
+                (let* ((hl (org-element-lineage cl '(headline)))
+                       (title (org-element-property :raw-value hl))
+                       (line (string-trim
+                              (buffer-substring-no-properties
+                               (org-element-property :begin cl)
+                               (org-element-property :end cl))))
+                       (hash (+clockify/clock-hash line))
+                       (existing (gethash title result)))
+                  (if existing
+                      (progn
+                        (plist-put existing :minutes (+ (plist-get existing :minutes) mins))
+                        (plist-put existing :clocks (cons (list cl hash) (plist-get existing :clocks))))
+                    (let* ((marker (copy-marker (org-element-property :begin hl)))
+                           (note (save-excursion
+                                   (goto-char marker)
+                                   (org-entry-get nil "BILLING_NOTE")))
+                           (sync-prop (save-excursion
+                                        (goto-char marker)
+                                        (org-entry-get nil "CLOCKIFY_SYNC"))))
+                      (puthash title
+                               (list :minutes mins
+                                     :marker marker
+                                     :note note
+                                     :sync-prop sync-prop
+                                     :clocks (list (list cl hash)))
+                               result))))))))))
+    result))
 
 ;; ============ Clockify API ============
 

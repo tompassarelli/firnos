@@ -11,9 +11,9 @@ in
     environment.systemPackages = [ pkgs.framework-tool ];
 
     # Disable suspend on lid close (sleep/wake issues)
-    services.logind = {
-      lidSwitch = "ignore";
-      lidSwitchExternalPower = "ignore";
+    services.logind.settings.Login = {
+      HandleLidSwitch = "ignore";
+      HandleLidSwitchExternalPower = "ignore";
     };
 
     # MT7925e WiFi stability fixes

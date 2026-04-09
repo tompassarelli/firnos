@@ -340,7 +340,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.90
+  opacity 0.88
 }
 
 binds {
@@ -411,10 +411,10 @@ binds {
     Mod+H     { focus-column-left; }
     // Jump to previous viewport (tuple of windows that fit on screen)
     Mod+Alt+H { spawn "niri-viewport-nav" "prev"; }
-    Mod+J     { focus-window-or-workspace-down; }
-    Mod+K     { focus-window-or-workspace-up; }
-    Mod+Ctrl+J { focus-workspace-down; }
-    Mod+Ctrl+K { focus-workspace-up; }
+    Mod+J     { focus-workspace-down; }
+    Mod+K     { focus-workspace-up; }
+    Mod+M     { focus-window-down; }
+    Mod+Comma { focus-window-up; }
     Mod+L     { focus-column-right; }
     // Jump to next viewport (tuple of windows that fit on screen)
     Mod+Alt+L { spawn "niri-viewport-nav" "next"; }
@@ -470,8 +470,6 @@ binds {
 
     Mod+Page_Down      { focus-workspace-down; }
     Mod+Page_Up        { focus-workspace-up; }
-    Mod+N              { focus-workspace-down; }
-    Mod+P              { focus-workspace-up; }
     Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
     Mod+Ctrl+N         { move-column-to-workspace-down; }

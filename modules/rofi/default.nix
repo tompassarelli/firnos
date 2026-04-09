@@ -12,7 +12,7 @@ in
     # ============ SYSTEM-LEVEL CONFIGURATION ============
 
     environment.systemPackages = with pkgs; [
-      rofi-wayland  # it works, its fast
+      rofi  # rofi-wayland merged into rofi in 25.11
 
       # Helper script for workspace renaming with rofi dmenu mode
       (pkgs.writeShellScriptBin "rofi-rename-workspace" ''

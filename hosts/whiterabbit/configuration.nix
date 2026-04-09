@@ -21,8 +21,8 @@
   myConfig.modules.pipewire.enable = true;
   myConfig.modules.bluetooth.enable = true;
   myConfig.modules.input.enable = true;
-  myConfig.modules.piper.enable = true;
-  myConfig.modules.g203-led.enable = true;
+  myConfig.modules.piper.enable = false;
+  myConfig.modules.g203-led.enable = false;
   myConfig.modules.kanata = {
     enable = true;
     configFile = ../../dotfiles/kanata/kanata.kbd;
@@ -33,7 +33,7 @@
       "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
     ];
   };
-  myConfig.modules.glide.enable = false;
+  myConfig.modules.glide.enable = true;
 
   # ============ BUNDLES ============
   myConfig.bundles.terminal.enable = true;
@@ -53,34 +53,51 @@
   myConfig.bundles.database.enable = true;
   myConfig.bundles.rust = {
     enable = true;
-    bevy.enable = true;
+    bevy.enable = false;
   };
-  myConfig.bundles.csharp.enable = true;
+  myConfig.bundles.csharp.enable = false;
   myConfig.bundles.lisp = {
     enable = true;
     lem.enable = false;
   };
+  myConfig.bundles.doom-emacs.enable = true;
   myConfig.bundles.browsers = {
     enable = true;
     firefox.fennec.enable = true;
-    nyxt.enable = true;
+    nyxt.enable = false;
     ladybird.enable = false;
   };
   myConfig.bundles.gaming = {
     enable = true;
+    lutris.enable = false;
     wowup.enable = false;
   };
   myConfig.bundles.creative = {
     enable = true;
+    blender.enable = false;
+    gimp.enable = false;
     godot.enable = false;
   };
-  myConfig.bundles.media.enable = true;
+  myConfig.bundles.media = {
+    enable = true;
+    youtube-music.enable = false;
+  };
   myConfig.bundles.communication.enable = true;
-  myConfig.bundles.productivity.enable = true;
-  myConfig.bundles.printing.enable = true;
-  myConfig.bundles.vpn.enable = true;
+  myConfig.bundles.productivity = {
+    enable = true;
+    obsidian.enable = false;
+    todoist.enable = false;
+    pomodoro.enable = false;
+    libreoffice.enable = false;
+  };
+  myConfig.bundles.printing.enable = false;
+  myConfig.bundles.vpn = {
+    enable = true;
+    protonvpn-cli.enable = false;
+  };
 
   # ============ MODULES ============
+  myConfig.modules.guix.enable = false;
   myConfig.modules.neovim.enable = true;
   myConfig.modules.password.enable = true;
   myConfig.modules.mini-serve.enable = true;

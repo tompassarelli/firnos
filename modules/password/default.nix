@@ -9,7 +9,7 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      bitwarden            # password manager
+      bitwarden-desktop    # password manager
     ];
   };
 }
