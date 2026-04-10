@@ -74,7 +74,7 @@ Fork this repo and modify it directly. You'll manage merge conflicts yourself wh
   myConfig.bundles.development.enable = true;
   myConfig.bundles.browsers = {
     enable = true;
-    firefox.fennec.enable = true;
+    firefox.palefox.enable = true;
   };
   myConfig.bundles.media = {
     enable = true;

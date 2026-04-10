@@ -66,14 +66,14 @@ in
 
 ### Proxying module sub-options through bundles
 
-When a module has options beyond just `enable` (e.g. firefox has fennec.enable, stylix has chosenTheme), the bundle must proxy those so users don't reach past the bundle:
+When a module has options beyond just `enable` (e.g. firefox has palefox.enable, stylix has chosenTheme), the bundle must proxy those so users don't reach past the bundle:
 
 ```nix
 # In bundle default.nix:
-firefox.fennec.enable = lib.mkOption { type = lib.types.bool; default = false; description = "..."; };
+firefox.palefox.enable = lib.mkOption { type = lib.types.bool; default = false; description = "..."; };
 
 # In bundle <name>.nix:
-myConfig.modules.firefox.fennec.enable = lib.mkDefault cfg.firefox.fennec.enable;
+myConfig.modules.firefox.palefox.enable = lib.mkDefault cfg.firefox.palefox.enable;
 ```
 
 ### Bundle-to-bundle composition

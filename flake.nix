@@ -36,6 +36,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     elephant.url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";
     walker = {
       url = "github:abenz1267/walker";
@@ -43,7 +48,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser }:
     let
       # All available modules - can be imported by external configs
       firnModules = ./modules;
@@ -73,7 +78,7 @@
     }: nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inputs = { inherit nur walker elephant lem quickshell; };
+        inputs = { inherit nur walker elephant lem quickshell zen-browser; };
         flakeRoot = self;
       } // extraSpecialArgs;
       modules = [
@@ -109,7 +114,7 @@
           # Home-manager configuration
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = {
-            inputs = { inherit nur walker elephant lem quickshell; };
+            inputs = { inherit nur walker elephant lem quickshell zen-browser; };
           } // extraSpecialArgs;
           home-manager.users.${config.myConfig.modules.users.username} = {
             home.stateVersion = config.myConfig.modules.system.stateVersion;

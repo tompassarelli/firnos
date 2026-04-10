@@ -63,9 +63,8 @@
   myConfig.bundles.doom-emacs.enable = true;
   myConfig.bundles.browsers = {
     enable = true;
-    firefox.fennec.enable = true;
-    nyxt.enable = false;
-    ladybird.enable = false;
+    firefox.palefox.enable = true;
+    zen-browser.enable = true;
   };
   myConfig.bundles.gaming = {
     enable = true;

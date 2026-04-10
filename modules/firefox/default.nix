@@ -2,7 +2,7 @@
 {
   options.myConfig.modules.firefox = {
     enable = lib.mkEnableOption "Enable Firefox browser";
-    fennec.enable = lib.mkEnableOption "Enable Fennec (Firefox with custom UI styling)";
+    palefox.enable = lib.mkEnableOption "Enable Palefox (Firefox with custom UI styling)";
 
     default = lib.mkOption {
       type = lib.types.bool;
@@ -13,6 +13,6 @@
 
   imports = [
     ./firefox.nix
-    ./fennec.nix
+    ./palefox.nix
   ];
 }

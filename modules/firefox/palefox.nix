@@ -3,8 +3,8 @@ let
   username = config.myConfig.modules.users.username;
 in
 {
-  config = lib.mkIf config.myConfig.modules.firefox.fennec.enable {
-    # Fennec implies firefox
+  config = lib.mkIf config.myConfig.modules.firefox.palefox.enable {
+    # Palefox implies firefox
     myConfig.modules.firefox.enable = lib.mkDefault true;
 
     home-manager.users.${username} = { config, ... }: {
@@ -33,9 +33,9 @@ in
         };
       };
 
-      # Symlink Fennec custom chrome directory
+      # Symlink Palefox custom chrome directory
       home.file.".mozilla/firefox/${username}/chrome".source = config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/code/fennec/chrome";
+        "${config.home.homeDirectory}/code/palefox/chrome";
     };
   };
 }
