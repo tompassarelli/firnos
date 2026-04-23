@@ -95,8 +95,15 @@
         ({ config, pkgs, ... }: {
           networking.hostName = hostname;
 
-          # sops-nix: use age key from user's home for both CLI editing and activation
-          sops.age.keyFile = "/home/${config.myConfig.modules.users.username}/.config/sops/age/keys.txt";
+          # sops-nix: key lives in /var/lib/sops-nix so it's readable at stage-2-init
+          # (before /home is mounted). The same file is also used by the `sops` CLI
+          # via SOPS_AGE_KEY_FILE below — single source of truth.
+          sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+          environment.sessionVariables.SOPS_AGE_KEY_FILE = "/var/lib/sops-nix/key.txt";
+          # Enforce ownership/mode on the key file every activation so perms can't drift.
+          systemd.tmpfiles.rules = [
+            "z /var/lib/sops-nix/key.txt 0400 ${config.myConfig.modules.users.username} users -"
+          ];
 
           # sops + age CLI tools for creating/editing encrypted secrets
           environment.systemPackages = with pkgs; [ sops age ];

@@ -58,13 +58,16 @@
   myConfig.bundles.csharp.enable = false;
   myConfig.bundles.lisp = {
     enable = true;
-    lem.enable = false;
+    lem.enable = true;
   };
+  myConfig.bundles.racket.enable = true;
   myConfig.bundles.doom-emacs.enable = true;
   myConfig.bundles.browsers = {
     enable = true;
     firefox.palefox.enable = true;
+    chrome.enable = true;
     zen-browser.enable = true;
+    # librewolf.enable = true;
   };
   myConfig.bundles.gaming = {
     enable = true;
@@ -102,4 +105,10 @@
   myConfig.modules.mini-serve.enable = true;
   myConfig.modules.awscli.enable = true;
   myConfig.modules.parted.enable = true;
+  myConfig.modules.unixodbc.enable = true;
+  myConfig.modules.nix-ld.enable = true;
+  myConfig.modules.appimage.enable = true;
+  myConfig.modules.codex.enable = true;
+  myConfig.modules.vscode.enable = true;
+  myConfig.modules.windows-vm.enable = true;
 }

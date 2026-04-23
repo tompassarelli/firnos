@@ -23,8 +23,7 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = bevyLibs;
 
-    # Make Bevy libraries available via nix-ld (for running compiled binaries)
-    programs.nix-ld.enable = true;
+    # Make Bevy libraries available via nix-ld
     programs.nix-ld.libraries = bevyLibs;
   };
 }

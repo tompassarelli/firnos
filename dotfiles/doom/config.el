@@ -314,19 +314,26 @@ Also refreshes the agenda file cache."
 
 ;; ============ Billing ============
 
-(defun +billing/period-bounds (seed &optional override)
-  "Compute (anchor-abs . end-abs) for the current 14-day pay period.
-SEED is a date string of any known period end (a Tuesday).
-OVERRIDE, if non-empty, pins the period end to that date."
-  (let* ((seed-abs (time-to-days (org-time-string-to-time seed)))
-         (today-abs (time-to-days (current-time)))
-         (cycle-days 14)
-         (elapsed (- today-abs seed-abs))
-         (end-abs (if (and override (not (string-empty-p override)))
-                      (time-to-days (org-time-string-to-time override))
-                    (+ seed-abs (* cycle-days (max 1 (ceiling elapsed cycle-days))))))
-         (anchor-abs (- end-abs (1- cycle-days))))
-    (cons anchor-abs end-abs)))
+(defun +billing/period-bounds (start-seed &optional end-date-override)
+  "Compute (start-abs . end-abs) for the 14-day pay period to report on.
+START-SEED is a date string of any known period START (a Wednesday).
+END-DATE-OVERRIDE, if non-empty, pins the period end to that date (a Tuesday);
+the start is then end - 13 days.
+
+Without an override: returns the most recently completed period, except on
+the final Tuesday of a period (payday eve), where it returns the period
+ending today."
+  (let* ((seed-abs (time-to-days (org-time-string-to-time start-seed)))
+         (cycle-days 14))
+    (if (and end-date-override (not (string-empty-p end-date-override)))
+        (let ((end-abs (time-to-days (org-time-string-to-time end-date-override))))
+          (cons (- end-abs (1- cycle-days)) end-abs))
+      (let* ((today-abs (time-to-days (current-time)))
+             (elapsed (- today-abs seed-abs))
+             (completed (max 1 (/ (1+ elapsed) cycle-days)))
+             (start-abs (+ seed-abs (* cycle-days (1- completed))))
+             (end-abs (+ start-abs (1- cycle-days))))
+        (cons start-abs end-abs)))))
 
 (defun +billing/collect-clocks (anchor-abs end-abs)
   "Scan buffer for CLOCK entries within ANCHOR-ABS..END-ABS.
@@ -466,3 +473,14 @@ PROP is like \"a1b2c3=69b1d32f,d4e5f6=69b1d44a\"."
                                   (format "%s=%s" (car pair) (cdr pair)))
                                 alist ","))
     (org-entry-delete nil "CLOCKIFY_SYNC")))
+
+;; #region / #endregion folding for CSS, JS, etc.
+(defun +fold/region-fold-p ()
+  "Set up #region / #endregion folding via outline-mode."
+  (setq-local outline-regexp ".*#region\\|.*#endregion")
+  (setq-local outline-level (lambda () 1))
+  (outline-minor-mode 1))
+
+(add-hook 'css-mode-hook #'+fold/region-fold-p)
+(add-hook 'js-mode-hook #'+fold/region-fold-p)
+(add-hook 'typescript-mode-hook #'+fold/region-fold-p)

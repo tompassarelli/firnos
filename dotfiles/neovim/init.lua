@@ -5,24 +5,24 @@ require('stylix-colors').setup()
 vim.opt.foldmethod = "expr"
 
 -- #region folding function
-function GetNixFold(lnum)
+function GetRegionFold(lnum)
   local line = vim.fn.getline(lnum)
-  if line:match("^%s*#region") then
+  if line:match("#region") then
     return ">1"
-  elseif line:match("^%s*#endregion") then
+  elseif line:match("#endregion") then
     return "<1"
   end
   return "="
 end
 
-vim.opt.foldexpr = "v:lua.GetNixFold(v:lnum)"
+vim.opt.foldexpr = "v:lua.GetRegionFold(v:lnum)"
 
--- Auto-apply for .nix files
+-- Auto-apply for file types that use #region / #endregion
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "nix",
+  pattern = { "nix", "css", "javascript", "typescript" },
   callback = function()
     vim.opt_local.foldmethod = "expr"
-    vim.opt_local.foldexpr = "v:lua.GetNixFold(v:lnum)"
+    vim.opt_local.foldexpr = "v:lua.GetRegionFold(v:lnum)"
   end,
 })
 

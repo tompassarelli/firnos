@@ -145,13 +145,20 @@ Repo stores:     secrets/aws.yaml (encrypted ciphertext)
 System uses:     /run/secrets/aws-access-key-id (plaintext, owner-only)
 ```
 
-Encryption uses [age](https://age-encryption.org/). Your age key lives at `~/.config/sops/age/keys.txt` — this file is **not** in the repo.
+Encryption uses [age](https://age-encryption.org/). Your age private key lives at **`/var/lib/sops-nix/key.txt`** (owned by you, mode 400) and is **not** in the repo. The authoritative backup is in Bitwarden; if you ever lose the file, restore it from there.
+
+Why `/var/lib/sops-nix/key.txt` and not `~/.config/sops/age/keys.txt` (sops's usual default)? Because sops-nix runs at stage-2-init, *before* `/home` is mounted. If the key lived under `/home`, activation would fail with `cannot read keyfile` and `/run/secrets/` would never be populated — silently breaking anything that reads from it.
+
+To keep the interactive `sops` CLI pointed at the same file, `flake.nix` sets `environment.sessionVariables.SOPS_AGE_KEY_FILE = "/var/lib/sops-nix/key.txt"`. One file, one path, one thing to rotate.
+
+**Rotating the key**: overwrite `/var/lib/sops-nix/key.txt` and update Bitwarden. That's it.
 
 ### Setup (already done in FirnOS)
 
 The flake handles the plumbing:
 - `sops-nix` is a flake input and its NixOS module is imported
-- `sops.age.keyFile` points to your age key
+- `sops.age.keyFile = "/var/lib/sops-nix/key.txt"` so activation works before `/home` is mounted
+- `SOPS_AGE_KEY_FILE` env var points the CLI at the same path
 - `sops` and `age` CLI tools are in `environment.systemPackages`
 - `.sops.yaml` at the repo root defines which age key encrypts which paths
 

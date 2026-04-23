@@ -61,7 +61,7 @@ input {
 
     // Warp cursor to center of newly focused windows.
     // Avoids unintentional sidebar activation in palefox when tiling.
-    warp-mouse-to-focus
+    // warp-mouse-to-focus
 
     // Focus windows and outputs automatically when moving the mouse into them.
     // Setting max-scroll-amount="0%" makes it work only on windows already fully on screen.
@@ -341,7 +341,7 @@ window-rule {
 
 // Global Transparency (see-through / frosted glass)
 window-rule {
-  opacity 0.88
+  opacity 0.90
 }
 
 binds {

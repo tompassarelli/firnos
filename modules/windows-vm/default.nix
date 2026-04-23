@@ -14,9 +14,6 @@ in
       enable = true;
       qemu = {
         package = pkgs.qemu_kvm;
-        # UEFI support (required for Windows 11)
-        ovmf.enable = true;
-        ovmf.packages = [ pkgs.OVMFFull.fd ];
         # TPM emulation (required for Windows 11)
         swtpm.enable = true;
       };
@@ -31,7 +28,7 @@ in
     # Useful packages
     environment.systemPackages = with pkgs; [
       spice-gtk        # USB redirection and clipboard sharing
-      win-virtio       # VirtIO drivers ISO for Windows guests
+      virtio-win       # VirtIO drivers ISO for Windows guests
     ];
 
     # Samba file sharing for Windows VM guests

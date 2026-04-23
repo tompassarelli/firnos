@@ -15,6 +15,8 @@ in {
     qutebrowser.default = lib.mkOption { type = lib.types.bool; default = false; description = "Set Qutebrowser as default browser"; };
     zen-browser.enable = lib.mkOption { type = lib.types.bool; default = false; description = "Enable Zen Browser"; };
     zen-browser.default = lib.mkOption { type = lib.types.bool; default = false; description = "Set Zen Browser as default browser"; };
+    librewolf.enable = lib.mkOption { type = lib.types.bool; default = false; description = "Enable LibreWolf"; };
+    librewolf.default = lib.mkOption { type = lib.types.bool; default = false; description = "Set LibreWolf as default browser"; };
   };
 
   config = lib.mkIf cfg.enable {
@@ -30,5 +32,7 @@ in {
     myConfig.modules.qutebrowser.default = lib.mkDefault cfg.qutebrowser.default;
     myConfig.modules.zen-browser.enable = lib.mkDefault cfg.zen-browser.enable;
     myConfig.modules.zen-browser.default = lib.mkDefault cfg.zen-browser.default;
+    myConfig.modules.librewolf.enable = lib.mkDefault cfg.librewolf.enable;
+    myConfig.modules.librewolf.default = lib.mkDefault cfg.librewolf.default;
   };
 }
