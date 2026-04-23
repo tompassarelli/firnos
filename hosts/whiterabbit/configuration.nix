@@ -50,7 +50,15 @@
   myConfig.bundles.development.enable = true;
   myConfig.bundles.javascript.enable = true;
   myConfig.bundles.python.enable = true;
-  myConfig.bundles.database.enable = true;
+  myConfig.bundles.database = {
+    enable = true;
+    # System Postgres disabled — Kea's dev Postgres lives in
+    # ~/code/msa/docker-compose.yml (podman) on port 5433. Keeping a
+    # second machine-wide Postgres around just causes confusion about
+    # which instance is authoritative. Re-enable if another project
+    # genuinely needs a non-dockerized Postgres on the host.
+    postgresql.enable = false;
+  };
   myConfig.bundles.rust = {
     enable = true;
     bevy.enable = false;

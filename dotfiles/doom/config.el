@@ -315,14 +315,10 @@ Also refreshes the agenda file cache."
 ;; ============ Billing ============
 
 (defun +billing/period-bounds (start-seed &optional end-date-override)
-  "Compute (start-abs . end-abs) for the 14-day pay period to report on.
+  "Compute (start-abs . end-abs) for the 14-day pay period containing today.
 START-SEED is a date string of any known period START (a Wednesday).
 END-DATE-OVERRIDE, if non-empty, pins the period end to that date (a Tuesday);
-the start is then end - 13 days.
-
-Without an override: returns the most recently completed period, except on
-the final Tuesday of a period (payday eve), where it returns the period
-ending today."
+the start is then end - 13 days."
   (let* ((seed-abs (time-to-days (org-time-string-to-time start-seed)))
          (cycle-days 14))
     (if (and end-date-override (not (string-empty-p end-date-override)))
@@ -330,8 +326,7 @@ ending today."
           (cons (- end-abs (1- cycle-days)) end-abs))
       (let* ((today-abs (time-to-days (current-time)))
              (elapsed (- today-abs seed-abs))
-             (completed (max 1 (/ (1+ elapsed) cycle-days)))
-             (start-abs (+ seed-abs (* cycle-days (1- completed))))
+             (start-abs (+ seed-abs (* cycle-days (/ elapsed cycle-days))))
              (end-abs (+ start-abs (1- cycle-days))))
         (cons start-abs end-abs)))))
 
