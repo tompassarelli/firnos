@@ -75,6 +75,7 @@
     firefox.palefox.enable = true;
     chrome.enable = true;
     zen-browser.enable = true;
+    qutebrowser.enable = true;
     # librewolf.enable = true;
   };
   myConfig.bundles.gaming = {

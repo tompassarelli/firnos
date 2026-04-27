@@ -2,36 +2,34 @@
 let
   username = config.myConfig.modules.users.username;
 
-  # fx-autoconfig: patched Firefox with JS loader bootstrap
-  palefoxFirefox = lib.pipe pkgs.firefox [
-    (pkg: pkg.override {
-      extraPrefs = ''
-        try {
-          let cmanifest = Cc['@mozilla.org/file/directory_service;1']
-            .getService(Ci.nsIProperties).get('UChrm', Ci.nsIFile);
-          cmanifest.append('utils');
-          cmanifest.append('chrome.manifest');
-          if(cmanifest.exists()){
-            Components.manager.QueryInterface(Ci.nsIComponentRegistrar)
-              .autoRegister(cmanifest);
-            ChromeUtils.importESModule('chrome://userchromejs/content/boot.sys.mjs');
-          }
-        } catch(ex) {};
-      '';
-    })
-    (pkg: pkg.overrideAttrs (old: {
-      buildCommand = (old.buildCommand or "") + ''
-        echo 'pref("general.config.sandbox_enabled", false);' >> "$out/lib/firefox/defaults/pref/autoconfig.js"
-      '';
-    }))
-  ];
+  # palefox flake input — `inputs.palefox` resolves to the flake's source
+  # tree (path-based, re-read every evaluation). Only TRACKED files are
+  # visible; bun-built artifacts must be committed before `firn rebuild`.
+  palefoxRoot = inputs.palefox;
+
+  # Wrap Firefox: bake palefox's hash-pinned bootstrap directly into the
+  # Nix-store derivation. The bootstrap content lives in the immutable
+  # Nix store from this point on — full security model intact.
+  #
+  # For dev iteration on palefox source (no nixos-rebuild per change),
+  # use the test rig: `bun run test:integration` / `bun run test:rig`.
+  # See palefox docs/dev/loader-pipeline.md for the full architecture.
+  palefoxFirefox = pkgs.firefox.overrideAttrs (old: {
+    buildCommand = (old.buildCommand or "") + ''
+      cat >> "$out/lib/firefox/defaults/pref/autoconfig.js" <<'EOF'
+      pref("general.config.filename", "config.js");
+      pref("general.config.sandbox_enabled", false);
+      EOF
+      cp ${palefoxRoot}/program/config.generated.js "$out/lib/firefox/config.js"
+    '';
+  });
 in
 {
   config = lib.mkIf config.myConfig.modules.firefox.palefox.enable {
     # Palefox implies firefox
     myConfig.modules.firefox.enable = lib.mkDefault true;
 
-    # fx-autoconfig: system-level Firefox with JS loader
+    # palefox: system-level Firefox with hash-pinned JS loader baked in
     programs.firefox = {
       enable = true;
       package = palefoxFirefox;
@@ -43,8 +41,13 @@ in
         package = palefoxFirefox;
         profiles.${username} = {
           settings = {
-            # Enable custom stylesheets
-            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            # Legacy stylesheets pref OFF — palefox CSS now loads via the
+            # hash-pinned loader's chrome:// CSS registration, NOT through
+            # Firefox's direct userChrome.css load.
+            "toolkit.legacyUserProfileCustomizations.stylesheets" = false;
+            # fx-autoconfig loader gate — required for boot.sys.mjs to
+            # actually load palefox JS and CSS.
+            "userChromeJS.enabled" = true;
 
             # Hide bookmarks toolbar by default
             "browser.toolbars.bookmarks.visibility" = "never";
@@ -67,9 +70,14 @@ in
         };
       };
 
-      # Symlink Palefox custom chrome directory
-      home.file.".mozilla/firefox/${username}/chrome".source = config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/code/palefox/chrome";
+      # Symlink palefox chrome dir into the profile (out-of-store so live
+      # source is what loads, but the bootstrap still hash-validates it
+      # against the manifest baked into the wrapped Firefox derivation).
+      # NOTE: this uses an absolute path because mkOutOfStoreSymlink runs
+      # at home-manager activation time, NOT at Nix evaluation time, so
+      # /home access is fine here.
+      home.file.".mozilla/firefox/${username}/chrome".source =
+        config.lib.file.mkOutOfStoreSymlink "/home/${username}/code/palefox/chrome";
     };
   };
 }

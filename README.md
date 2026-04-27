@@ -6,8 +6,6 @@
   </picture>
 </p>
 
-<p align="center">A coherent Nix workstation, compressed by deadlines</p>
-
 ## What is FirnOS?
 
 A NixOS configuration framework. Import it as a flake input and build on top of it.

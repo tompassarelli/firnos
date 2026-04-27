@@ -37,6 +37,11 @@
 ;; Disable automatic eldoc popups
 (setq eldoc-idle-delay most-positive-fixnum)
 
+(defun insert-date ()
+  "Insert today's date at point as YYYY-MM-DD."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d")))
+
 ;; Kill the other window without switching to it
 (defun kill-other-window ()
   (interactive)

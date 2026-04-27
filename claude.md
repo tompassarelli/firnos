@@ -10,6 +10,10 @@ NEVER chain `git commit && git push` in one command. Always:
 3. If secrets are detected, fix the leak before proceeding
 4. Only then advise the user to push
 
+## Nix Flakes: New Files Must Be Git-Tracked
+
+When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them.
+
 ## Architecture
 
 Two namespaces: `myConfig.modules.*` (atoms) and `myConfig.bundles.*` (molecules).

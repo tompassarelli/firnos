@@ -46,9 +46,19 @@
       url = "github:abenz1267/walker";
       inputs.elephant.follows = "elephant";
     };
+
+    # palefox: local checkout. Path-based input re-reads from the
+    # working tree on every evaluation (no `nix flake update palefox`
+    # needed per change), but only TRACKED files are visible — bun-built
+    # artifacts (chrome/JS/*.uc.js, program/config.generated.js) must be
+    # committed before a `firn rebuild`.
+    palefox = {
+      url = "path:/home/tom/code/palefox";
+      flake = true;
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox }:
     let
       # All available modules - can be imported by external configs
       firnModules = ./modules;
@@ -78,7 +88,7 @@
     }: nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inputs = { inherit nur walker elephant lem quickshell zen-browser; };
+        inputs = { inherit nur walker elephant lem quickshell zen-browser palefox; };
         flakeRoot = self;
       } // extraSpecialArgs;
       modules = [
@@ -121,7 +131,7 @@
           # Home-manager configuration
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = {
-            inputs = { inherit nur walker elephant lem quickshell zen-browser; };
+            inputs = { inherit nur walker elephant lem quickshell zen-browser palefox; };
           } // extraSpecialArgs;
           home-manager.users.${config.myConfig.modules.users.username} = {
             home.stateVersion = config.myConfig.modules.system.stateVersion;
