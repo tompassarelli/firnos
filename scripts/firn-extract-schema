@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-# firn-extract-schema — dump every NixOS option (path + type-name) into
+# firn-extract-schema — dump every NixOS option (path + type info) into
 # .firn-build/schema.json. Includes custom myConfig.* options + flake-input
 # options (stylix, home-manager, sops, etc.) automatically.
+#
+# Each entry has:
+#   p     - dotted option path
+#   t     - top-level type name ("bool", "str", "listOf", "nullOr", "enum", ...)
+#   inner - (optional) recursive {t, inner?, enum?} for parameterized types
+#   enum  - (optional) list of valid values for enum types
 #
 # Re-run after `nix flake update` or after adding/changing modules with
 # new options. Cached output is read by firn-validate.
@@ -18,21 +24,41 @@ HOST="${1:-whiterabbit}"
 
 echo "firn-extract-schema: extracting options tree for nixosConfigurations.${HOST}..."
 
-# System options (whiterabbit's full merged options tree)
 nix eval --json --impure --expr "
 let
   flake = builtins.getFlake (toString ./.);
   opts  = flake.nixosConfigurations.${HOST}.options;
+
+  # Recursively describe a type. Captures the type-name, recurses into
+  # nestedTypes.elemType for parameterized containers (listOf, nullOr,
+  # attrsOf, lazyAttrsOf), and pulls enum values out of functor.payload.
+  describeType = t:
+    let
+      base = { t = t.name or \"?\"; };
+      tryInner =
+        if (t ? nestedTypes) && (t.nestedTypes ? elemType)
+        then builtins.tryEval (describeType t.nestedTypes.elemType)
+        else { success = false; value = null; };
+      withInner =
+        if tryInner.success then base // { inner = tryInner.value; } else base;
+      tryEnum =
+        if (t.name or \"\") == \"enum\" && (t ? functor) && (t.functor ? payload) && (t.functor.payload ? values)
+        then builtins.tryEval t.functor.payload.values
+        else { success = false; value = null; };
+      withEnum =
+        if tryEnum.success then withInner // { enum = tryEnum.value; } else withInner;
+    in withEnum;
+
   walk = path: o:
     if (o._type or null) == \"option\"
-    then [ { p = path; t = o.type.name or \"?\"; } ]
+    then [ ({ p = path; } // describeType (o.type or {})) ]
     else if builtins.isAttrs o
     then builtins.concatLists
       (builtins.attrValues
         (builtins.mapAttrs (n: v: walk (if path == \"\" then n else \"\${path}.\${n}\") v) o))
     else [];
 in walk \"\" opts
-" 2>/dev/null > .firn-build/schema.json
+" > .firn-build/schema.json 2>.firn-build/schema.err
 
 count=$(python3 -c 'import json; print(len(json.load(open(".firn-build/schema.json"))))')
 size=$(wc -c < .firn-build/schema.json)

@@ -475,6 +475,224 @@
   (for ([k (in-list (sort (hash-keys seen) string<?))])
     (printf "  ~a\n" k)))
 
+;; ---------- command: diff ----------
+;;
+;; Re-emit Nix from a .rkt source and diff it against the committed .nix.
+;; Useful for "what would change in the generated Nix if I ran firn-build?"
+;; and for confirming hand-edited .nix files are equivalent to what nisp
+;; would produce.
+
+(define (resolve-rkt-source name)
+  ;; Resolve a user-facing name to a .rkt path. Accepts:
+  ;;   - bare name       → modules/<name>/default.rkt or bundles/<name>/default.rkt
+  ;;   - module/<name>   → modules/<name>/default.rkt
+  ;;   - bundle/<name>   → bundles/<name>/default.rkt
+  ;;   - host/<name>     → hosts/<name>/configuration.rkt
+  ;;   - flake           → flake.rkt
+  ;;   - relative path   → as-is (resolved against repo root if not absolute)
+  (cond
+    [(equal? name "flake")
+     (in-repo "flake.rkt")]
+    [(regexp-match #rx"^module[s]?/(.+)$" name)
+     => (λ (m) (in-repo "modules" (cadr m) "default.rkt"))]
+    [(regexp-match #rx"^bundle[s]?/(.+)$" name)
+     => (λ (m) (in-repo "bundles" (cadr m) "default.rkt"))]
+    [(regexp-match #rx"^host[s]?/(.+)$" name)
+     => (λ (m) (in-repo "hosts" (cadr m) "configuration.rkt"))]
+    [(regexp-match #rx"\\.rkt$" name)
+     ;; explicit path — allow absolute or repo-relative
+     (cond [(file-exists? name) (string->path name)]
+           [(file-exists? (in-repo name)) (in-repo name)]
+           [else #f])]
+    [else
+     ;; bare name — try modules/, then bundles/, then hosts/
+     (define candidates
+       (list (in-repo "modules" name "default.rkt")
+             (in-repo "bundles" name "default.rkt")
+             (in-repo "hosts" name "configuration.rkt")))
+     (or (findf file-exists? candidates) #f)]))
+
+(define (rkt->nix-path rkt)
+  (define s (path->string rkt))
+  (cond
+    [(regexp-match? #rx"\\.rkt$" s)
+     (string->path (regexp-replace #rx"\\.rkt$" s ".nix"))]
+    [else (error 'rkt->nix-path "not a .rkt file: ~a" s)]))
+
+(define (re-emit-nix rkt-path)
+  ;; Run `racket <rkt>` and capture stdout. Returns string or #f on error.
+  (define out (open-output-string))
+  (define err (open-output-string))
+  (define ok?
+    (parameterize ([current-output-port out]
+                   [current-error-port err])
+      (system* (find-exe "racket") (path->string rkt-path))))
+  (cond
+    [ok? (get-output-string out)]
+    [else
+     (eprintf "firn diff: failed to evaluate ~a\n" (path->string rkt-path))
+     (eprintf "~a" (get-output-string err))
+     #f]))
+
+(define (diff-one rkt-path)
+  ;; Returns 'same / 'different / 'error
+  (define nix-path (rkt->nix-path rkt-path))
+  (define fresh (re-emit-nix rkt-path))
+  (cond
+    [(not fresh) 'error]
+    [(not (file-exists? nix-path))
+     (printf "=== ~a ===\n" (relative-to-repo nix-path))
+     (printf "(no committed .nix — would create)\n")
+     'different]
+    [else
+     (define committed (file->string nix-path))
+     (cond
+       [(equal? fresh committed) 'same]
+       [else
+        (define tmp (make-temporary-file "firn-diff-~a.nix"))
+        (with-output-to-file tmp #:exists 'replace
+          (λ () (display fresh)))
+        (printf "=== ~a ===\n" (relative-to-repo nix-path))
+        (flush-output)
+        (system* (find-exe "diff") "-u" "--color=always"
+                 (path->string nix-path) (path->string tmp))
+        (delete-file tmp)
+        'different])]))
+
+(define (cmd-diff args)
+  (define targets
+    (cond
+      [(null? args)
+       ;; diff every nisp .rkt
+       (sort
+        (for/list ([f (in-directory ROOT)]
+                   #:when (let ([s (path->string f)])
+                            (and (regexp-match? #rx"\\.rkt$" s)
+                                 (not (regexp-match? #rx"/nisp/" s))
+                                 (not (regexp-match? #rx"/scripts/" s))
+                                 (not (regexp-match? #rx"/\\.firn-build/" s))
+                                 (not (regexp-match? #rx"/\\.direnv/" s))
+                                 (not (regexp-match? #rx"/\\.git/" s))
+                                 (not (regexp-match? #rx"/result" s))
+                                 (with-handlers ([exn:fail? (λ (_) #f)])
+                                   (regexp-match?
+                                    #rx"^#lang nisp"
+                                    (call-with-input-file f
+                                      (λ (p) (read-line p))))))))
+          f)
+        path<?)]
+      [else
+       (filter-map
+        (λ (a)
+          (define r (resolve-rkt-source a))
+          (cond
+            [r r]
+            [else (eprintf "firn diff: cannot resolve ~a\n" a) #f]))
+        args)]))
+  (define same 0)
+  (define diff 0)
+  (define err 0)
+  (for ([rkt (in-list targets)])
+    (case (diff-one rkt)
+      [(same) (set! same (+ same 1))]
+      [(different) (set! diff (+ diff 1))]
+      [(error) (set! err (+ err 1))]))
+  (printf "\nfirn diff: ~a unchanged, ~a differ, ~a error(s)\n" same diff err)
+  (exit (if (or (> diff 0) (> err 0)) 1 0)))
+
+;; ---------- command: scaffold ----------
+;;
+;; Template-based generation for module/bundle/host shapes that are richer
+;; than what `firn mod` / `firn bundle` produce. Each template emits a
+;; `#lang nisp` source so the user starts from a working .rkt.
+
+(define (scaffold-write-file path contents)
+  (when (file-exists? path)
+    (eprintf "firn scaffold: refusing to overwrite ~a\n" path)
+    (exit 1))
+  (make-directory* (path-only path))
+  (display-to-file contents path)
+  (sh "git" "-C" ROOT "add" (path->string path))
+  (printf "Created ~a (git added)\n" (relative-to-repo path)))
+
+(define (scaffold-service name)
+  (define dir (in-repo "modules" name))
+  (define f (build-path dir "default.rkt"))
+  (define body
+    (string-append
+     "#lang nisp\n\n"
+     (format "(module-file modules ~a~n" name)
+     (format "  (desc ~s)~n" (format "~a service" name))
+     "  (config-body\n"
+     (format "    (set environment.systemPackages (with-pkgs ~a))~n" name)
+     (format "    (set services.~a.enable #t)))~n" name)))
+  (scaffold-write-file f body))
+
+(define (scaffold-submodule name)
+  (define dir (in-repo "modules" name))
+  (define f (build-path dir "default.rkt"))
+  (define body
+    (string-append
+     "#lang nisp\n\n"
+     (format "(module-file modules ~a~n" name)
+     (format "  (desc ~s)~n" (format "~a configuration" name))
+     "  (option-attrs\n"
+     "    (extraConfig (mkopt #:type lib.types.lines\n"
+     "                        #:default \"\"\n"
+     "                        #:desc \"Extra config text.\")))\n"
+     "  (config-body\n"
+     (format "    (set environment.systemPackages (with-pkgs ~a))))~n" name)))
+  (scaffold-write-file f body))
+
+(define (scaffold-home name)
+  (define dir (in-repo "modules" name))
+  (define f (build-path dir "default.rkt"))
+  (define body
+    (string-append
+     "#lang nisp\n\n"
+     (format "(hm-module ~a ~s~n" name (format "~a (home-manager)" name))
+     (format "  (set programs.~a~n" name)
+     "    (att (enable #t))))\n"))
+  (scaffold-write-file f body))
+
+(define (scaffold-host name)
+  (define dir (in-repo "hosts" name))
+  (define f (build-path dir "configuration.rkt"))
+  (define body
+    (string-append
+     "#lang nisp\n\n"
+     "(host-file\n"
+     "  (set myConfig.modules.system.stateVersion \"25.11\")\n"
+     "  (set myConfig.modules.users.username \"you\")\n"
+     "  (enable myConfig.modules.users\n"
+     "          myConfig.modules.boot\n"
+     "          myConfig.modules.networking)\n\n"
+     "  ;; REQUIRED for the firn-build pipeline\n"
+     "  (enable myConfig.bundles.racket\n"
+     "          myConfig.bundles.terminal\n"
+     "          myConfig.bundles.development))\n"))
+  (scaffold-write-file f body)
+  (printf "Don't forget to add ~a to flake.rkt's nixosConfigurations.\n" name))
+
+(define (cmd-scaffold args)
+  (cond
+    [(< (length args) 2)
+     (eprintf "Usage: firn scaffold <pattern> <name>\n")
+     (eprintf "  patterns: service, submodule, home, host\n")
+     (exit 1)]
+    [else
+     (define pattern (car args))
+     (define name (cadr args))
+     (case (string->symbol pattern)
+       [(service)   (scaffold-service name)]
+       [(submodule) (scaffold-submodule name)]
+       [(home)      (scaffold-home name)]
+       [(host)      (scaffold-host name)]
+       [else
+        (eprintf "firn scaffold: unknown pattern '~a'\n" pattern)
+        (eprintf "  patterns: service, submodule, home, host\n")
+        (exit 1)])]))
+
 ;; ---------- help ----------
 
 (define (cmd-help _args)
@@ -490,8 +708,10 @@ Commands:
   list --used                 show modules/bundles in use and where
   list --unused               show modules/bundles not referenced anywhere
   refs <name>                 show what references a module/bundle
-  mod <name>                  scaffold a new module (.rkt)
+  mod <name>                  scaffold a minimal module (.rkt)
   bundle <name> <mods...>     scaffold a new bundle (.rkt)
+  scaffold <pattern> <name>   scaffold from template (service|submodule|home|host)
+  diff [target...]            re-emit Nix from .rkt and diff vs committed .nix
   secret <name>               create/edit an encrypted secret
   secret list                 list secret files
   secret show <name>          decrypt and display a secret
@@ -517,6 +737,8 @@ HELP
        [("refs")        (cmd-refs rest)]
        [("mod")         (cmd-mod rest)]
        [("bundle")      (cmd-bundle rest)]
+       [("scaffold")    (cmd-scaffold rest)]
+       [("diff")        (cmd-diff rest)]
        [("secret")      (cmd-secret rest)]
        [("gen")         (cmd-gen rest)]
        [("enable")      (cmd-enable rest)]

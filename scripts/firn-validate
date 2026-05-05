@@ -3,10 +3,14 @@
 
 ;; firn-validate — type-check NixOS option paths in nisp .rkt sources.
 ;;
-;; Loads the cached options schema (.firn-build/schema.json), walks every
-;; .rkt file looking for (set 'PATH ...) and (enable 'PATH ...) calls, and
-;; reports any path that doesn't exist in the schema — with file:line:col
-;; precision and did-you-mean suggestions.
+;; Two passes:
+;;   Phase 1: every (set 'PATH ...) and (enable 'PATH ...) — check the path
+;;            exists in the schema. Did-you-mean suggestions on miss.
+;;   Phase 2: for known paths, statically check that the value's shape
+;;            matches the schema's expected type (bool / str / int /
+;;            listOf X / nullOr X / enum {...}).
+;;
+;; Both passes report file:line:col precision, point to the offending stx.
 ;;
 ;; Usage:
 ;;   ./scripts/firn-validate                  # check every .rkt
@@ -35,11 +39,16 @@
   (eprintf "  run ./scripts/firn-extract-schema first.\n")
   (exit 2))
 
+;; schema-table: path → hash with keys 't (string), 'inner (hash, optional),
+;; 'enum (list of strings, optional). The hash is the original JSON entry
+;; minus 'p, so lookup is O(1).
 (define schema-table
   (let ([h (make-hash)])
     (for ([e (in-list (call-with-input-file SCHEMA-PATH read-json))])
-      (hash-set! h (hash-ref e 'p) (hash-ref e 't)))
+      (hash-set! h (hash-ref e 'p) e))
     h))
+
+(define (schema-type-of path) (hash-ref schema-table path #f))
 
 ;; Build a set of "namespace prefixes" — every dotted-path prefix of any
 ;; schema entry. So if `services.openssh.enable` is in the schema, then
@@ -85,7 +94,8 @@
       [else
        (define prefix-parts (drop-right parts 1))
        (define prefix (string-join prefix-parts "."))
-       (define t (hash-ref schema-table prefix #f))
+       (define entry (hash-ref schema-table prefix #f))
+       (define t (and entry (hash-ref entry 't #f)))
        (cond
          [(and t (member t SUBMODULE-TYPES)) #t]
          [else (loop prefix-parts)])])))
@@ -142,9 +152,225 @@
                (take sorted max-results)
                sorted)))
 
+(define (find-similar-strs target candidates [max-results 3])
+  (define max-edits
+    (max 2 (min 4 (quotient (string-length target) 3))))
+  (define cands
+    (for/list ([s (in-list candidates)]
+               #:when (<= (levenshtein target s) max-edits))
+      (cons (levenshtein target s) s)))
+  (define sorted (sort cands < #:key car))
+  (map cdr (if (> (length sorted) max-results)
+               (take sorted max-results)
+               sorted)))
+
+;; ---------- value type inference ----------
+;;
+;; Walk a value-side syntax object and try to classify what kind of Nix
+;; value it produces. Returns one of:
+;;
+;;   '(bool)               #t / #f
+;;   '(str)                string literal, (s …), (ms …)
+;;   '(int)                integer literal
+;;   '(float)              floating-point literal
+;;   '(null)               null literal (the symbol `null`)
+;;   '(path)               (p …) form
+;;   '(packages)           (with-pkgs …) — list of package
+;;   `(list ,types)        (lst …) — types is list of inferred element types
+;;   '(attrset)            (att …)
+;;   `(str-lit ,value)     string literal — value preserved for enum check
+;;   '(unknown)            anything else (let-bound names, calls, mk*, etc.)
+
+(define (infer-value-type stx)
+  (define dat (and (syntax? stx) (syntax->datum stx)))
+  (cond
+    [(boolean? dat) '(bool)]
+    [(exact-integer? dat) '(int)]
+    [(real? dat) '(float)]
+    [(string? dat) (list 'str-lit dat)]
+    [(eq? dat 'null) '(null)]
+    [(pair? dat)
+     (define lst (syntax->list stx))
+     (cond
+       [(or (not lst) (null? lst)) '(unknown)]
+       [else
+        (define head-stx (car lst))
+        (define head (and (identifier? head-stx) (syntax->datum head-stx)))
+        (define args (cdr lst))
+        (case head
+          [(s ms) '(str)]
+          [(p) '(path)]
+          [(with-pkgs) '(packages)]
+          [(lst) (list 'list (map infer-value-type args))]
+          [(att) '(attrset)]
+          ;; mkdefault, mkforce, mkif — unwrap
+          [(mkdefault mkforce)
+           (if (and (pair? args) (not (null? args)))
+               (infer-value-type (car args))
+               '(unknown))]
+          [(mkif)
+           (if (and (pair? args) (not (null? (cdr args))))
+               (infer-value-type (cadr args))
+               '(unknown))]
+          [else '(unknown)])])]
+    [else '(unknown)]))
+
+;; ---------- type matching ----------
+;;
+;; Given a schema-entry (hash with 't, 'inner, 'enum) and an inferred
+;; value-type, return one of:
+;;   'ok                 — types are compatible (or check skipped)
+;;   'unknown            — couldn't determine (don't report)
+;;   `(mismatch ,msg)    — definite mismatch; msg is a short description
+;;
+;; The matcher is intentionally conservative — only flag when CERTAIN.
+
+(define STR-TYPES
+  '("str" "string" "singleLineStr" "passwdEntry" "separatedString"
+    "lines" "commas" "envVar"))
+
+(define INT-TYPES
+  '("int" "ints.unsigned" "ints.positive" "ints.between"
+    "unsignedInt8" "unsignedInt16" "unsignedInt32" "unsignedInt64"
+    "signedInt8" "signedInt16" "signedInt32" "signedInt64"
+    "port" "u8" "u16" "u32" "u64" "s8" "s16" "s32" "s64"))
+
+(define PERMISSIVE-TYPES
+  ;; Types where we can't statically check meaningfully.
+  '("submodule" "attrsOf" "lazyAttrsOf" "anything" "unspecified" "raw"
+    "either" "oneOf" "coercedTo" "addCheck" "functionTo" "package"
+    "deferredModule" "optionType" "loaOf" "uniq" "attrs" "freeformType"))
+
+(define (str-type? t)
+  (or (member t STR-TYPES)
+      (and (string? t) (regexp-match? #rx"^strMatching" t))))
+
+(define (int-type? t)
+  (or (member t INT-TYPES)
+      (and (string? t) (regexp-match? #rx"^ints\\." t))))
+
+(define (permissive-type? t)
+  (or (member t PERMISSIVE-TYPES)
+      (and (string? t) (regexp-match? #rx"^enum$" t)) ; handled separately
+      ))
+
+(define (path-type? t) (member t '("path" "pathInStore")))
+(define (bool-type? t) (equal? t "bool"))
+(define (float-type? t) (or (equal? t "float") (equal? t "number")))
+
+(define (check-type expected-entry val-type)
+  (define t (hash-ref expected-entry 't "?"))
+  (define val-tag (car val-type))
+  (cond
+    ;; Permissive — skip
+    [(member t PERMISSIVE-TYPES) 'ok]
+    [(equal? t "?") 'ok]
+
+    ;; Unknown value — can't check
+    [(eq? val-tag 'unknown) 'unknown]
+
+    ;; bool
+    [(bool-type? t)
+     (case val-tag
+       [(bool) 'ok]
+       [else `(mismatch ,(format "expected bool, got ~a" (describe-val val-type)))])]
+
+    ;; str
+    [(str-type? t)
+     (case val-tag
+       [(str str-lit) 'ok]
+       [else `(mismatch ,(format "expected ~a, got ~a" t (describe-val val-type)))])]
+
+    ;; int
+    [(int-type? t)
+     (case val-tag
+       [(int) 'ok]
+       [else `(mismatch ,(format "expected ~a, got ~a" t (describe-val val-type)))])]
+
+    ;; float
+    [(float-type? t)
+     (case val-tag
+       [(float int) 'ok]
+       [else `(mismatch ,(format "expected ~a, got ~a" t (describe-val val-type)))])]
+
+    ;; path
+    [(path-type? t)
+     (case val-tag
+       [(path str str-lit) 'ok]
+       [else `(mismatch ,(format "expected path, got ~a" (describe-val val-type)))])]
+
+    ;; nullOr X
+    [(equal? t "nullOr")
+     (cond
+       [(eq? val-tag 'null) 'ok]
+       [(hash-ref expected-entry 'inner #f)
+        => (λ (inner) (check-type inner val-type))]
+       [else 'ok])]
+
+    ;; listOf X
+    [(equal? t "listOf")
+     (case val-tag
+       [(packages)
+        ;; Only valid if inner is package or unspecified
+        (define inner (hash-ref expected-entry 'inner #f))
+        (define inner-t (and inner (hash-ref inner 't "?")))
+        (if (or (not inner-t) (equal? inner-t "package") (member inner-t PERMISSIVE-TYPES))
+            'ok
+            `(mismatch ,(format "expected listOf ~a, got list of packages" inner-t)))]
+       [(list)
+        (define inner (hash-ref expected-entry 'inner #f))
+        (cond
+          [(not inner) 'ok]
+          [else
+           (define elems (cadr val-type))
+           (define mismatches
+             (filter (λ (r) (and (pair? r) (eq? (car r) 'mismatch)))
+                     (map (λ (e) (check-type inner e)) elems)))
+           (if (null? mismatches)
+               'ok
+               (car mismatches))])]
+       [else `(mismatch ,(format "expected list, got ~a" (describe-val val-type)))])]
+
+    ;; enum
+    [(equal? t "enum")
+     (define enum-vals (hash-ref expected-entry 'enum #f))
+     (cond
+       [(not enum-vals) 'ok]
+       [(eq? val-tag 'str-lit)
+        (define v (cadr val-type))
+        (if (member v enum-vals)
+            'ok
+            (let ([sims (find-similar-strs v enum-vals)])
+              `(mismatch
+                ,(format "~s not in enum {~a}~a"
+                         v
+                         (string-join (map (λ (s) (format "~s" s)) enum-vals) ", ")
+                         (if (null? sims)
+                             ""
+                             (format " — did you mean ~a?"
+                                     (string-join (map (λ (s) (format "~s" s)) sims)
+                                                  " or ")))))))]
+       [(eq? val-tag 'str) 'unknown]   ; (s …) interpolation — skip
+       [else `(mismatch ,(format "expected enum string, got ~a" (describe-val val-type)))])]
+
+    [else 'ok]))
+
+(define (describe-val val-type)
+  (case (car val-type)
+    [(bool) "bool"]
+    [(int) "int"]
+    [(float) "float"]
+    [(str str-lit) "string"]
+    [(null) "null"]
+    [(path) "path"]
+    [(packages) "list of packages"]
+    [(list) "list"]
+    [(attrset) "attrset"]
+    [else "unknown"]))
+
 ;; ---------- syntax walking ----------
 
-(struct path-ref (path stx) #:transparent)
+(struct path-ref (path stx val-stx) #:transparent)
 
 (define (extract-quoted-sym stx)
   (define lst (syntax->list stx))
@@ -167,14 +393,15 @@
      (cond
        [(and (eq? head 'set) (not (null? rest)))
         (define maybe-path (extract-quoted-sym (car rest)))
+        (define val-stx (and (not (null? (cdr rest))) (cadr rest)))
         (if maybe-path
-            (list (path-ref maybe-path (car rest)))
+            (list (path-ref maybe-path (car rest) val-stx))
             '())]
        [(eq? head 'enable)
         (filter-map
          (λ (arg)
            (define p (extract-quoted-sym arg))
-           (and p (path-ref (string-append p ".enable") arg)))
+           (and p (path-ref (string-append p ".enable") arg #f)))
          rest)]
        [else '()])]))
 
@@ -194,7 +421,7 @@
 
 (define total-errors 0)
 
-(define (report-error src stx path)
+(define (report-unknown-path src stx path)
   (set! total-errors (+ total-errors 1))
   (define line (or (syntax-line stx) "?"))
   (define col (or (syntax-column stx) "?"))
@@ -203,6 +430,12 @@
   (when (not (null? sims))
     (eprintf "  did you mean: ~a?\n"
              (string-join sims ", " #:before-last " or "))))
+
+(define (report-type-mismatch src val-stx path msg)
+  (set! total-errors (+ total-errors 1))
+  (define line (or (and val-stx (syntax-line val-stx)) "?"))
+  (define col (or (and val-stx (syntax-column val-stx)) "?"))
+  (eprintf "~a:~a:~a: type mismatch at ~a: ~a\n" src line col path msg))
 
 (define (validate-file f)
   (define raw (call-with-input-file f port->string))
@@ -231,8 +464,18 @@
               (for ([pr (in-list (extract-from-form s))])
                 (define p (path-ref-path pr))
                 (define stx-loc (path-ref-stx pr))
+                (define val-stx (path-ref-val-stx pr))
                 (case (validate-path p)
-                  [(unknown) (report-error src stx-loc p)]
+                  [(unknown) (report-unknown-path src stx-loc p)]
+                  [(ok)
+                   ;; Phase 2: type-check the value.
+                   (when val-stx
+                     (define entry (schema-type-of p))
+                     (when entry
+                       (define val-type (infer-value-type val-stx))
+                       (define result (check-type entry val-type))
+                       (when (and (pair? result) (eq? (car result) 'mismatch))
+                         (report-type-mismatch src val-stx p (cadr result)))))]
                   [else (void)])))))
         (loop)))))
 
