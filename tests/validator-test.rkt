@@ -22,9 +22,9 @@
 
 (define-runtime-path FIXTURES-DIR "fixtures")
 
-;; Locate firn-validate relative to this test file. tests/ is in nisp/,
-;; so two levels up is the repo root, and scripts/firn-validate is there.
-(define-runtime-path FIRN-VALIDATE "../../scripts/firn-validate")
+;; Locate firn-validate relative to this test file. tests/ is one level
+;; from the repo root, and scripts/firn-validate is there.
+(define-runtime-path FIRN-VALIDATE "../scripts/firn-validate")
 
 (define (run-validator fixture-name)
   ;; Returns (values stdout-string stderr-string exit-code).

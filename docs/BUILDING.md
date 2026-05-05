@@ -1,10 +1,25 @@
 # Building FirnOS
 
-FirnOS is authored in [nisp](nisp.md) — a Racket `#lang` for NixOS configuration.
+FirnOS is authored in [nisp](nisp.md) — a Racket `#lang` for writing Nix
+as s-expressions. nisp lives in its own repo at
+[tompassarelli/nisp](https://github.com/tompassarelli/nisp); FirnOS
+consumes it as a `raco pkg` link.
+
 Every `*.nix` file in this repo is generated from a sibling `*.rkt` source by
 `scripts/firn-build`. The `.rkt` files are source-of-truth. The `.nix` files
 are committed because the flake reads from the git tree (`nixos-rebuild` needs
 them visible).
+
+## Bootstrap
+
+```bash
+git clone https://github.com/tompassarelli/firnos
+git clone https://github.com/tompassarelli/nisp     # sibling clone — firn-build expects ../nisp
+# or set NISP_PATH=/wherever/you/cloned/nisp
+cd firnos
+./scripts/firn-build                                  # links nisp via raco pkg, regenerates .nix
+sudo nixos-rebuild switch --flake .#my-machine
+```
 
 ## Pipeline
 

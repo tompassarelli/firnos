@@ -5,9 +5,13 @@
 # under the repo. The matching .nix file is generated next to it.
 #
 # Files NOT covered:
-#   - nisp/                       (the DSL implementation itself)
 #   - hardware-configuration.nix  (NixOS-generated; left as raw .nix)
 #   - secrets/, dotfiles/, assets/  (non-Nix content, stays as-is)
+#   - tests/, scripts/, .firn-build/   (tooling, not config)
+#
+# Requires the nisp Racket package to be linked. firn-build will install
+# it on first run from $NISP_PATH (default: ../nisp, i.e. a sibling clone
+# of https://github.com/tompassarelli/nisp).
 
 set -euo pipefail
 
@@ -18,13 +22,22 @@ if ! command -v racket >/dev/null 2>&1; then
   exit 1
 fi
 
+# Locate nisp source. Default: sibling directory ../nisp. Override with NISP_PATH.
+NISP_PATH="${NISP_PATH:-$(cd .. && pwd)/nisp}"
+if [ ! -f "$NISP_PATH/info.rkt" ]; then
+  echo "firn-build: nisp not found at $NISP_PATH" >&2
+  echo "  clone it: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
+  echo "  or set NISP_PATH=/path/to/nisp" >&2
+  exit 1
+fi
+
 # Ensure the nisp package is registered with raco. Idempotent; only re-runs
-# raco when the nisp/ directory has changed since the last build.
+# raco when nisp/ has changed since the last build.
 nisp_marker=".firn-build/nisp.installed"
 mkdir -p .firn-build
-if [ ! -f "$nisp_marker" ] || [ -n "$(find nisp -newer "$nisp_marker" 2>/dev/null)" ]; then
-  echo "firn-build: (re)installing nisp package..." >&2
-  raco pkg install --auto --force --link --batch ./nisp >/dev/null 2>&1 || true
+if [ ! -f "$nisp_marker" ] || [ -n "$(find "$NISP_PATH" -newer "$nisp_marker" 2>/dev/null)" ]; then
+  echo "firn-build: (re)installing nisp package from $NISP_PATH..." >&2
+  raco pkg install --auto --force --link --batch "$NISP_PATH" >/dev/null 2>&1 || true
   raco setup nisp >/dev/null 2>&1
   touch "$nisp_marker"
 fi
@@ -32,10 +45,9 @@ fi
 count=0
 errors=0
 while IFS= read -r -d '' rkt; do
-  # Skip the nisp package itself.
   case "$rkt" in
-    ./nisp/*) continue ;;
     ./scripts/*) continue ;;
+    ./tests/*) continue ;;
   esac
 
   # Only process #lang nisp files. Other Racket files (CLI tools, helpers)
@@ -60,7 +72,7 @@ while IFS= read -r -d '' rkt; do
     racket "$rkt" 2>&1 | head -20 >&2 || true
     errors=$((errors + 1))
   fi
-done < <(find . -name '*.rkt' -not -path './nisp/*' -not -path './.firn-build/*' -not -path './result*' -print0)
+done < <(find . -name '*.rkt' -not -path './.firn-build/*' -not -path './result*' -print0)
 
 if [ "$errors" -gt 0 ]; then
   echo "firn-build: $count regenerated, $errors failed." >&2

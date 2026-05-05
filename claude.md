@@ -12,7 +12,7 @@ NEVER chain `git commit && git push` in one command. Always:
 
 ## Configuration interface: nisp
 
-The *write interface* for this repo is **nisp** — a Racket `#lang` (in `nisp/`). Authors edit `.rkt` files; `scripts/firn-build` regenerates the matching `.nix` next to each `.rkt` via `racket file.rkt > file.nix`. **Nix is the build target, not the source-of-truth.**
+The *write interface* for this repo is **nisp** — a Racket `#lang` for writing Nix as s-expressions. Authors edit `.rkt` files; `scripts/firn-build` regenerates the matching `.nix` next to each `.rkt` via `racket file.rkt > file.nix`. **Nix is the build target, not the source-of-truth.**
 
 ```
 *.rkt  ──(./scripts/firn-build)──▶  *.nix  ──(nixos-rebuild)──▶  system
@@ -20,9 +20,11 @@ The *write interface* for this repo is **nisp** — a Racket `#lang` (in `nisp/`
 
 Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
 
+**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp). firn-build expects it cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. The DSL implementation, AST, emitter, and emit tests are over there. firnos consumes it as a `raco pkg` link.
+
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
-References: `BUILDING.md` (full pipeline + DSL patterns), `nisp.md` (DSL spec), `nisp/main.rkt` (implementation).
+References: `docs/BUILDING.md` (pipeline + DSL patterns), `docs/nisp.md` (DSL surface ref), [tompassarelli/nisp main.rkt](https://github.com/tompassarelli/nisp/blob/main/main.rkt) (implementation).
 
 ## Nix Flakes: New Files Must Be Git-Tracked
 

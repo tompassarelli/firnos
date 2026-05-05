@@ -856,8 +856,8 @@ in
         (for/list ([f (in-directory ROOT)]
                    #:when (let ([ps (path->string f)])
                             (and (regexp-match? #rx"\\.rkt$" ps)
-                                 (not (regexp-match? #rx"/nisp/" ps))
                                  (not (regexp-match? #rx"/scripts/" ps))
+                                 (not (regexp-match? #rx"/tests/" ps))
                                  (not (regexp-match? #rx"/\\.firn-build/" ps))
                                  (not (regexp-match? #rx"/\\.direnv/" ps))
                                  (not (regexp-match? #rx"/\\.git/" ps))

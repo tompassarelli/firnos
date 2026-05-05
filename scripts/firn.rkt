@@ -595,8 +595,8 @@
         (for/list ([f (in-directory ROOT)]
                    #:when (let ([s (path->string f)])
                             (and (regexp-match? #rx"\\.rkt$" s)
-                                 (not (regexp-match? #rx"/nisp/" s))
                                  (not (regexp-match? #rx"/scripts/" s))
+                                 (not (regexp-match? #rx"/tests/" s))
                                  (not (regexp-match? #rx"/\\.firn-build/" s))
                                  (not (regexp-match? #rx"/\\.direnv/" s))
                                  (not (regexp-match? #rx"/\\.git/" s))
@@ -640,8 +640,8 @@
   (not (or (regexp-match? #rx"/\\.git$"        s)
            (regexp-match? #rx"/\\.direnv$"     s)
            (regexp-match? #rx"/\\.firn-build$" s)
-           (regexp-match? #rx"/nisp$"          s)
            (regexp-match? #rx"/scripts$"       s)
+           (regexp-match? #rx"/tests$"         s)
            (regexp-match? #rx"/result"         s))))
 
 (define (gather-nisp-rkts)

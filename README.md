@@ -7,8 +7,9 @@
 </p>
 
 **A source-aware NixOS config compiler.** Write your config in a small
-Racket DSL (nisp); validate every option path, type, and enum value
-against the NixOS options schema; emit ordinary Nix.
+Racket DSL ([nisp](https://github.com/tompassarelli/nisp)); validate
+every option path, type, and enum value against the NixOS options
+schema; emit ordinary Nix.
 
 Both `.rkt` and `.nix` are committed. The flake reads regular generated
 Nix. You're not trapped in a custom language — you can drop down to raw
@@ -63,7 +64,9 @@ milliseconds, before any `nixos-rebuild` evaluation cost.
 ## Quick start
 
 ```bash
-nix flake init -t github:tompassarelli/firnos
+git clone https://github.com/tompassarelli/firnos
+git clone https://github.com/tompassarelli/nisp           # sibling clone, firn-build expects ../nisp
+cd firnos
 cp /etc/nixos/hardware-configuration.nix hosts/my-machine/
 # edit hosts/my-machine/configuration.rkt — set username, enable bundles
 firn rebuild   # firn-build → firn-validate → nixos-rebuild → tag generation

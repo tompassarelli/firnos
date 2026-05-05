@@ -10,6 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: firnos
+
+      - name: Checkout nisp (sibling clone — firn-build expects ../nisp)
+        uses: actions/checkout@v4
+        with:
+          repository: tompassarelli/nisp
+          ref: v0.1.0
+          path: nisp
 
       - uses: cachix/install-nix-action@v27
         with:
@@ -20,16 +29,14 @@ jobs:
 
       - name: Link nisp package
         run: |
-          raco pkg install --auto --batch --link --force ./nisp
+          raco pkg install --auto --batch --link --force "$GITHUB_WORKSPACE/nisp"
           raco setup nisp
-
-      - name: nisp emit tests
-        run: raco test nisp/tests/emit-test.rkt
 
       - name: Drift check (.rkt and .nix in sync)
         # Regenerates every .nix from its sibling .rkt and fails if any
         # generated file differs from what's committed. Forces .rkt to
         # remain the source of truth.
+        working-directory: firnos
         run: |
           ./scripts/firn-build
           if ! git diff --exit-code; then
