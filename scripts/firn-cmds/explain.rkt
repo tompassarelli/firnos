@@ -17,7 +17,7 @@
          (only-in nisp/validate find-similar-strs)
          "util.rkt")
 
-(provide cmd-explain)
+(provide cmd-explain commands)
 
 (define CACHE-DIR (build-path ROOT ".nisp-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
@@ -120,3 +120,8 @@
               (eprintf "did you mean:\n")
               (for ([s (in-list sims)]) (eprintf "  ~a\n" s))])
            (exit 1)])])]))
+
+(define commands
+  (list (cmd "explain" "<path | err-line>"
+             "show schema entry + repo references for an option"
+             cmd-explain)))

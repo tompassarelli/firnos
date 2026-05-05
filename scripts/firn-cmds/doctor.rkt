@@ -20,7 +20,7 @@
          "util.rkt"
          "list.rkt")  ; for host-of-path / bundle-of-path / cmd-list machinery
 
-(provide cmd-doctor)
+(provide cmd-doctor commands)
 
 (define (check-status name predicate-thunk)
   ;; predicate-thunk returns (values pass? detail-lines)
@@ -136,3 +136,8 @@
   (define passed (length (filter values passes)))
   (printf "\nfirn doctor: ~a/~a checks passed.\n" passed total)
   (exit (if (= passed total) 0 1)))
+
+(define commands
+  (list (cmd "doctor" ""
+             "repo health check (untracked, stale, schema, orphans, validator)"
+             cmd-doctor)))

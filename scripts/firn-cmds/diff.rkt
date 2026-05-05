@@ -6,7 +6,7 @@
          racket/system
          "util.rkt")
 
-(provide cmd-diff resolve-rkt-source)
+(provide cmd-diff resolve-rkt-source commands)
 
 (define (resolve-rkt-source name)
   ;; Resolve a user-facing name to a .rkt path. Accepts:
@@ -119,3 +119,8 @@
       [(error) (set! err (+ err 1))]))
   (printf "\nfirn diff: ~a unchanged, ~a differ, ~a error(s)\n" same diff err)
   (exit (if (or (> diff 0) (> err 0)) 1 0)))
+
+(define commands
+  (list (cmd "diff" "[target...]"
+             "re-emit Nix from .rkt and diff vs committed .nix"
+             cmd-diff)))

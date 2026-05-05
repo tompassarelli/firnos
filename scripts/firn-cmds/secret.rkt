@@ -4,7 +4,7 @@
          racket/path
          "util.rkt")
 
-(provide cmd-secret cmd-gen)
+(provide cmd-secret cmd-gen commands)
 
 (define (cmd-secret args)
   (define subcmd (and (pair? args) (car args)))
@@ -48,3 +48,11 @@
      (when (regexp-match? #rx"^[0-9]+$" cur)
        (printf "next:    ~a\n" (+ 1 (string->number cur))))]
     [else (printf "(no generation info)\n")]))
+
+(define commands
+  (list (cmd "secret" "<name | list | show>"
+             "sops edit / list / decrypt"
+             cmd-secret)
+        (cmd "gen" ""
+             "current and next NixOS generation numbers"
+             cmd-gen)))

@@ -12,7 +12,14 @@
          sh sh-out find-exe
          list-dirs modules bundles hosts
          current-hostname host-config-rkt
-         grep-files relative-to-repo)
+         grep-files relative-to-repo
+         (struct-out cmd))
+
+;; ---------- command metadata ----------
+;; Each firn-cmds/*.rkt module exports `commands`, a list of these.
+;; firn.rkt aggregates them for both help-text generation and dispatch,
+;; so the help can never go out of sync with what's actually wired up.
+(struct cmd (name usage desc fn) #:transparent)
 
 ;; ---------- repo discovery ----------
 

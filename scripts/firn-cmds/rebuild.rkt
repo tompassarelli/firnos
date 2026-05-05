@@ -6,7 +6,7 @@
          racket/system
          "util.rkt")
 
-(provide cmd-rebuild)
+(provide cmd-rebuild commands)
 
 (define (cmd-rebuild args)
   (define-values (skip-checks? rest-args)
@@ -36,12 +36,16 @@
     (unless (sh (path->string (in-repo "scripts" "firn-validate")))
       (eprintf "firn rebuild: validation failed; aborting.\n") (exit 1)))
 
-  ;; Step 3: actual rebuild.
+  ;; Step 3: actual rebuild. Dispatch by platform.
   (printf ">> rebuild\n")
-  (define has-nh? (and (find-executable-path "nh") #t))
+  (define on-darwin?
+    (equal? "Darwin" (string-trim (sh-out "uname" "-s"))))
   (define rc
     (cond
-      [has-nh?
+      [on-darwin?
+       (define flake-target (if host (string-append ROOT "#" host) ROOT))
+       (sh "sudo" "darwin-rebuild" "switch" "--flake" flake-target)]
+      [(find-executable-path "nh")
        (apply system* (find-executable-path "nh")
               (append (list "os" "switch" ROOT)
                       (if host (list "-H" host) '())))]
@@ -50,6 +54,9 @@
        (sh "sudo" "nixos-rebuild" "switch" "--flake" flake-target)]))
   (cond
     [(not rc) (printf "rebuild failed.\n") (exit 1)]
+    [on-darwin?
+     ;; nix-darwin's generation listing is different; skip the gen tag for now.
+     (printf "rebuild complete.\n")]
     [else
      (define gens (sh-out "nixos-rebuild" "list-generations"))
      (define cur-line
@@ -61,3 +68,8 @@
        (when (regexp-match? #rx"^[0-9]+$" gen)
          (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD")
          (printf "Tagged: gen-~a\n" gen)))]))
+
+(define commands
+  (list (cmd "rebuild" "[host] [--skip-checks]"
+             "firn-build → validate → nixos-rebuild → tag generation"
+             cmd-rebuild)))

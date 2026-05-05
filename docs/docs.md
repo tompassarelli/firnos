@@ -11,13 +11,19 @@ ls -la /etc/nginx/nginx.conf
 
 The `/nix/store` is immutable and content-addressed — every path includes a hash of its inputs. You write `.nix` files, Nix evaluates them into store paths, and the system symlinks to those paths. This makes your system declarative, reproducible, atomic, and rollbackable.
 
+In FirnOS the *write interface* is one step removed: you author `.rkt` (nisp), `firn-build` regenerates `.nix`, and from there it's the standard Nix flow:
+
 ```
-You write:       ~/code/nixos-config/*.nix
+You write:       ~/code/firnos/**/*.rkt
+                           ↓  (firn-build regenerates)
+Generated Nix:   ~/code/firnos/**/*.nix
                            ↓  (nix evaluates)
 Nix generates:   /nix/store/hash-config
                            ↓  (creates symlink)
 System uses:     /etc/thing -> /nix/store/hash-config
 ```
+
+Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
 
 ## The Abstraction Spectrum
 
@@ -37,65 +43,78 @@ Each level builds on the previous. You can mix them — flakes for infrastructur
 
 FirnOS sits at the top of that spectrum with two namespaces:
 
-**`myConfig.modules.*`** = atoms. One package or service each. Each lives in `modules/<name>/default.nix`.
+**`myConfig.modules.*`** = atoms. One package or service each. Each lives in `modules/<name>/default.rkt` (with a regenerated `default.nix` sibling).
 
-Most modules are a single file with both `options` and `config`:
+Most modules are a single file. The simplest install-package case is one line:
 
-```nix
-# modules/awscli/default.nix
-{ config, lib, pkgs, ... }:
-{
-  options.myConfig.modules.awscli.enable = lib.mkEnableOption "awscli";
-
-  config = lib.mkIf config.myConfig.modules.awscli.enable {
-    environment.systemPackages = [ pkgs.awscli2 ];
-  };
-}
+```racket
+;; modules/awscli/default.rkt
+#lang nisp
+(pkg awscli2 "AWS CLI v2")
 ```
 
-When a module has complex options (multiple `mkOption` declarations beyond `enable`), split into `default.nix` for options and `<name>.nix` for implementation. This keeps the interface readable when there are many knobs. Currently `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, and `users` use this split.
+`(pkg name desc)` expands to the standard `module-file` boilerplate — the `mkEnableOption`, the `mkIf cfg.enable`, the `environment.systemPackages` setter — so authors don't repeat themselves. For services, `(svc openssh)` is the analogous shortcut.
 
-**`myConfig.bundles.*`** = molecules. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled:
+When a module has complex options (multiple `mkOption` declarations beyond `enable`), use the explicit form:
 
-```nix
-myConfig.bundles.media = {
-  enable = true;           # turns on 13 modules
-  lutris.enable = false;   # except this one
-};
+```racket
+;; modules/foo/default.rkt
+#lang nisp
+(module-file modules foo
+  (desc "foo configuration")
+  (option-attrs
+    (port (mkopt #:type lib.types.port
+                 #:default 8080
+                 #:desc "Listen port")))
+  (config-body
+    (set services.foo.enable #t)
+    (set services.foo.port cfg.port)))
+```
+
+When a module spans many lines, split into `default.rkt` (options) and `<name>.rkt` (implementation). Currently `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, and `users` use this split.
+
+**`myConfig.bundles.*`** = molecules. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled at the host:
+
+```racket
+;; in hosts/<your-host>/configuration.rkt
+(enable myConfig.bundles.media)
+(set myConfig.modules.lutris.enable #f)   ; opt out of one bundle member
 ```
 
 This works through NixOS priorities: bundles propagate enables with `mkDefault` (priority 1000), so a direct `false` (priority 100) always wins.
 
-**Auto-import**: `flake.nix` discovers all modules and bundles from directory listings. Adding a new module = create the directory and `git add`. No flake.nix edits.
+**Auto-import**: the flake discovers all modules and bundles from directory listings. Adding a new module = create the directory + `.rkt`, run `firn-build`, `git add` both files. No flake edits.
 
-See [`template/`](template/) for a complete starting config to copy.
+See [`template/`](../template/) for a complete starting config to copy.
 
 ## Adding a New Host
 
-1. Create `hosts/new-hostname/configuration.nix`:
-   ```nix
-   { ... }:
-   {
-     myConfig.modules.system.stateVersion = "25.05";
-     myConfig.modules.users.enable = true;
-     myConfig.modules.users.username = "yourname";
-     myConfig.modules.boot.enable = true;
-     myConfig.modules.networking.enable = true;
-     myConfig.bundles.development.enable = true;
-     # ... enable what you need
-   }
+1. Create `hosts/new-hostname/configuration.rkt`:
+   ```racket
+   #lang nisp
+   (host-file
+     (set myConfig.modules.system.stateVersion "25.11")
+     (set myConfig.modules.users.username "yourname")
+     (enable myConfig.modules.users
+             myConfig.modules.boot
+             myConfig.modules.networking
+             myConfig.bundles.racket           ; required for the firn-build pipeline
+             myConfig.bundles.development))
    ```
 
-2. Add a `nixosConfigurations` entry in `flake.nix`:
-   ```nix
-   new-hostname = self.lib.mkSystem {
-     hostname = "new-hostname";
-     hostConfig = ./hosts/new-hostname/configuration.nix;
-     hardwareConfig = ./hosts/new-hostname/hardware-configuration.nix;
-   };
+2. Add a `nixosConfigurations` entry in `flake.rkt` (regenerates into `flake.nix`):
+   ```racket
+   (new-hostname
+     (call self.lib.mkSystem
+       (att
+         (hostname "new-hostname")
+         (hostConfig (p "./hosts/new-hostname/configuration.nix"))
+         (hardwareConfig (p "./hardware-configuration.nix")))))
    ```
 
-Modules and bundles are auto-imported — only the host entry needs adding.
+3. `firn-build && git add hosts/new-hostname flake.nix` — the flake's dynamic auto-discovery picks up the rest. Modules and bundles are auto-imported; only the host entry needs adding.
+
+For a macOS machine, see [`MACOS.md`](MACOS.md) — uses `lib.mkDarwinSystem` and a parallel `darwinConfigurations` entry.
 
 ## mkOutOfStoreSymlink: Live-Editing Configs
 

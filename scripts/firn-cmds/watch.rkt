@@ -5,7 +5,7 @@
          racket/system
          "util.rkt")
 
-(provide cmd-watch)
+(provide cmd-watch commands)
 
 (define (descend? d)
   (define s (path->string d))
@@ -51,3 +51,8 @@
        (loop (gather-nisp-rkts))]
       [else
        (loop (gather-nisp-rkts))])))
+
+(define commands
+  (list (cmd "watch" ""
+             "re-run validator on .rkt save (no external deps)"
+             cmd-watch)))

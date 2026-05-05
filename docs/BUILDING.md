@@ -1,9 +1,10 @@
 # Building FirnOS
 
-FirnOS is authored in [nisp](nisp.md) — a Racket `#lang` for writing Nix
-as s-expressions. nisp ships the language plus the full validation
-toolchain (`nisp-validate`, `nisp-extract-schema`); FirnOS is one
-consumer of that toolchain.
+FirnOS is authored in [nisp](https://github.com/tompassarelli/nisp) — a Racket
+`#lang` for writing Nix as s-expressions. nisp ships the language plus the
+full validation toolchain (`nisp-validate`, `nisp-extract-schema`,
+`nisp-edit`, `nisp-rename`, `nisp-import`, `nisp-schema`, `nisp-lsp`); FirnOS
+is one consumer of that toolchain.
 
 - **nisp** ([repo](https://github.com/tompassarelli/nisp)) — language + library + CLIs
 - **firnos** (this repo) — modules, bundles, hosts, scaffolding, the `firn` CLI for daily workflow
@@ -49,13 +50,16 @@ no-op.
 ## The `firn` CLI
 
 `scripts/firn.rkt` is a Racket-based CLI that wraps the routine config
-operations (rebuild, list/refs, scaffolding new modules/bundles, secrets
-management, generation tagging) and adds two new commands that need
-syntax-aware host-config edits:
+operations. Command implementations live in `scripts/firn-cmds/*.rkt`;
+`firn.rkt` itself is just argv dispatch. Highlights:
 
-- `firn enable <name>` — toggle a module/bundle on in the current host
-- `firn disable <name>` — toggle off
-- `firn status` — list what's enabled
+- `firn enable <name>` / `firn disable <name>` / `firn status` — syntax-aware host-config edits via `nisp-edit`
+- `firn explain <path | validator-error-line>` — show the schema entry, declarations, and every `.rkt` that references the path. Accepts pasted validator errors directly (extracts the path)
+- `firn doctor` — five-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, validator)
+- `firn upgrade [--dry-run]` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references
+- `firn diff` — re-emit Nix from `.rkt` and unified-diff against committed `.nix` (drift sentinel)
+- `firn list` / `firn refs` / `firn mod` / `firn bundle` / `firn scaffold` — module/bundle introspection and scaffolding (`scaffold service` queries the schema cache and pre-fills commented stubs)
+- `firn secret` / `firn gen` — sops wrapper and generation numbers
 
 `scripts/firn.rkt` is invokable directly via `racket scripts/firn.rkt …`
 but for daily use it should be compiled. `firn-build-bin` uses `raco demod`
@@ -257,10 +261,12 @@ If you modify `nisp/main.rkt` (adding a new form, fixing the emitter):
 
 | nisp form | Generated Nix |
 | --- | --- |
-| `(file-module modules vim ...)` | `{ config, lib, pkgs, ... }: let cfg = ...; in { options... ; config = mkIf cfg.enable {...}; }` |
+| `(module-file modules vim ...)` | `{ config, lib, pkgs, ... }: let cfg = ...; in { options... ; config = mkIf cfg.enable {...}; }` |
 | `(bundle-file auth ...)`        | same shape under `myConfig.bundles.auth` |
 | `(host-file ...)`               | `{ lib, ... }: { ... }` (just option setters) |
 | `(flake-file ...)`              | full `flake.nix` |
+| `(pkg vim "Vim text editor")`   | full module-file installing `pkgs.vim` (shortcut) |
+| `(svc openssh)`                 | full module-file enabling `services.openssh.enable` (shortcut) |
 | `(set foo.bar val)`             | `foo.bar = val;` |
 | `(enable a b c)`                | `a.enable = true; b.enable = true; c.enable = true;` |
 | `(with-pkgs vim git fd)`        | `with pkgs; [ vim git fd ]` |
@@ -292,4 +298,4 @@ If you modify `nisp/main.rkt` (adding a new form, fixing the emitter):
 | `(home-of-bare u body...)`      | `home-manager.users.${u} = { body... };` |
 | `(sops-secret "name" (k v)...)` | `sops.secrets."name" = { k = v; ... };` |
 
-Full DSL reference lives at `nisp.md`.
+Full DSL reference lives in the [upstream nisp repo](https://github.com/tompassarelli/nisp).

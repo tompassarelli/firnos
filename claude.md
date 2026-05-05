@@ -24,7 +24,7 @@ Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
-References: `docs/BUILDING.md` (pipeline + DSL patterns), `docs/nisp.md` (DSL surface ref), [tompassarelli/nisp main.rkt](https://github.com/tompassarelli/nisp/blob/main/main.rkt) (implementation).
+References: `docs/BUILDING.md` (pipeline + DSL patterns), [tompassarelli/nisp](https://github.com/tompassarelli/nisp) (DSL surface ref + implementation), `docs/MACOS.md` (cross-platform via nix-darwin).
 
 ## Nix Flakes: New Files Must Be Git-Tracked
 

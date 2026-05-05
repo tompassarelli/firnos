@@ -21,7 +21,7 @@
          json
          "util.rkt")
 
-(provide cmd-upgrade)
+(provide cmd-upgrade commands)
 
 (define CACHE-DIR (build-path ROOT ".nisp-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
@@ -151,3 +151,8 @@
        (exit 1))])
 
   (printf "\nfirn upgrade: done. Test with `firn rebuild` (or `--skip-checks` if needed).\n"))
+
+(define commands
+  (list (cmd "upgrade" "[--dry-run]"
+             "flake update + schema diff + validate"
+             cmd-upgrade)))

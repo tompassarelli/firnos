@@ -7,7 +7,7 @@
                   find-set-form-positions)
          "util.rkt")
 
-(provide cmd-enable cmd-disable cmd-status)
+(provide cmd-enable cmd-disable cmd-status commands)
 
 (define (find-name-kind name)
   ;; Return 'module, 'bundle, or #f
@@ -90,3 +90,14 @@
     (hash-set! seen norm #t))
   (for ([k (in-list (sort (hash-keys seen) string<?))])
     (printf "  ~a\n" k)))
+
+(define commands
+  (list (cmd "enable" "<name> [host]"
+             "toggle a module or bundle on in a host's config"
+             cmd-enable)
+        (cmd "disable" "<name> [host]"
+             "toggle a module or bundle off in a host's config"
+             cmd-disable)
+        (cmd "status" "[host]"
+             "list enabled modules and bundles for a host"
+             cmd-status)))

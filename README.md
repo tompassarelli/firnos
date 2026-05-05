@@ -72,6 +72,8 @@ cp /etc/nixos/hardware-configuration.nix hosts/my-machine/
 firn rebuild   # firn-build → firn-validate → nixos-rebuild → tag generation
 ```
 
+On macOS, see [`docs/MACOS.md`](docs/MACOS.md) — FirnOS supports nix-darwin via `lib.mkDarwinSystem` with a curated subset of modules.
+
 ## Authoring config
 
 A trivial install-package module:
@@ -125,8 +127,17 @@ firn diff    [target...]              re-emit Nix and diff vs committed .nix
 firn mod     <name>                   scaffold a minimal module
 firn bundle  <name> <mods...>         scaffold a new bundle
 firn scaffold <pat> <name>            template (service|submodule|home|host)
+firn explain <path | err-line>        schema entry + repo references for an option
+firn doctor                           repo health check (untracked, stale, validator)
+firn upgrade [--dry-run]              flake update + schema diff + flag deprecated paths
 firn secret  <name|list|show>         sops edit / list / decrypt
 firn gen                              current/next generation numbers
+```
+
+For unambiguous typo cleanup across the whole tree:
+
+```
+nisp-validate --auto-fix               rewrite unambiguous typos in place
 ```
 
 Compile to a self-contained ~1.3MB binary with `./scripts/firn-build-bin`
@@ -200,7 +211,7 @@ changes — no manual step required.
 ├── scripts/           firn (CLI), firn-build, firn-validate, firn-extract-schema
 ├── template/          starting point for `nix flake init -t`
 ├── dotfiles/          out-of-store configs (live editing)
-└── docs/              BUILDING.md, nisp.md, docs.md
+└── docs/              BUILDING.md, docs.md, MACOS.md
 ```
 
 **Module** = atom. One package or service.
@@ -260,8 +271,9 @@ nix flake init -t github:tompassarelli/firnos
 ## Documentation
 
 - [docs/BUILDING.md](docs/BUILDING.md) — pipeline, DSL forms, validator, firn CLI
-- [docs/nisp.md](docs/nisp.md) — `#lang nisp` reference
-- [docs/docs.md](docs/docs.md) — design philosophy
+- [docs/docs.md](docs/docs.md) — design philosophy and conceptual primer
+- [docs/MACOS.md](docs/MACOS.md) — running FirnOS on macOS via nix-darwin
+- [tompassarelli/nisp](https://github.com/tompassarelli/nisp) — `#lang nisp` reference (the DSL itself)
 
 ## Inspired by
 

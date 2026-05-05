@@ -2,15 +2,31 @@
 # firn-extract-schema — thin wrapper around nisp-extract-schema.
 #
 # Configures the extractor for this repo:
-#   target: nixosConfigurations.$1.options  (default $1: whiterabbit)
+#   target: nixosConfigurations.$HOST.options  (default HOST: whiterabbit)
 #   out:    .nisp-cache/schema.json
+#
+# Usage:
+#   firn-extract-schema [host]                    # NixOS (default)
+#   firn-extract-schema --darwin [host]           # nix-darwin (default host: ashashi)
 
 set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
 NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
 
-HOST="${1:-whiterabbit}"
+DARWIN=false
+if [[ "${1:-}" == "--darwin" ]]; then
+  DARWIN=true
+  shift
+fi
+
+if $DARWIN; then
+  HOST="${1:-ashashi}"
+  TARGET="darwinConfigurations.$HOST.options"
+else
+  HOST="${1:-whiterabbit}"
+  TARGET="nixosConfigurations.$HOST.options"
+fi
 
 if [[ ! -x "$NISP_PATH/bin/nisp-extract-schema" ]]; then
   echo "firn-extract-schema: nisp-extract-schema not found at $NISP_PATH/bin/nisp-extract-schema" >&2
@@ -20,6 +36,6 @@ if [[ ! -x "$NISP_PATH/bin/nisp-extract-schema" ]]; then
 fi
 
 exec "$NISP_PATH/bin/nisp-extract-schema" \
-  --target "nixosConfigurations.$HOST.options" \
+  --target "$TARGET" \
   --out "$REPO/.nisp-cache/schema.json" \
   --flake "$REPO"

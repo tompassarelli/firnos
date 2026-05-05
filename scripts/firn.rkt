@@ -5,77 +5,73 @@
 ;;
 ;; Compile to a standalone binary with `./scripts/firn-build-bin`.
 ;;
-;; Command implementations live in scripts/firn-cmds/*.rkt; this module
-;; is just argv dispatch. Each command module imports util.rkt for
-;; shared helpers (ROOT, sh, listing helpers, etc.).
+;; Each command implementation lives in scripts/firn-cmds/*.rkt. Each
+;; cmd module exports a `commands` list of (cmd name usage desc fn)
+;; entries; this file imports each module under a unique prefix and
+;; concatenates them. Help text and dispatch both read from that one
+;; list, so the CLI's surface can never go out of sync with what's
+;; actually wired up — adding a new command means writing one module
+;; and adding it to ALL-CMDS below.
 
-(require "firn-cmds/rebuild.rkt"
-         "firn-cmds/list.rkt"
-         "firn-cmds/secret.rkt"
-         "firn-cmds/toggle.rkt"
-         "firn-cmds/diff.rkt"
-         "firn-cmds/watch.rkt"
-         "firn-cmds/scaffold.rkt"
-         "firn-cmds/explain.rkt"
-         "firn-cmds/doctor.rkt"
-         "firn-cmds/upgrade.rkt")
+(require racket/list
+         racket/format
+         "firn-cmds/util.rkt"
+         (prefix-in r:  "firn-cmds/rebuild.rkt")
+         (prefix-in w:  "firn-cmds/watch.rkt")
+         (prefix-in l:  "firn-cmds/list.rkt")
+         (prefix-in t:  "firn-cmds/toggle.rkt")
+         (prefix-in sc: "firn-cmds/scaffold.rkt")
+         (prefix-in d:  "firn-cmds/diff.rkt")
+         (prefix-in s:  "firn-cmds/secret.rkt")
+         (prefix-in e:  "firn-cmds/explain.rkt")
+         (prefix-in dr: "firn-cmds/doctor.rkt")
+         (prefix-in u:  "firn-cmds/upgrade.rkt"))
+
+(define ALL-CMDS
+  (append r:commands
+          w:commands
+          l:commands
+          t:commands
+          sc:commands
+          d:commands
+          s:commands
+          e:commands
+          dr:commands
+          u:commands))
 
 (define (cmd-help _args)
-  (printf #<<HELP
-firn — FirnOS config management
+  (printf "firn — FirnOS config management\n\n")
+  (printf "Usage:\n  firn <command> [args...]\n\n")
+  (printf "Commands:\n")
+  (define widest
+    (apply max
+           (map (λ (c)
+                  (string-length
+                   (string-append (cmd-name c)
+                                  (if (zero? (string-length (cmd-usage c))) ""
+                                      (string-append " " (cmd-usage c))))))
+                ALL-CMDS)))
+  (for ([c (in-list ALL-CMDS)])
+    (define head
+      (string-append (cmd-name c)
+                     (if (zero? (string-length (cmd-usage c))) ""
+                         (string-append " " (cmd-usage c)))))
+    (printf "  ~a  ~a\n" (~a head #:min-width widest) (cmd-desc c))))
 
-Usage:
-  firn <command> [args...]
-
-Commands:
-  rebuild [host] [--skip-checks]  firn-build + validate, then nixos-rebuild + tag
-  watch                       re-run validator on .rkt save (no external deps)
-  list                        list all modules and bundles
-  list --used                 show modules/bundles in use and where
-  list --unused               show unreferenced modules/bundles
-  refs <name>                 show what references a module/bundle
-  mod <name>                  scaffold a minimal module (.rkt)
-  bundle <name> <mods...>     scaffold a new bundle (.rkt)
-  scaffold <pat> <name>       template scaffold (service|submodule|home|host)
-  diff [target...]            re-emit Nix from .rkt and diff vs committed .nix
-  secret <name|list|show>     sops edit / list / decrypt
-  gen                         current and next generation numbers
-  enable <name> [host]        toggle a module/bundle on in host config
-  disable <name> [host]       toggle a module/bundle off in host config
-  status [host]               list enabled modules/bundles for host
-  explain <path|err-line>     show schema entry + references for an option
-  doctor                      run repo health checks (untracked, stale, validator)
-  upgrade [--dry-run]         flake update + schema-diff vs previous + validate
-
-HELP
-  ))
+(define (find-cmd name)
+  (findf (λ (c) (equal? (cmd-name c) name)) ALL-CMDS))
 
 (define (main argv)
   (cond
     [(null? argv) (cmd-help argv)]
     [else
-     (define cmd (car argv))
+     (define name (car argv))
      (define rest (cdr argv))
-     (case cmd
-       [("rebuild")     (cmd-rebuild rest)]
-       [("watch")       (cmd-watch rest)]
-       [("list")        (cmd-list rest)]
-       [("refs")        (cmd-refs rest)]
-       [("mod")         (cmd-mod rest)]
-       [("bundle")      (cmd-bundle rest)]
-       [("scaffold")    (cmd-scaffold rest)]
-       [("diff")        (cmd-diff rest)]
-       [("secret")      (cmd-secret rest)]
-       [("gen")         (cmd-gen rest)]
-       [("enable")      (cmd-enable rest)]
-       [("disable")     (cmd-disable rest)]
-       [("status")      (cmd-status rest)]
-       [("explain")     (cmd-explain rest)]
-       [("doctor")      (cmd-doctor rest)]
-       [("upgrade")     (cmd-upgrade rest)]
-       [("help" "-h" "--help") (cmd-help rest)]
+     (cond
+       [(member name '("help" "-h" "--help")) (cmd-help rest)]
+       [(find-cmd name) => (λ (c) ((cmd-fn c) rest))]
        [else
-        (eprintf "firn: unknown command '~a'\n\n" cmd)
+        (eprintf "firn: unknown command '~a'\n\n" name)
         (cmd-help rest)
         (exit 1)])]))
 

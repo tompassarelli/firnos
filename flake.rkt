@@ -8,6 +8,7 @@
     (nixpkgs-unstable  "github:nixos/nixpkgs/nixos-unstable")
     (nixpkgs-master    "github:nixos/nixpkgs/master")
     (home-manager      "github:nix-community/home-manager/release-25.11" (follows nixpkgs))
+    (nix-darwin        "github:LnL7/nix-darwin/nix-darwin-25.11" (follows nixpkgs))
     (stylix            "github:danth/stylix/release-25.11")
     (sops-nix          "github:Mic92/sops-nix" (follows nixpkgs))
     (nur               "github:nix-community/NUR")
@@ -21,8 +22,8 @@
     (walker            "github:abenz1267/walker" (follows elephant))
     (palefox           "path:/home/tom/code/palefox" (flake #t)))
 
-  (outputs (self nixpkgs nixpkgs-unstable nixpkgs-master home-manager stylix
-                 sops-nix nur lem elephant walker kanata-git glide quickshell
+  (outputs (self nixpkgs nixpkgs-unstable nixpkgs-master home-manager nix-darwin
+                 stylix sops-nix nur lem elephant walker kanata-git glide quickshell
                  zen-browser palefox)
     (let-in
       ([firnModules (p "./modules")]
@@ -241,6 +242,132 @@
                             extraOverlays))))
                     extraModules))))))
 
+        ;; ============================================================
+        ;; PUBLIC API: Reusable system builder (macOS / nix-darwin)
+        ;; ------------------------------------------------------------
+        ;; Mirrors mkSystem but targets nix-darwin instead of NixOS.
+        ;; Skips NixOS-only modules (stylix, sops-nix, hardwareConfig,
+        ;; systemd-tmpfiles). Reuses the same auto-discovered
+        ;; modules/bundles tree — `mkIf cfg.enable` gating means
+        ;; NixOS-only modules are inert when not enabled.
+        ;; ============================================================
+        (lib.mkDarwinSystem
+          (fn-set-rest
+            (hostname
+             hostConfig
+             (system "aarch64-darwin")
+             (extraModules     (lst))
+             (extraOverlays    (lst))
+             (extraSpecialArgs (att)))
+            (call nix-darwin.lib.darwinSystem
+              (att
+                (system system)
+                (specialArgs
+                  (merge
+                    (att
+                      (inputs (att
+                                (nur nur)
+                                (palefox palefox)))
+                      (flakeRoot self))
+                    extraSpecialArgs))
+                (modules
+                  (concat-list
+                    (lst
+                      home-manager.darwinModules.home-manager
+                      hostConfig
+
+                      ;; ============ FIRN MODULES (inline module, darwin) ============
+                      ;; Explicit imports/options/config split. Other modules
+                      ;; (modules/git, modules/atuin, …) reference
+                      ;; config.myConfig.modules.users.username, but
+                      ;; modules/users isn't in the darwin allowlist (its
+                      ;; config-body touches NixOS-only options). So we
+                      ;; declare the option here.
+                      ;;
+                      ;; Module allowlist for darwin: mkIf gating *defers the
+                      ;; value*, but nix-darwin's option system still rejects
+                      ;; undeclared option *paths* (boot.*, hardware.*, etc.).
+                      ;; So we can't reuse the full NixOS auto-discovery tree —
+                      ;; modules that touch top-level NixOS-only options would
+                      ;; fail eval even when unenabled. Maintain a hand-curated
+                      ;; safelist of modules whose config-body only touches
+                      ;; options nix-darwin also exposes (programs.*,
+                      ;; environment.systemPackages, home-manager.*). Add to
+                      ;; this list as needed; bundles are skipped entirely.
+                      (fn-set-rest (config lib pkgs)
+                        (att
+                          (imports
+                            (call map
+                              (fn m (s firnModules "/" m))
+                              (lst "gh" "delta" "ripgrep" "fd" "vim"
+                                   "tree" "btop" "dust" "eza"
+                                   "git" "atuin" "starship"
+                                   "fish" "direnv" "zoxide")))
+
+                          (options.myConfig.modules.users.username
+                            (call lib.mkOption
+                              (att (type lib.types.str)
+                                   (default "you")
+                                   (description "Primary system username"))))
+
+                          (config
+                            (att
+                              (networking.hostName hostname)
+
+                              ;; nix-darwin requires this to track which
+                              ;; version of nix-darwin built the system.
+                              (system.stateVersion 6)
+
+                              ;; nix-darwin's home-manager module derives
+                              ;; home.username/homeDirectory from
+                              ;; users.users.<name>. The macOS account already
+                              ;; exists outside Nix; just declare the entry so
+                              ;; the lookup resolves. nix-darwin defaults
+                              ;; .name and .home from the attr name.
+                              (users.users
+                                (att ("${config.myConfig.modules.users.username}"
+                                      (att (home (s "/Users/"
+                                                    config.myConfig.modules.users.username))))))
+
+                              ;; Home-manager configuration
+                              (home-manager.backupFileExtension "backup")
+                              (home-manager.extraSpecialArgs
+                                (merge
+                                  (att
+                                    (inputs (att
+                                              (nur nur)
+                                              (palefox palefox))))
+                                  extraSpecialArgs))
+                              (home-of-bare config.myConfig.modules.users.username
+                                ;; home-manager defaults home.username and
+                                ;; home.homeDirectory from config.users.users.<n>,
+                                ;; but we don't import modules/users on darwin —
+                                ;; the friend's macOS account already exists.
+                                ;; Set them explicitly so home-manager can attach.
+                                (set home.username config.myConfig.modules.users.username)
+                                (set home.homeDirectory
+                                     (s "/Users/" config.myConfig.modules.users.username))
+                                (set home.stateVersion "25.11")
+                                (set nixpkgs.config.allowUnfree #t))))))
+
+                      ;; ============ OVERLAYS (darwin) ============
+                      (att
+                        (nixpkgs.overlays
+                          (concat-list
+                            (lst
+                              (fn (final prev)
+                                (att
+                                  (unstable
+                                    (call import nixpkgs-unstable
+                                      (att (system system)
+                                           (config.allowUnfree #t))))
+                                  (master
+                                    (call import nixpkgs-master
+                                      (att (system system)
+                                           (config.allowUnfree #t)))))))
+                            extraOverlays))))
+                    extraModules))))))
+
         ;; Expose modules path for users who want to import individual modules
         (modules firnModules)
 
@@ -251,7 +378,7 @@
                          (att (system "x86_64-linux")
                               (config.allowUnfree #t)))))))
 
-        ;; Tom's personal hosts
+        ;; Tom's personal hosts (NixOS)
         (nixosConfigurations
           (att
             (whiterabbit
@@ -266,6 +393,15 @@
                   (hostname "thinkpad-x1e")
                   (hostConfig (p "./hosts/thinkpad-x1e/configuration.nix"))
                   (hardwareConfig (p "./hardware-configuration.nix")))))))
+
+        ;; macOS hosts (nix-darwin) — see docs/MACOS.md
+        (darwinConfigurations
+          (att
+            (ashashi
+              (call self.lib.mkDarwinSystem
+                (att
+                  (hostname "ashashi")
+                  (hostConfig (p "./hosts/ashashi/configuration.nix")))))))
 
         ;; Flake template: nix flake init -t github:tompassarelli/firnos
         (templates.default

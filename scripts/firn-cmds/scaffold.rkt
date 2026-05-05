@@ -7,7 +7,7 @@
          json
          "util.rkt")
 
-(provide cmd-mod cmd-bundle cmd-scaffold)
+(provide cmd-mod cmd-bundle cmd-scaffold commands)
 
 (define (cmd-mod args)
   (cond
@@ -195,3 +195,14 @@
         (eprintf "firn scaffold: unknown pattern '~a'\n" pattern)
         (eprintf "  patterns: service, submodule, home, host\n")
         (exit 1)])]))
+
+(define commands
+  (list (cmd "mod" "<name>"
+             "scaffold a minimal module (.rkt)"
+             cmd-mod)
+        (cmd "bundle" "<name> <mods...>"
+             "scaffold a new bundle (.rkt)"
+             cmd-bundle)
+        (cmd "scaffold" "<pat> <name>"
+             "template scaffold (service | submodule | home | host)"
+             cmd-scaffold)))

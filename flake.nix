@@ -6,6 +6,8 @@
     nixpkgs-master.url = "github:nixos/nixpkgs/master";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.11";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     stylix.url = "github:danth/stylix/release-25.11";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -25,7 +27,7 @@
     palefox.url = "path:/home/tom/code/palefox";
     palefox.flake = true;
   };
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, ... }: let
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, ... }: let
     firnModules = ./modules;
     firnBundles = ./bundles;
   in
@@ -215,6 +217,80 @@
         }
       ] ++ extraModules;
     };
+    lib.mkDarwinSystem = { hostname, hostConfig, system ? "aarch64-darwin", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nix-darwin.lib.darwinSystem {
+      system = system;
+      specialArgs = {
+        inputs = {
+          nur = nur;
+          palefox = palefox;
+        };
+        flakeRoot = self;
+      } // extraSpecialArgs;
+      modules = [
+        home-manager.darwinModules.home-manager
+        hostConfig
+        ({ config, lib, pkgs, ... }: {
+          imports = map (m: "${firnModules}/${m}") [
+            "gh"
+            "delta"
+            "ripgrep"
+            "fd"
+            "vim"
+            "tree"
+            "btop"
+            "dust"
+            "eza"
+            "git"
+            "atuin"
+            "starship"
+            "fish"
+            "direnv"
+            "zoxide"
+          ];
+          options.myConfig.modules.users.username = lib.mkOption {
+            type = lib.types.str;
+            default = "you";
+            description = "Primary system username";
+          };
+          config = {
+            networking.hostName = hostname;
+            system.stateVersion = 6;
+            users.users = {
+              ${config.myConfig.modules.users.username} = {
+                home = "/Users/${config.myConfig.modules.users.username}";
+              };
+            };
+            home-manager.backupFileExtension = "backup";
+            home-manager.extraSpecialArgs = {
+              inputs = {
+                nur = nur;
+                palefox = palefox;
+              };
+            } // extraSpecialArgs;
+            home-manager.users.${config.myConfig.modules.users.username} = {
+              home.username = config.myConfig.modules.users.username;
+              home.homeDirectory = "/Users/${config.myConfig.modules.users.username}";
+              home.stateVersion = "25.11";
+              nixpkgs.config.allowUnfree = true;
+            };
+          };
+        })
+        {
+          nixpkgs.overlays = [
+            (final: prev: {
+              unstable = import nixpkgs-unstable {
+                system = system;
+                config.allowUnfree = true;
+              };
+              master = import nixpkgs-master {
+                system = system;
+                config.allowUnfree = true;
+              };
+            })
+          ] ++ extraOverlays;
+        }
+      ] ++ extraModules;
+    };
     modules = firnModules;
     packages.x86_64-linux.claude-sandbox = import ./modules/containers/claude-sandbox.nix {
       pkgs = import nixpkgs-master {
@@ -232,6 +308,12 @@
         hostname = "thinkpad-x1e";
         hostConfig = ./hosts/thinkpad-x1e/configuration.nix;
         hardwareConfig = ./hardware-configuration.nix;
+      };
+    };
+    darwinConfigurations = {
+      ashashi = self.lib.mkDarwinSystem {
+        hostname = "ashashi";
+        hostConfig = ./hosts/ashashi/configuration.nix;
       };
     };
     templates.default = {

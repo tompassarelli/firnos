@@ -4,7 +4,7 @@
          racket/list
          "util.rkt")
 
-(provide cmd-list cmd-refs host-of-path bundle-of-path)
+(provide cmd-list cmd-refs host-of-path bundle-of-path commands)
 
 (define (cmd-list args)
   (define flag (and (pair? args) (car args)))
@@ -85,3 +85,11 @@
                                                 (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
                              string<?))])
        (when h (printf "  ~a\n" h)))]))
+
+(define commands
+  (list (cmd "list" "[--used | --unused]"
+             "list modules and bundles (with usage filter)"
+             cmd-list)
+        (cmd "refs" "<name>"
+             "show what references a module or bundle"
+             cmd-refs)))
