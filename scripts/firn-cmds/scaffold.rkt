@@ -2,11 +2,12 @@
 
 (require racket/path
          racket/file
+         racket/list
+         racket/string
+         json
          "util.rkt")
 
 (provide cmd-mod cmd-bundle cmd-scaffold)
-
-(require racket/string)
 
 (define (cmd-mod args)
   (cond
@@ -53,18 +54,82 @@
   (sh "git" "-C" ROOT "add" (path->string path))
   (printf "Created ~a (git added)\n" (relative-to-repo path)))
 
+;; Schema-driven helpers ------------------------------------------------------
+
+(define SCHEMA-PATH (build-path ROOT ".nisp-cache" "schema.json"))
+
+(define (load-schema)
+  (cond
+    [(file-exists? SCHEMA-PATH)
+     (call-with-input-file SCHEMA-PATH read-json)]
+    [else #f]))
+
+(define (schema-children-of prefix)
+  ;; Return a list of {p, t, default?} entries for paths directly under `prefix`.
+  (define schema (load-schema))
+  (cond
+    [(not schema) '()]
+    [else
+     (define depth (length (regexp-split #rx"\\." prefix)))
+     (sort
+      (for/list ([e (in-list schema)]
+                 #:when (let ([p (hash-ref e 'p)])
+                          (and (regexp-match? (regexp (string-append "^" (regexp-quote prefix) "\\.")) p)
+                               (= (length (regexp-split #rx"\\." p)) (+ depth 1)))))
+        e)
+      string<? #:key (λ (e) (hash-ref e 'p)))]))
+
+(define (describe-type t)
+  (cond [(string? t) t] [else "?"]))
+
+;; ----------------------------------------------------------------------------
+
 (define (scaffold-service name)
   (define dir (in-repo "modules" name))
   (define f (build-path dir "default.rkt"))
+  (define service-prefix (string-append "services." name))
+  (define children (schema-children-of service-prefix))
+  ;; Filter out submodule/internal options and the `enable` option itself
+  ;; (we always emit it explicitly).
+  (define interesting
+    (filter (λ (e)
+              (define p (hash-ref e 'p))
+              (define t (hash-ref e 't "?"))
+              (and (not (equal? p (string-append service-prefix ".enable")))
+                   (not (member t '("submodule" "attrsOf" "lazyAttrsOf"
+                                    "anything" "unspecified" "package")))))
+            children))
+  ;; Take up to 8 most common-looking options (alphabetically; could be
+  ;; smarter with usage stats).
+  (define top (take interesting (min 8 (length interesting))))
+  (define stub-lines
+    (cond
+      [(null? top) '()]
+      [else
+       (cons "    ;; common options — uncomment to override:"
+             (map (λ (e)
+                    (define p (hash-ref e 'p))
+                    (define short (regexp-replace (regexp (string-append "^" (regexp-quote service-prefix) "\\."))
+                                                  p ""))
+                    (define t (describe-type (hash-ref e 't "?")))
+                    (format "    ;; (set ~a <value>)   ; ~a" p t))
+                  top))]))
   (define body
     (string-append
      "#lang nisp\n\n"
      (format "(module-file modules ~a~n" name)
      (format "  (desc ~s)~n" (format "~a service" name))
      "  (config-body\n"
-     (format "    (set environment.systemPackages (with-pkgs ~a))~n" name)
-     (format "    (set services.~a.enable #t)))~n" name)))
-  (scaffold-write-file f body))
+     (format "    (set services.~a.enable #t)" name)
+     (cond [(null? stub-lines) ""]
+           [else (string-append "\n" (string-join stub-lines "\n") "\n")])
+     "))\n"))
+  (scaffold-write-file f body)
+  (cond
+    [(null? top)
+     (printf "  (no schema entries found for services.~a — schema cache stale or service not in nixpkgs?)\n" name)]
+    [else
+     (printf "  pre-filled ~a common options as commented stubs (from schema)\n" (length top))]))
 
 (define (scaffold-submodule name)
   (define dir (in-repo "modules" name))

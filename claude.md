@@ -109,6 +109,40 @@ Use `nisp-edit` instead of manual Edit-tool text replacement when:
 
 Use Edit tool when the change is structural beyond what `set`/`unset` cover (modifying lambda formals, restructuring let-in, etc.).
 
+## Diagnosing schema errors
+
+When the validator reports an unknown option, type mismatch, or you're about to write a new `(set …)`, use `firn explain` instead of digging through `schema.json` by hand:
+
+```bash
+firn explain services.openssh.enable                     # bare option path
+firn explain "modules/foo.rkt:6:7: unknown option services.opensh.enable"   # paste a validator error directly
+```
+
+Output: type, declarations (links to upstream NixOS module sources), and every `.rkt` file in this repo that references the path. If the path doesn't exist, prints did-you-mean candidates.
+
+## Repo health
+
+`firn doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
+
+## Bumping inputs
+
+To bump nixpkgs and surface deprecations the schema-driven way:
+
+```bash
+firn upgrade --dry-run     # show what would change without touching flake.lock
+firn upgrade               # snapshot schema, nix flake update, re-extract, diff, validate
+```
+
+The diff phase highlights any **removed** or **type-changed** option paths that this repo references — those are the actual breakage candidates, not the thousands of unrelated changes you'd see in a raw `nix flake update` log.
+
+## Auto-fixing typos
+
+```bash
+nisp-validate --auto-fix
+```
+
+Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 with a clear gap to the runner-up). Ambiguous cases are left for human review.
+
 ## Importing existing Nix
 
 If the user has hand-written `.nix` and wants to convert to nisp:

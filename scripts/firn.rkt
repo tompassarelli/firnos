@@ -15,7 +15,10 @@
          "firn-cmds/toggle.rkt"
          "firn-cmds/diff.rkt"
          "firn-cmds/watch.rkt"
-         "firn-cmds/scaffold.rkt")
+         "firn-cmds/scaffold.rkt"
+         "firn-cmds/explain.rkt"
+         "firn-cmds/doctor.rkt"
+         "firn-cmds/upgrade.rkt")
 
 (define (cmd-help _args)
   (printf #<<HELP
@@ -40,6 +43,9 @@ Commands:
   enable <name> [host]        toggle a module/bundle on in host config
   disable <name> [host]       toggle a module/bundle off in host config
   status [host]               list enabled modules/bundles for host
+  explain <path|err-line>     show schema entry + references for an option
+  doctor                      run repo health checks (untracked, stale, validator)
+  upgrade [--dry-run]         flake update + schema-diff vs previous + validate
 
 HELP
   ))
@@ -64,6 +70,9 @@ HELP
        [("enable")      (cmd-enable rest)]
        [("disable")     (cmd-disable rest)]
        [("status")      (cmd-status rest)]
+       [("explain")     (cmd-explain rest)]
+       [("doctor")      (cmd-doctor rest)]
+       [("upgrade")     (cmd-upgrade rest)]
        [("help" "-h" "--help") (cmd-help rest)]
        [else
         (eprintf "firn: unknown command '~a'\n\n" cmd)
