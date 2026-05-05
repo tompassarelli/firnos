@@ -112,9 +112,18 @@
 
 (define (cmd-rebuild args)
   (define host (and (pair? args) (car args)))
-  (define flake-target
-    (cond [host (string-append ROOT "#" host)] [else ROOT]))
-  (define rc (sh "sudo" "nixos-rebuild" "switch" "--flake" flake-target))
+  (define has-nh? (and (find-executable-path "nh") #t))
+  (define rc
+    (cond
+      [has-nh?
+       ;; nh os switch <flake-path> [-H <host>]
+       ;; nh handles sudo and gives us progress UI + generation diff.
+       (apply system* (find-executable-path "nh")
+              (append (list "os" "switch" ROOT)
+                      (if host (list "-H" host) '())))]
+      [else
+       (define flake-target (if host (string-append ROOT "#" host) ROOT))
+       (sh "sudo" "nixos-rebuild" "switch" "--flake" flake-target)]))
   (cond
     [(not rc) (printf "rebuild failed.\n") (exit 1)]
     [else

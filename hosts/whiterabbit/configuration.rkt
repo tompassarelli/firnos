@@ -101,4 +101,6 @@
           myConfig.modules.appimage
           myConfig.modules.codex
           myConfig.modules.vscode
-          myConfig.modules.windows-vm))
+          myConfig.modules.windows-vm)
+    (enable myConfig.modules.nh)
+)

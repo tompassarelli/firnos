@@ -250,10 +250,17 @@
                    #:when (let ([ps (path->string f)])
                             (and (regexp-match? #rx"\\.rkt$" ps)
                                  (not (regexp-match? #rx"/nisp/" ps))
+                                 (not (regexp-match? #rx"/scripts/" ps))
                                  (not (regexp-match? #rx"/\\.firn-build/" ps))
                                  (not (regexp-match? #rx"/\\.direnv/" ps))
                                  (not (regexp-match? #rx"/\\.git/" ps))
-                                 (not (regexp-match? #rx"/result" ps)))))
+                                 (not (regexp-match? #rx"/result" ps))
+                                 ;; Only #lang nisp files
+                                 (with-handlers ([exn:fail? (λ (_) #f)])
+                                   (regexp-match?
+                                    #rx"^#lang nisp"
+                                    (call-with-input-file f
+                                      (λ (p) (read-line p))))))))
           f)
         string<? #:key path->string)]
       [else (map string->path args)])))

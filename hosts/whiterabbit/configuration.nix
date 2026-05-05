@@ -101,4 +101,5 @@
   myConfig.modules.codex.enable = true;
   myConfig.modules.vscode.enable = true;
   myConfig.modules.windows-vm.enable = true;
+  myConfig.modules.nh.enable = true;
 }
