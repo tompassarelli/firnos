@@ -50,6 +50,19 @@ The wrapper exec's `racket` on the bytecode, so the system needs Racket
 on PATH (already provided by `bundles/racket`). Add `~/.local/bin` to
 PATH if it isn't already.
 
+## `firn rebuild` and `nh`
+
+`firn rebuild` runs `firn-build → firn-validate → rebuild → tag generation`.
+The rebuild step prefers [`nh`](https://github.com/nix-community/nh) (a
+Rust wrapper around `nixos-rebuild`) when it's on PATH — `nh os switch`
+gives nicer progress output, a generation diff after activation, and
+handles `sudo` itself. `modules/nh/default.rkt` installs it.
+
+When `nh` isn't available, `firn rebuild` falls back to
+`sudo nixos-rebuild switch --flake …` automatically. To force the
+fallback, remove `nh` from your config or use `--skip-checks` and call
+`nixos-rebuild` directly.
+
 ## Validation: catching typos before `nixos-rebuild`
 
 `scripts/firn-validate` checks every `(set …)` and `(enable …)` path in
