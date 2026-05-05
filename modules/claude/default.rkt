@@ -4,7 +4,7 @@
   (desc "Claude Code CLI configuration")
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
-    (set environment.systemPackages (lst 'pkgs.master.claude-code))
+    (set 'environment.systemPackages (lst 'pkgs.master.claude-code))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (home-of 'username

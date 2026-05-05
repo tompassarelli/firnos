@@ -8,7 +8,7 @@
      ;; A viewport is what fits on screen: 2x 50% windows or 1x 100% window
      [niri-viewport-nav
       (call 'pkgs.writers.writePython3Bin "niri-viewport-nav"
-        (att (libraries (lst)))
+        (att ('libraries (lst)))
         (ms "import json"
             "import subprocess"
             "import sys"
@@ -130,9 +130,9 @@
             "    main()"))]))
   (config-body
     ;; Enable niri compositor at system level
-    (set programs.niri.enable #t)
-    (set programs.niri.package 'pkgs.unstable.niri)
-    (set environment.systemPackages (lst 'niri-viewport-nav))
+    (set 'programs.niri.enable #t)
+    (set 'programs.niri.package 'pkgs.unstable.niri)
+    (set 'environment.systemPackages (lst 'niri-viewport-nav))
     (home-of 'username
       ;; Niri configuration file
       (nix-attrs-entries (att

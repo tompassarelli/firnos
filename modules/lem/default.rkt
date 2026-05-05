@@ -12,20 +12,20 @@
       (call 'inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs
         (fn o
           (att
-            (postPatch
+            ('postPatch
               (cat (bop 'or 'o.postPatch (s ""))
                    (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd"))))))]))
   (config-body
-    (set environment.systemPackages (lst 'lem-ncurses))
+    (set 'environment.systemPackages (lst 'lem-ncurses))
     (home-of 'username
       (nix-attr-entry
         (.> "home" "file" "\".lem\"" "source")
         (call 'config.lib.file.mkOutOfStoreSymlink
           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/lem")))
-      (set xdg.desktopEntries.lem
-        (att (name "Lem")
-             (comment "Common Lisp Editor")
-             (exec (s 'pkgs.unstable.ghostty "/bin/ghostty -e " 'lem-ncurses "/bin/lem"))
-             (terminal #f)
-             (type "Application")
-             (categories (lst "Development" "TextEditor")))))))
+      (set 'xdg.desktopEntries.lem
+        (att ('name "Lem")
+             ('comment "Common Lisp Editor")
+             ('exec (s 'pkgs.unstable.ghostty "/bin/ghostty -e " 'lem-ncurses "/bin/lem"))
+             ('terminal #f)
+             ('type "Application")
+             ('categories (lst "Development" "TextEditor")))))))

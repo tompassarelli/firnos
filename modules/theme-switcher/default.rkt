@@ -88,4 +88,4 @@
                 "    exit 1"
                 "fi"))]))
   (config-body
-    (set environment.systemPackages (lst 'switch-theme))))
+    (set 'environment.systemPackages (lst 'switch-theme))))

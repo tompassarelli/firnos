@@ -4,4 +4,4 @@
   (desc "touchpad support (libinput)")
   (config-body
     ;; Touchpad support
-    (set services.libinput.enable #t)))
+    (set 'services.libinput.enable #t)))

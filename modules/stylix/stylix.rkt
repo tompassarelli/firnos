@@ -3,10 +3,10 @@
 (raw-file
   (fn-set-rest (config lib pkgs)
     (att
-      (config
+      ('config
         (mkif 'config.myConfig.modules.stylix.enable
           (att
-            (environment.systemPackages
-              (with-pkgs adwaita-icon-theme   ;; default GNOME icons (needed for nautilus)
-                         gnome-themes-extra)) ;; includes Adwaita-dark theme
+            ('environment.systemPackages
+              (with-pkgs 'adwaita-icon-theme   ;; default GNOME icons (needed for nautilus)
+                         'gnome-themes-extra)) ;; includes Adwaita-dark theme
             ))))))

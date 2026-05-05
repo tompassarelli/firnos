@@ -3,4 +3,4 @@
 (module-file modules ripgrep
   (desc "ripgrep search tool")
   (config-body
-    (set environment.systemPackages (with-pkgs ripgrep))))
+    (set 'environment.systemPackages (with-pkgs 'ripgrep))))

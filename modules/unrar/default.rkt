@@ -3,4 +3,4 @@
 (module-file modules unrar
   (desc "unrar archive tool")
   (config-body
-    (set environment.systemPackages (lst 'pkgs.unrar))))
+    (set 'environment.systemPackages (lst 'pkgs.unrar))))

@@ -5,7 +5,7 @@
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
-    (set environment.systemPackages (with-pkgs fastfetch))
+    (set 'environment.systemPackages (with-pkgs 'fastfetch))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (home-of 'username

@@ -7,7 +7,7 @@
          [monoFont 'config.stylix.fonts.monospace.name]))
   (config-body
     ;; SYSTEM: Install quickshell
-    (set environment.systemPackages
+    (set 'environment.systemPackages
       (lst (nix-ident "inputs.quickshell.packages.${pkgs.system}.default")))
 
     ;; User needs input group for evdev key release detection
@@ -72,13 +72,13 @@
               "}")))
 
       ;; Systemd service: Quickshell daemon
-      (set systemd.user.services.quickshell
+      (set 'systemd.user.services.quickshell
         (att
-          (Unit (att (Description "Quickshell widget framework")
-                     (PartOf (lst "graphical-session.target"))
-                     (After (lst "graphical-session.target"))
-                     (Requisite (lst "graphical-session.target"))))
-          (Service (att
-            (ExecStart (s (nix-ident "inputs.quickshell.packages.${pkgs.system}.default") "/bin/qs"))
-            (Restart "on-failure")))
-          (Install (att (WantedBy (lst "niri.service")))))))))
+          ('Unit (att ('Description "Quickshell widget framework")
+                     ('PartOf (lst "graphical-session.target"))
+                     ('After (lst "graphical-session.target"))
+                     ('Requisite (lst "graphical-session.target"))))
+          ('Service (att
+            ('ExecStart (s (nix-ident "inputs.quickshell.packages.${pkgs.system}.default") "/bin/qs"))
+            ('Restart "on-failure")))
+          ('Install (att ('WantedBy (lst "niri.service")))))))))

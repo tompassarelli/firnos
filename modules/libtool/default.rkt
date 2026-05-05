@@ -3,4 +3,4 @@
 (module-file modules libtool
   (desc "GNU Libtool")
   (config-body
-    (set environment.systemPackages (with-pkgs libtool))))
+    (set 'environment.systemPackages (with-pkgs 'libtool))))

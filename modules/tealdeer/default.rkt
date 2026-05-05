@@ -4,9 +4,9 @@
   (desc "Enable tealdeer (tldr client)")
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
-    (set environment.systemPackages (with-pkgs tealdeer))
+    (set 'environment.systemPackages (with-pkgs 'tealdeer))
     (home-of 'username
-      (set xdg.configFile
+      (set 'xdg.configFile
         (att ("${\"tealdeer/config.toml\"}.source"
               (call 'config.lib.file.mkOutOfStoreSymlink
                     (cat 'config.home.homeDirectory

@@ -9,7 +9,7 @@
 (provide (rename-out [nisp-module-begin #%module-begin])
          #%top #%app #%datum quote
          ;; --- existing nisp surface ---
-         enable set service user packages pkg
+         enable set service pkg
          ;; --- atoms ---
          s ms p nl
          ;; --- compound ---
@@ -204,21 +204,16 @@
     [(_ form ...)
      #'(nix-rec-attrs (flatten-entries (list (att-clause form) ...)))]))
 
+;; (att (k v))  — k is evaluated as a normal Racket expression. To denote a
+;; Nix-identifier key, write 'foo (symbol). mk-entry handles symbols/strings/lists.
+;; For arbitrary entry-producing expressions, just write them at top level of att.
 (define-syntax (att-clause stx)
   (syntax-case stx ()
-    [(_ (k v)) #'(mk-entry (quote-key k) v)]
+    [(_ (k v)) #'(mk-entry k v)]
     [(_ expr)  #'expr]))
 
 ;; att*: pass entries as a single list (for dynamic construction)
 (define (att* entries) (nix-attrs entries))
-
-(define-syntax (quote-key stx)
-  (syntax-case stx ()
-    [(_ k)
-     (cond
-       [(identifier? #'k) #'(symbol->string 'k)]
-       [(string? (syntax->datum #'k)) #'k]
-       [else #'k])]))   ; AST list etc.
 
 (define (mk-entry key value)
   (define segs
@@ -385,58 +380,51 @@
 ;; Existing nisp surface, redefined to produce AST nodes
 ;; =========================================================================
 
-;; (enable a.b.c) -> a.b.c.enable = true;
-;; (enable a b c) -> three entries
-(define-syntax (enable stx)
-  (syntax-case stx ()
-    [(_ path)         #'(mk-entry (string-append (symbol->string 'path) ".enable") #t)]
-    [(_ p1 p2 ...)    #'(list (enable p1) (enable p2) ...)]))
+;; All forms below are FUNCTIONS (not macros). Their args are evaluated as
+;; normal Racket. To pass a Nix-identifier name, quote it: 'foo.bar.
+;; This is the one rule for the whole DSL — bare identifier = Racket binding;
+;; quoted symbol = literal Nix identifier.
 
-;; (set path val) | (set path v1 v2 ...)
-;; path can be a dotted identifier OR a string (for paths with quoted segments).
-(define-syntax (set stx)
-  (syntax-case stx ()
-    [(_ path val)
-     (cond [(identifier? #'path) #'(mk-entry (symbol->string 'path) val)]
-           [else                 #'(mk-entry path val)])]
-    [(_ path v1 v2 ...)
-     (cond [(identifier? #'path) #'(mk-entry (symbol->string 'path) (lst v1 v2 ...))]
-           [else                 #'(mk-entry path (lst v1 v2 ...))])]))
+;; (enable 'a.b.c)        -> a.b.c.enable = true;
+;; (enable 'a 'b 'c)      -> three entries
+(define (enable . paths)
+  (define (one p)
+    (define s
+      (cond [(symbol? p)    (symbol->string p)]
+            [(string? p)    p]
+            [(nix-ident? p) (nix-ident-name p)]
+            [else (error 'enable "expected symbol/string/nix-ident, got: ~v" p)]))
+    (mk-entry (string-append s ".enable") #t))
+  (cond
+    [(null? paths)         (error 'enable "expected at least one path")]
+    [(null? (cdr paths))   (one (car paths))]
+    [else                  (map one paths)]))
 
-;; (service openssh) | (service pipewire (alsa #t) ...)
-(define-syntax (service stx)
-  (syntax-case stx ()
-    [(_ name)
-     #'(mk-entry (string-append "services." (symbol->string 'name) ".enable") #t)]
-    [(_ name (k v) ...)
-     #'(mk-entry (string-append "services." (symbol->string 'name))
-                 (att (enable #t) (k v) ...))]))
+;; (set 'path val) | (set 'path v1 v2 ...)
+;; path is a symbol/string/segment-list.
+(define (set path . vals)
+  (cond
+    [(null? vals)            (error 'set "(set 'path val ...) — at least one value required")]
+    [(null? (cdr vals))      (mk-entry path (car vals))]
+    [else                    (mk-entry path (apply lst vals))]))
 
-;; (user "tom" (extraGroups "wheel") (shell (pkg "zsh")))
-(define-syntax (user stx)
-  (syntax-case stx ()
-    [(_ name field ...)
-     #'(mk-entry (string-append "users.users." name)
-                 (att (isNormalUser #t) (user-field field) ...))]))
-
-(define-syntax (user-field stx)
-  (syntax-case stx ()
-    [(_ (key v))         #'(list 'key v)]
-    [(_ (key v1 v2 ...)) #'(list 'key (lst v1 v2 ...))]))
-
-;; Wait — user-field is used with att, which expects (k v). Restructure:
-;; we override att-entry generation. Simpler: just use att inside.
-;; Above 'user' macro is fine if we rewrite to:
-;;   (att (isNormalUser #t) field ...)
-;; but field is (key val). Use att directly:
-
-;; (packages vim git fd) -> environment.systemPackages = with pkgs; [ vim git fd ];
-(define-syntax (packages stx)
-  (syntax-case stx ()
-    [(_ name ...)
-     #'(mk-entry "environment.systemPackages"
-                 (with-do (nix-ident "pkgs")
-                          (lst (nix-ident (symbol->string 'name)) ...)))]))
+;; (service 'openssh) | (service 'pipewire (att ('alsa #t) ('pulse #t)))
+(define service
+  (case-lambda
+    [(name)
+     (define s (cond [(symbol? name) (symbol->string name)]
+                     [(string? name) name]
+                     [else (error 'service "name must be symbol or string")]))
+     (mk-entry (string-append "services." s ".enable") #t)]
+    [(name body)
+     (define s (cond [(symbol? name) (symbol->string name)]
+                     [(string? name) name]
+                     [else (error 'service "name must be symbol or string")]))
+     (mk-entry (string-append "services." s)
+               (cond
+                 [(nix-attrs? body)
+                  (nix-attrs (cons (mk-entry "enable" #t) (nix-attrs-entries body)))]
+                 [else (error 'service "second arg must be an attrset (use att)")]))]))
 
 (define (pkg name) (nix-ident (string-append "pkgs." name)))
 
@@ -444,25 +432,20 @@
 ;; Module convenience
 ;; =========================================================================
 
-;; (with-pkgs vim git fd) -> with pkgs; [ vim git fd ]
-(define-syntax (with-pkgs stx)
-  (syntax-case stx ()
-    [(_ name ...)
-     #'(with-do (nix-ident "pkgs")
-                (lst (nix-ident (symbol->string 'name)) ...))]))
+;; (with-pkgs 'vim 'git 'fd) -> with pkgs; [ vim git fd ]
+(define (with-pkgs . names)
+  (with-do (nix-ident "pkgs") (apply lst names)))
 
-;; (imports a b c) -> imports = [ ./a ./b ./c ];   (paths if symbols, else as-is)
-(define-syntax (imports stx)
-  (syntax-case stx ()
-    [(_ x ...) #'(mk-entry "imports" (lst (import-item x) ...))]))
-
-(define-syntax (import-item stx)
-  (syntax-case stx ()
-    [(_ x)
-     (cond
-       [(string? (syntax->datum #'x)) #'(nix-path x)]
-       [(identifier? #'x)             #'(nix-path (symbol->string 'x))]
-       [else                          #'x])]))
+;; (imports 'a 'b 'c) -> imports = [ ./a ./b ./c ];
+;;   symbol      -> ./symbol
+;;   string      -> ./string
+;;   anything else passes through (assumed to be a path AST already)
+(define (imports . items)
+  (define (one x)
+    (cond [(string? x) (nix-path x)]
+          [(symbol? x) (nix-path (symbol->string x))]
+          [else x]))
+  (mk-entry "imports" (apply lst (map one items))))
 
 ;; (opts (path option-spec) ...) — set options.<path> = option-spec
 (define-syntax (opts stx)
@@ -554,8 +537,23 @@
      #'(nisp-file 'module
                   (build-module-file 'bundles 'bundles 'name (list (mod-clause body) ...)))]))
 
-;; Convert each body clause into a tagged pair. We can't use plain identifiers
-;; everywhere because clauses like (extra-args inputs) need to read identifiers literally.
+;; Helper: coerce a symbol or string to its string form (used in clauses below).
+(define (->key k)
+  (cond [(symbol? k) (symbol->string k)]
+        [(string? k) k]
+        [else (error '->key "expected symbol or string, got ~v" k)]))
+
+;; Convert each body clause into a tagged pair.
+;;
+;; Binding/structural positions (use bare identifiers — they're not Nix-idents
+;; but Racket syntactic positions):
+;;   - extra-args: function arg names (`(extra-args flakeRoot inputs)`)
+;;   - lets: binding names (`(lets ([username val] ...))`)
+;;
+;; Nix-identifier positions (require explicit ' quoting):
+;;   - option-attrs:  (option-attrs ('foo spec) ...)
+;;   - sub-modules:   (sub-modules 'vim 'git ...)
+;;   - sub-modules*:  (sub-modules* ('foo #t) ...)
 (define-syntax (mod-clause stx)
   (syntax-case stx (desc extra-args lets option-attrs no-enable config-body raw-body sub-modules sub-modules*)
     [(_ (desc str))
@@ -565,7 +563,7 @@
     [(_ (lets ([k v] ...)))
      #'(cons 'lets (list (list (symbol->string 'k) v) ...))]
     [(_ (option-attrs (n spec) ...))
-     #'(cons 'option-attrs (list (cons (symbol->string 'n) spec) ...))]
+     #'(cons 'option-attrs (list (cons (->key n) spec) ...))]
     [(_ (no-enable))
      #'(cons 'no-enable #t)]
     [(_ (config-body body ...))
@@ -573,10 +571,9 @@
     [(_ (raw-body body ...))
      #'(cons 'raw-body (flatten-entries (list body ...)))]
     [(_ (sub-modules m ...))
-     ;; bundle helper: sub-modules vim git => mkDefault cfg.X.enable for each
-     #'(cons 'sub-modules (list (symbol->string 'm) ...))]
+     #'(cons 'sub-modules (list (->key m) ...))]
     [(_ (sub-modules* (m default) ...))
-     #'(cons 'sub-modules* (list (cons (symbol->string 'm) default) ...))]))
+     #'(cons 'sub-modules* (list (cons (->key m) default) ...))]))
 
 ;; Build the file structure.
 (define (build-module-file kind ns name clauses)

@@ -21,10 +21,10 @@
            [stylixGtkTheme 'config.gtk.theme.name])
           (att
             ;; Let Stylix handle base GTK config
-            (set gtk.enable #t)
+            (set 'gtk.enable #t)
 
             ;; Add GTK packages and gsettings schemas to fix GLib-GIO warnings
-            (set home.packages (with-pkgs gsettings-desktop-schemas gtk3))
+            (set 'home.packages (with-pkgs 'gsettings-desktop-schemas 'gtk3))
 
             ;; Override the settings.ini files to add dark mode preference
             ;; We read Stylix's values and add our dark mode setting
@@ -46,9 +46,9 @@
 
             ;; Set GTK color scheme preference for modern apps
             ;; Override Stylix's default setting dynamically based on polarity
-            (set dconf.settings
+            (set 'dconf.settings
               (att
                 (nix-attr-entry
                   (.> "\"org/gnome/desktop/interface\"")
                   (att
-                    (color-scheme (mkforce (if-then 'isDark "prefer-dark" "prefer-light"))))))))))) ))
+                    ('color-scheme (mkforce (if-then 'isDark "prefer-dark" "prefer-light"))))))))))) ))

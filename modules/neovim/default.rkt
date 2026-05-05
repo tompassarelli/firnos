@@ -6,9 +6,9 @@
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     ;; Enable neovim system-wide and set as default editor
-    (set programs.neovim
-      (att (enable #t)
-           (defaultEditor #t)))
+    (set 'programs.neovim
+      (att ('enable #t)
+           ('defaultEditor #t)))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (home-of 'username

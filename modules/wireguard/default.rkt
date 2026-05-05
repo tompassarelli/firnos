@@ -5,25 +5,25 @@
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; Allow user to run wg show without password (for logging)
-    (set security.sudo.extraRules
-      (lst (att (users (lst 'username))
-                (commands
-                  (lst (att (command (s "${pkgs.wireguard-tools}/bin/wg"))
-                            (options (lst "NOPASSWD"))))))))
+    (set 'security.sudo.extraRules
+      (lst (att ('users (lst 'username))
+                ('commands
+                  (lst (att ('command (s "${pkgs.wireguard-tools}/bin/wg"))
+                            ('options (lst "NOPASSWD"))))))))
 
-    (set networking.firewall.checkReversePath "loose") ;; Required for WireGuard
-    (set services.resolved.enable #t)                  ;; Required for wg-quick DNS
+    (set 'networking.firewall.checkReversePath "loose") ;; Required for WireGuard
+    (set 'services.resolved.enable #t)                  ;; Required for wg-quick DNS
     ;; Config files go in /etc/wireguard/ - use: sudo wg-quick up wg0
 
     ;; WireGuard watchdog - detects dead connections and forces re-handshake within ~2 seconds
-    (set systemd.services.wireguard-watchdog
-      (att (description "WireGuard connection watchdog")
-           (after (lst "network.target"))
-           (serviceConfig
-             (att (Type "simple")
-                  (Restart "always")
-                  (RestartSec 5)
-                  (ExecStart
+    (set 'systemd.services.wireguard-watchdog
+      (att ('description "WireGuard connection watchdog")
+           ('after (lst "network.target"))
+           ('serviceConfig
+             (att ('Type "simple")
+                  ('Restart "always")
+                  ('RestartSec 5)
+                  ('ExecStart
                     (let-in
                       ([watchdog
                         (call 'pkgs.writeShellScript "wg-watchdog"
@@ -69,6 +69,6 @@
                                   "  sleep 1"
                                   "done"))])
                       (s watchdog)))))
-           (wantedBy (lst "multi-user.target"))))
+           ('wantedBy (lst "multi-user.target"))))
 
-    (set environment.systemPackages (with-pkgs wireguard-tools))))
+    (set 'environment.systemPackages (with-pkgs 'wireguard-tools))))

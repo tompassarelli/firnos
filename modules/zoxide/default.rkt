@@ -5,7 +5,7 @@
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     (home-of-bare 'username
-      (set programs.fish.shellAliases.cd "z")
-      (set programs.zoxide
-        (att (enable #t)
-             (enableFishIntegration #t))))))
+      (set 'programs.fish.shellAliases.cd "z")
+      (set 'programs.zoxide
+        (att ('enable #t)
+             ('enableFishIntegration #t))))))

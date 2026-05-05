@@ -31,7 +31,7 @@
         ;; ============================================================
         ;; PUBLIC API: Reusable system builder
         ;; ============================================================
-        (lib.mkSystem
+        ('lib.mkSystem
           (fn-set-rest
             (hostname
              hostConfig
@@ -42,21 +42,21 @@
              (extraSpecialArgs (att)))
             (call 'nixpkgs.lib.nixosSystem
               (att
-                (system system)
-                (specialArgs
+                ('system system)
+                ('specialArgs
                   (merge
                     (att
-                      (inputs (att
-                                (nur 'nur)
-                                (walker 'walker)
-                                (elephant 'elephant)
-                                (lem 'lem)
-                                (quickshell 'quickshell)
-                                (zen-browser 'zen-browser)
-                                (palefox 'palefox)))
-                      (flakeRoot 'self))
+                      ('inputs (att
+                                ('nur 'nur)
+                                ('walker 'walker)
+                                ('elephant 'elephant)
+                                ('lem 'lem)
+                                ('quickshell 'quickshell)
+                                ('zen-browser 'zen-browser)
+                                ('palefox 'palefox)))
+                      ('flakeRoot 'self))
                     extraSpecialArgs))
-                (modules
+                ('modules
                   (concat-list
                     (lst
                       hardwareConfig
@@ -68,27 +68,27 @@
                       ;; ============ FIRN MODULES (inline module) ============
                       (fn-set-rest (config pkgs)
                         (att
-                          (networking.hostName hostname)
+                          ('networking.hostName hostname)
 
                           ;; sops-nix key path: lives in /var/lib/sops-nix so it's
                           ;; readable at stage-2-init (before /home is mounted).
-                          (sops.age.keyFile "/var/lib/sops-nix/key.txt")
-                          (environment.sessionVariables.SOPS_AGE_KEY_FILE
+                          ('sops.age.keyFile "/var/lib/sops-nix/key.txt")
+                          ('environment.sessionVariables.SOPS_AGE_KEY_FILE
                             "/var/lib/sops-nix/key.txt")
 
                           ;; Enforce ownership/mode on the key file every activation
                           ;; so perms can't drift.
-                          (systemd.tmpfiles.rules
+                          ('systemd.tmpfiles.rules
                             (lst
                               (s "z /var/lib/sops-nix/key.txt 0400 "
                                  'config.myConfig.modules.users.username
                                  " users -")))
 
                           ;; sops + age CLI tools for editing encrypted secrets
-                          (environment.systemPackages (with-pkgs sops age))
+                          ('environment.systemPackages (with-pkgs 'sops 'age))
 
                           ;; Discover modules/bundles dynamically from the directory tree.
-                          (imports
+                          ('imports
                             (let-in
                               ([moduleDirs
                                 (call 'builtins.attrNames
@@ -109,63 +109,63 @@
                                   bundleDirs))))
 
                           ;; Home-manager configuration
-                          (home-manager.backupFileExtension "backup")
-                          (home-manager.extraSpecialArgs
+                          ('home-manager.backupFileExtension "backup")
+                          ('home-manager.extraSpecialArgs
                             (merge
                               (att
-                                (inputs (att
-                                          (nur 'nur)
-                                          (walker 'walker)
-                                          (elephant 'elephant)
-                                          (lem 'lem)
-                                          (quickshell 'quickshell)
-                                          (zen-browser 'zen-browser)
-                                          (palefox 'palefox))))
+                                ('inputs (att
+                                          ('nur 'nur)
+                                          ('walker 'walker)
+                                          ('elephant 'elephant)
+                                          ('lem 'lem)
+                                          ('quickshell 'quickshell)
+                                          ('zen-browser 'zen-browser)
+                                          ('palefox 'palefox))))
                               extraSpecialArgs))
                           (home-of-bare 'config.myConfig.modules.users.username
-                            (set home.stateVersion 'config.myConfig.modules.system.stateVersion)
-                            (set nixpkgs.config.allowUnfree #t))))
+                            (set 'home.stateVersion 'config.myConfig.modules.system.stateVersion)
+                            (set 'nixpkgs.config.allowUnfree #t))))
 
                       ;; ============ OVERLAYS ============
                       (att
-                        (nixpkgs.overlays
+                        ('nixpkgs.overlays
                           (concat-list
                             (lst
                               (fn (final prev)
                                 (att
-                                  (unstable
+                                  ('unstable
                                     (call 'import 'nixpkgs-unstable
-                                      (att (system system)
-                                           (config.allowUnfree #t))))
-                                  (master
+                                      (att ('system system)
+                                           ('config.allowUnfree #t))))
+                                  ('master
                                     (call 'import 'nixpkgs-master
-                                      (att (system system)
-                                           (config.allowUnfree #t))))
-                                  (kanata-git
+                                      (att ('system system)
+                                           ('config.allowUnfree #t))))
+                                  ('kanata-git
                                     (call 'final.unstable.kanata.overrideAttrs
                                       (fn old
                                         (att
-                                          (src 'kanata-git)
-                                          (version "git")
-                                          (cargoDeps
+                                          ('src 'kanata-git)
+                                          ('version "git")
+                                          ('cargoDeps
                                             (call 'final.unstable.rustPlatform.importCargoLock
-                                              (att (lockFile (s 'kanata-git "/Cargo.lock")))))
-                                          (doCheck #f)
-                                          (doInstallCheck #f)))))
-                                  (glide
+                                              (att ('lockFile (s 'kanata-git "/Cargo.lock")))))
+                                          ('doCheck #f)
+                                          ('doInstallCheck #f)))))
+                                  ('glide
                                     (call 'final.unstable.rustPlatform.buildRustPackage
                                       (att
-                                        (pname "glide")
-                                        (version "git")
-                                        (src 'glide)
-                                        (cargoLock.lockFile (s 'glide "/Cargo.lock")))))
-                                  (nyxt4
+                                        ('pname "glide")
+                                        ('version "git")
+                                        ('src 'glide)
+                                        ('cargoLock.lockFile (s 'glide "/Cargo.lock")))))
+                                  ('nyxt4
                                     (let-in
                                       ([nyxt-tarball
                                         (call 'final.fetchurl
                                           (att
-                                            (url "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz")
-                                            (hash "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ=")))]
+                                            ('url "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz")
+                                            ('hash "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ=")))]
                                        [nyxt-appimage
                                         (call 'final.runCommand
                                           "nyxt.AppImage"
@@ -175,15 +175,15 @@
                                        [nyxt-extracted
                                         (call 'final.appimageTools.extractType2
                                           (att
-                                            (pname "nyxt")
-                                            (version "4.0.0")
-                                            (src nyxt-appimage)))]
+                                            ('pname "nyxt")
+                                            ('version "4.0.0")
+                                            ('src nyxt-appimage)))]
                                        [cl-electron-extracted
                                         (call 'final.appimageTools.extractType2
                                           (att
-                                            (pname "cl-electron-server")
-                                            (version "4.0.0")
-                                            (src (s nyxt-extracted "/usr/bin/cl-electron-server"))))]
+                                            ('pname "cl-electron-server")
+                                            ('version "4.0.0")
+                                            ('src (s nyxt-extracted "/usr/bin/cl-electron-server"))))]
                                        [nyxt-unwrapped
                                         (call 'final.runCommand
                                           "nyxt-unwrapped-4.0.0"
@@ -204,9 +204,9 @@
                                             "sed -i \"s|Exec=.*|Exec=nyxt %u|\" $out/share/applications/nyxt.desktop 2>/dev/null || true"))])
                                       (call 'final.buildFHSEnv
                                         (att
-                                          (pname "nyxt")
-                                          (version "4.0.0")
-                                          (targetPkgs
+                                          ('pname "nyxt")
+                                          ('version "4.0.0")
+                                          ('targetPkgs
                                             (fn p
                                               (with-do p
                                                 (lst
@@ -224,16 +224,16 @@
                                                   'xorg.libXfixes 'xorg.libXrandr 'xorg.libxcb 'xorg.libXcursor
                                                   'xorg.libXi 'xorg.libXrender 'xorg.libXtst 'xorg.libXScrnSaver
                                                   'systemd 'libGL 'libglvnd 'egl-wayland))))
-                                          (extraBwrapArgs
+                                          ('extraBwrapArgs
                                             (lst (s "--bind " nyxt-unwrapped "/app /app")))
-                                          (runScript
+                                          ('runScript
                                             (call 'final.writeShellScript "nyxt-wrapper"
                                               (ms
                                                 "export APPDIR=/app/Nyxt"
                                                 "export PATH=\"/app/Nyxt/_build/cl-electron:$PATH\""
                                                 "export ELECTRON_OZONE_PLATFORM_HINT=auto"
                                                 "exec /app/Nyxt/nyxt \"$@\"")))
-                                          (extraInstallCommands
+                                          ('extraInstallCommands
                                             (ms
                                               "mkdir -p $out/share"
                                               "ln -s ${nyxt-unwrapped}/share/applications $out/share/applications"
@@ -242,42 +242,42 @@
                     extraModules))))))
 
         ;; Expose modules path for users who want to import individual modules
-        (modules firnModules)
+        ('modules firnModules)
 
         ;; Container image (built directly, not via mkSystem)
-        (packages.x86_64-linux.claude-sandbox
+        ('packages.x86_64-linux.claude-sandbox
           (call 'import (p "./modules/containers/claude-sandbox.nix")
-            (att (pkgs (call 'import 'nixpkgs-master
-                         (att (system "x86_64-linux")
-                              (config.allowUnfree #t)))))))
+            (att ('pkgs (call 'import 'nixpkgs-master
+                         (att ('system "x86_64-linux")
+                              ('config.allowUnfree #t)))))))
 
         ;; Tom's personal hosts
-        (nixosConfigurations
+        ('nixosConfigurations
           (att
-            (whiterabbit
+            ('whiterabbit
               (call 'self.lib.mkSystem
                 (att
-                  (hostname "whiterabbit")
-                  (hostConfig (p "./hosts/whiterabbit/configuration.nix"))
-                  (hardwareConfig (p "./hardware-configuration.nix")))))
-            (thinkpad-x1e
+                  ('hostname "whiterabbit")
+                  ('hostConfig (p "./hosts/whiterabbit/configuration.nix"))
+                  ('hardwareConfig (p "./hardware-configuration.nix")))))
+            ('thinkpad-x1e
               (call 'self.lib.mkSystem
                 (att
-                  (hostname "thinkpad-x1e")
-                  (hostConfig (p "./hosts/thinkpad-x1e/configuration.nix"))
-                  (hardwareConfig (p "./hardware-configuration.nix")))))))
+                  ('hostname "thinkpad-x1e")
+                  ('hostConfig (p "./hosts/thinkpad-x1e/configuration.nix"))
+                  ('hardwareConfig (p "./hardware-configuration.nix")))))))
 
         ;; Flake template: nix flake init -t github:tompassarelli/firnos
-        (templates.default
+        ('templates.default
           (att
-            (description "FirnOS starter configuration")
-            (path (p "./template"))))
+            ('description "FirnOS starter configuration")
+            ('path (p "./template"))))
 
-        (devShells.x86_64-linux.default
+        ('devShells.x86_64-linux.default
           (let-in
             ([pkgs 'nixpkgs.legacyPackages.x86_64-linux])
             (call 'pkgs.mkShell
               (att
-                (packages (lst 'pkgs.pre-commit 'pkgs.gitleaks))
-                (shellHook
+                ('packages (lst 'pkgs.pre-commit 'pkgs.gitleaks))
+                ('shellHook
                   (ms "pre-commit install --allow-missing-config 2>/dev/null"))))))))))

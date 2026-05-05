@@ -7,16 +7,16 @@
     (let-in
       ([username 'config.myConfig.modules.users.username])
       (att
-        (set config
+        (set 'config
           (mkif 'config.myConfig.modules.nyxt.enable
             (att
-              (set environment.systemPackages (with-pkgs nyxt4))
+              (set 'environment.systemPackages (with-pkgs 'nyxt4))
 
               ;; AppImages need FUSE
-              (set myConfig.modules.fuse.enable (mkdefault #t))
-              (set programs.appimage.enable #t)
+              (set 'myConfig.modules.fuse.enable (mkdefault #t))
+              (set 'programs.appimage.enable #t)
 
-              (set xdg.mime.defaultApplications
+              (set 'xdg.mime.defaultApplications
                 (mkif 'config.myConfig.modules.nyxt.default
                   (att ("\"text/html\""                "nyxt.desktop")
                        ("\"x-scheme-handler/http\""    "nyxt.desktop")
@@ -25,7 +25,7 @@
                        ("\"x-scheme-handler/unknown\"" "nyxt.desktop"))))
 
               (home-of username
-                (set xdg.configFile
+                (set 'xdg.configFile
                   (att ("${\"nyxt/config.lisp\"}.source"
                         (call 'config.lib.file.mkOutOfStoreSymlink
                               (cat 'config.home.homeDirectory

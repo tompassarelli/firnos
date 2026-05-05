@@ -12,8 +12,8 @@
                            "  fi"
                            "done"))]))
   (config-body
-    (set environment.systemPackages (with-pkgs racket))
+    (set 'environment.systemPackages (with-pkgs 'racket))
 
     ;; Ensure raco packages are installed on activation
-    (set system.activationScripts.racoPackages.text
+    (set 'system.activationScripts.racoPackages.text
       (ms "sudo -u ${config.myConfig.modules.users.username} ${racoEnsure} || true"))))

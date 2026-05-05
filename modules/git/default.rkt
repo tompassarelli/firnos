@@ -9,16 +9,16 @@
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (home-of-bare 'username
-      (set programs.git
-        (att (enable #t)
-             (settings
-               (att (user.name "tompassarelli")
-                    (user.email "tom.passarelli@protonmail.com")
-                    (init.defaultBranch "main")
-                    (core.editor "nvim")
-                    (merge.conflictstyle "diff3")
-                    (diff.colorMoved "default")))))
-      (set programs.delta
-        (att (enable #t)
-             (enableGitIntegration #t)
-             (options (att (navigate #t))))))))
+      (set 'programs.git
+        (att ('enable #t)
+             ('settings
+               (att ('user.name "tompassarelli")
+                    ('user.email "tom.passarelli@protonmail.com")
+                    ('init.defaultBranch "main")
+                    ('core.editor "nvim")
+                    ('merge.conflictstyle "diff3")
+                    ('diff.colorMoved "default")))))
+      (set 'programs.delta
+        (att ('enable #t)
+             ('enableGitIntegration #t)
+             ('options (att ('navigate #t))))))))

@@ -5,7 +5,7 @@
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; SYSTEM: Install ironbar package (unstable for niri workspace support)
-    (set environment.systemPackages (lst 'pkgs.unstable.ironbar))
+    (set 'environment.systemPackages (lst 'pkgs.unstable.ironbar))
 
     ;; HOME-MANAGER: User configuration, dotfiles, and services
     (home-of 'username
@@ -71,29 +71,29 @@
            (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/battery.sh")))))
 
       ;; Systemd service: Main ironbar daemon
-      (set systemd.user.services.ironbar
+      (set 'systemd.user.services.ironbar
         (att
-          (Unit (att
-            (Description "Customizable GTK4 status bar for Wayland")
-            (PartOf (lst "graphical-session.target"))
-            (After (lst "graphical-session.target"))
-            (Requisite (lst "graphical-session.target"))))
-          (Service (att
-            (ExecStart (s 'pkgs.unstable.ironbar "/bin/ironbar"))
-            (Restart "on-failure")))
-          (Install (att
-            (WantedBy (lst "niri.service"))))))
+          ('Unit (att
+            ('Description "Customizable GTK4 status bar for Wayland")
+            ('PartOf (lst "graphical-session.target"))
+            ('After (lst "graphical-session.target"))
+            ('Requisite (lst "graphical-session.target"))))
+          ('Service (att
+            ('ExecStart (s 'pkgs.unstable.ironbar "/bin/ironbar"))
+            ('Restart "on-failure")))
+          ('Install (att
+            ('WantedBy (lst "niri.service"))))))
 
       ;; Systemd service: Overview listener script
-      (set systemd.user.services.ironbar-overview
+      (set 'systemd.user.services.ironbar-overview
         (att
-          (Unit (att
-            (Description "Ironbar overview listener script")
-            (PartOf (lst "graphical-session.target"))
-            (After (lst "ironbar.service"))
-            (Requires (lst "ironbar.service"))))
-          (Service (att
-            (ExecStart "%h/.config/ironbar/overview-ironbar.py")
-            (Restart "on-failure")))
-          (Install (att
-            (WantedBy (lst "niri.service")))))))))
+          ('Unit (att
+            ('Description "Ironbar overview listener script")
+            ('PartOf (lst "graphical-session.target"))
+            ('After (lst "ironbar.service"))
+            ('Requires (lst "ironbar.service"))))
+          ('Service (att
+            ('ExecStart "%h/.config/ironbar/overview-ironbar.py")
+            ('Restart "on-failure")))
+          ('Install (att
+            ('WantedBy (lst "niri.service")))))))))

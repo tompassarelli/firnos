@@ -26,26 +26,26 @@
                  "dark"))]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
-    (set stylix
-      (att (enable #t)
-           (base16Scheme 'schemeFile)
+    (set 'stylix
+      (att ('enable #t)
+           ('base16Scheme 'schemeFile)
            ;; Auto-detect polarity from base16 scheme variant field
-           (polarity 'variant)
+           ('polarity 'variant)
            ;; Font configuration
-           (fonts (att (monospace (att (package 'pkgs.commit-mono)
-                                       (name "CommitMono")))
-                       (sansSerif (att (package 'pkgs.dejavu_fonts)
-                                       (name "DejaVu Sans")))
-                       (serif (att (package 'pkgs.ia-writer-quattro)
-                                   (name "iA Writer Quattro S")))
-                       (sizes (att (terminal 14)))))))
+           ('fonts (att ('monospace (att ('package 'pkgs.commit-mono)
+                                       ('name "CommitMono")))
+                       ('sansSerif (att ('package 'pkgs.dejavu_fonts)
+                                       ('name "DejaVu Sans")))
+                       ('serif (att ('package 'pkgs.ia-writer-quattro)
+                                   ('name "iA Writer Quattro S")))
+                       ('sizes (att ('terminal 14)))))))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (home-of 'username
       ;; Stylix Firefox target configuration
-      (set stylix.targets.firefox
-        (att (profileNames (lst 'username))
-             (colorTheme.enable #t)))
+      (set 'stylix.targets.firefox
+        (att ('profileNames (lst 'username))
+             ('colorTheme.enable #t)))
 
       ;; Themes directory (wallpapers and other theme assets)
       (set "xdg.configFile.\"themes\".source"

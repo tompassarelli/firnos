@@ -3,4 +3,4 @@
 (module-file modules polkit
   (desc "Polkit security configuration")
   (config-body
-    (enable security.polkit)))
+    (enable 'security.polkit)))

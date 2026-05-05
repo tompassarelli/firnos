@@ -4,4 +4,4 @@
   (desc "SSH server")
   (config-body
     ;; OpenSSH daemon configuration
-    (set services.openssh.enable #t)))
+    (set 'services.openssh.enable #t)))

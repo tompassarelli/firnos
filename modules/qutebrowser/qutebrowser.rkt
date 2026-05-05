@@ -5,12 +5,12 @@
 (raw-file
   (fn-set-rest (config lib pkgs)
     (att
-      (set config
+      (set 'config
         (mkif 'config.myConfig.modules.qutebrowser.enable
           (att
-            (set environment.systemPackages (with-pkgs qutebrowser))
+            (set 'environment.systemPackages (with-pkgs 'qutebrowser))
 
-            (set xdg.mime.defaultApplications
+            (set 'xdg.mime.defaultApplications
               (mkif 'config.myConfig.modules.qutebrowser.default
                 (att ("\"text/html\""                "org.qutebrowser.qutebrowser.desktop")
                      ("\"x-scheme-handler/http\""    "org.qutebrowser.qutebrowser.desktop")

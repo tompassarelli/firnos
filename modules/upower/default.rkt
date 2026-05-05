@@ -4,4 +4,4 @@
   (desc "UPower power management")
   (config-body
     ;; Power monitoring
-    (set services.upower.enable #t)))
+    (set 'services.upower.enable #t)))

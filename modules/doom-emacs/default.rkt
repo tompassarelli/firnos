@@ -8,8 +8,8 @@
   (config-body
     ;; Clockify API key (decrypted to /run/secrets/msa-clockify-api-key)
     (sops-secret "msa-clockify-api-key"
-      (sopsFile (cat 'flakeRoot (s "/secrets/clockify.yaml")))
-      (owner 'username))
+      ('sopsFile (cat 'flakeRoot (s "/secrets/clockify.yaml")))
+      ('owner 'username))
 
     ;; HOME-MANAGER: Doom config and environment
     (home-of 'username
@@ -19,11 +19,11 @@
           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/doom")))
 
       ;; Set DOOMDIR and font environment variables
-      (set home.sessionVariables
-        (att (DOOMDIR (s 'config.home.homeDirectory "/.config/doom"))
-             (NIXOS_MONO_FONT 'config.stylix.fonts.monospace.name)
-             (NIXOS_SANS_FONT 'config.stylix.fonts.sansSerif.name)
-             (NIXOS_SERIF_FONT 'config.stylix.fonts.serif.name)))
+      (set 'home.sessionVariables
+        (att ('DOOMDIR (s 'config.home.homeDirectory "/.config/doom"))
+             ('NIXOS_MONO_FONT 'config.stylix.fonts.monospace.name)
+             ('NIXOS_SANS_FONT 'config.stylix.fonts.sansSerif.name)
+             ('NIXOS_SERIF_FONT 'config.stylix.fonts.serif.name)))
 
       ;; Generate stylix base16 theme for Doom Emacs
       (nix-attr-entry '("xdg" "configFile" "\"doom-stylix/stylix-theme-theme.el\"" "text")
@@ -52,11 +52,11 @@
               "(provide-theme 'stylix-theme)")))
 
       ;; Add doom bin to PATH (fish-specific)
-      (set programs.fish.interactiveShellInit
+      (set 'programs.fish.interactiveShellInit
         (ms "fish_add_path ~/.config/emacs/bin"))
 
       ;; Clone Doom Emacs framework on activation
-      (set home.activation.cloneDoomEmacs
+      (set 'home.activation.cloneDoomEmacs
         (call 'config.lib.dag.entryAfter (lst "writeBoundary")
           (ms "DOOM_DIR=\"${config.home.homeDirectory}/.config/emacs\""
               ""
@@ -68,7 +68,7 @@
               "fi")))
 
       ;; Enable Emacs daemon for instant startup with emacsclient
-      (set services.emacs
-        (att (enable #t)
-             (package 'pkgs.emacs-pgtk)
-             (startWithUserSession "graphical"))))))
+      (set 'services.emacs
+        (att ('enable #t)
+             ('package 'pkgs.emacs-pgtk)
+             ('startWithUserSession "graphical"))))))

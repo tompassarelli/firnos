@@ -5,7 +5,7 @@
   (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
-    (set environment.systemPackages
+    (set 'environment.systemPackages
       (with-do 'pkgs
         (lst
           'rofi  ;; rofi-wayland merged into rofi in 25.11
