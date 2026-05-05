@@ -112,6 +112,30 @@ firn-validate                                                      # verify clea
 
 Word-boundary matching prevents partial collisions; string literals are skipped. After applying, always re-run `firn-validate`.
 
+## Programmatic edits to a single file
+
+For surgical edits — replace an option's value, or remove a `(set …)` form — use `nisp-edit`. It's source-text-preserving (uses AST positions to do text-level surgery), so comments and formatting outside the edited region survive intact:
+
+```bash
+# Replace existing value, or insert if not present
+nisp-edit set hosts/whiterabbit/configuration.rkt myConfig.modules.foo.port 8080
+nisp-edit set modules/swap/default.rkt zramSwap.memoryPercent 75
+nisp-edit set hosts/laptop/configuration.rkt services.bluetooth.enable '#t'
+nisp-edit set foo.rkt some.path '(lst 80 443 8080)'
+
+# Remove a (set …) form entirely
+nisp-edit unset hosts/whiterabbit/configuration.rkt myConfig.modules.unused.enable
+```
+
+Inserts land inside the surrounding scope (`config-body` for module-files, top-level for host-files) at the right indentation. The value argument is raw nisp source — quote shell-special chars appropriately.
+
+Use `nisp-edit` instead of manual Edit-tool text replacement when:
+- The change is "set this option to that value" (it's atomic and validates afterwards)
+- You're inserting a new option that may or may not already exist (handles both cases)
+- You're removing a form (handles the trailing-whitespace cleanup)
+
+Use Edit tool when the change is structural beyond what `set`/`unset` cover (modifying lambda formals, restructuring let-in, etc.).
+
 ## Importing existing Nix
 
 If the user has hand-written `.nix` and wants to convert to nisp:
