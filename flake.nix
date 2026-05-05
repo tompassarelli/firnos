@@ -30,6 +30,7 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, ... }: let
     firnModules = ./modules;
     firnBundles = ./bundles;
+    firnBundlesDarwin = ./bundles-darwin;
   in
   {
     lib.mkSystem = { hostname, hostConfig, hardwareConfig, system ? "x86_64-linux", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nixpkgs.lib.nixosSystem {
@@ -230,23 +231,35 @@
         home-manager.darwinModules.home-manager
         hostConfig
         ({ config, lib, pkgs, ... }: {
-          imports = map (m: "${firnModules}/${m}") [
-            "gh"
-            "delta"
-            "ripgrep"
-            "fd"
-            "vim"
-            "tree"
-            "btop"
-            "dust"
-            "eza"
-            "git"
+          imports = (map (m: "${firnModules}/${m}") [
+            "kitty"
+            "fish"
+            "zoxide"
             "atuin"
             "starship"
-            "fish"
+            "yazi"
+            "tree"
+            "dust"
+            "eza"
+            "procs"
+            "tealdeer"
+            "fastfetch"
+            "btop"
+            "unrar"
+            "curl"
+            "wget"
+            "unzip"
+            "imagemagick"
+            "ghostscript"
+            "git"
+            "gh"
+            "delta"
+            "vim"
+            "claude"
             "direnv"
-            "zoxide"
-          ];
+            "ripgrep"
+            "fd"
+          ]) ++ (map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: v == "directory") (builtins.readDir ./bundles-darwin))));
           options.myConfig.modules.users.username = lib.mkOption {
             type = lib.types.str;
             default = "you";
@@ -255,6 +268,7 @@
           config = {
             networking.hostName = hostname;
             system.stateVersion = 6;
+            nixpkgs.config.allowUnfree = true;
             users.users = {
               ${config.myConfig.modules.users.username} = {
                 home = "/Users/${config.myConfig.modules.users.username}";

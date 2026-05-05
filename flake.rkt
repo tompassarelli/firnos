@@ -27,7 +27,8 @@
                  zen-browser palefox)
     (let-in
       ([firnModules (p "./modules")]
-       [firnBundles (p "./bundles")])
+       [firnBundles (p "./bundles")]
+       [firnBundlesDarwin (p "./bundles-darwin")])
       (att
         ;; ============================================================
         ;; PUBLIC API: Reusable system builder
@@ -284,25 +285,48 @@
                       ;; config-body touches NixOS-only options). So we
                       ;; declare the option here.
                       ;;
-                      ;; Module allowlist for darwin: mkIf gating *defers the
-                      ;; value*, but nix-darwin's option system still rejects
-                      ;; undeclared option *paths* (boot.*, hardware.*, etc.).
-                      ;; So we can't reuse the full NixOS auto-discovery tree —
-                      ;; modules that touch top-level NixOS-only options would
-                      ;; fail eval even when unenabled. Maintain a hand-curated
-                      ;; safelist of modules whose config-body only touches
-                      ;; options nix-darwin also exposes (programs.*,
-                      ;; environment.systemPackages, home-manager.*). Add to
-                      ;; this list as needed; bundles are skipped entirely.
+                      ;; Module + bundle allowlist for darwin: mkIf gating
+                      ;; *defers the value*, but nix-darwin's option system
+                      ;; still rejects undeclared option *paths* (boot.*,
+                      ;; hardware.*, etc.). So we can't reuse the full NixOS
+                      ;; auto-discovery tree.
+                      ;;
+                      ;; Strategy:
+                      ;;   - Bundles live in `bundles-darwin/`, auto-discovered
+                      ;;     wholesale. They share the `myConfig.bundles.<name>`
+                      ;;     namespace with their NixOS siblings, so a host
+                      ;;     can do `(enable myConfig.bundles.terminal)` on
+                      ;;     either platform and get the right composition.
+                      ;;   - Modules are an explicit safelist below — every
+                      ;;     module referenced by any darwin bundle, plus
+                      ;;     extras a darwin host might want directly.
+                      ;;     Adding a module: confirm its config-body only
+                      ;;     touches programs.*, environment.systemPackages,
+                      ;;     or home-manager.*, then append to the list.
                       (fn-set-rest (config lib pkgs)
                         (att
                           (imports
-                            (call map
-                              (fn m (s firnModules "/" m))
-                              (lst "gh" "delta" "ripgrep" "fd" "vim"
-                                   "tree" "btop" "dust" "eza"
-                                   "git" "atuin" "starship"
-                                   "fish" "direnv" "zoxide")))
+                            (concat-list
+                              ;; modules/<name> safelist
+                              (call map
+                                (fn m (s firnModules "/" m))
+                                (lst
+                                  ;; bundles-darwin/terminal
+                                  "kitty" "fish" "zoxide" "atuin" "starship"
+                                  ;; bundles-darwin/cli-tools
+                                  "yazi" "tree" "dust" "eza" "procs" "tealdeer"
+                                  "fastfetch" "btop" "unrar" "curl" "wget" "unzip"
+                                  "imagemagick" "ghostscript"
+                                  ;; bundles-darwin/development
+                                  "git" "gh" "delta" "vim" "claude" "direnv"
+                                  "ripgrep" "fd"))
+                              ;; bundles-darwin/* — auto-discovered
+                              (call map
+                                (fn b (s firnBundlesDarwin "/" b))
+                                (call builtins.attrNames
+                                  (call nixpkgs.lib.filterAttrs
+                                    (fn (n v) (== v (s "directory")))
+                                    (call builtins.readDir (p "./bundles-darwin")))))))
 
                           (options.myConfig.modules.users.username
                             (call lib.mkOption
@@ -317,6 +341,11 @@
                               ;; nix-darwin requires this to track which
                               ;; version of nix-darwin built the system.
                               (system.stateVersion 6)
+
+                              ;; allowUnfree at the system level (matches
+                              ;; the NixOS path; some darwin-safe modules
+                              ;; like unrar pull unfree dependencies).
+                              (nixpkgs.config.allowUnfree #t)
 
                               ;; nix-darwin's home-manager module derives
                               ;; home.username/homeDirectory from
