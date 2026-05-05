@@ -5,29 +5,29 @@
 (raw-file
   (fn-set-rest (config lib pkgs)
     (let-in
-      ([cfg 'config.myConfig.modules.glide])
+      ([cfg config.myConfig.modules.glide])
       (att
-        (set 'config
-          (mkif 'cfg.enable
+        (set config
+          (mkif cfg.enable
             (att
-              (set 'systemd.services.glide
+              (set systemd.services.glide
                 (att
-                  ('description "Glide touchpad motion detection daemon")
-                  ('after (lst "kanata-main.service"))
-                  ('wants (lst "kanata-main.service"))
-                  ('wantedBy (lst "multi-user.target"))
-                  ('serviceConfig
+                  (description "Glide touchpad motion detection daemon")
+                  (after (lst "kanata-main.service"))
+                  (wants (lst "kanata-main.service"))
+                  (wantedBy (lst "multi-user.target"))
+                  (serviceConfig
                     (att
-                      ('ExecStart
-                        (call 'lib.concatStringsSep " "
+                      (ExecStart
+                        (call lib.concatStringsSep " "
                           (lst
                             (s "${pkgs.glide}/bin/glide")
-                            "--device" 'cfg.device
-                            "--kanata-address" 'cfg.kanataAddress
-                            "--virtual-key" 'cfg.virtualKey
-                            "--motion-threshold" (call 'toString 'cfg.motionThreshold)
-                            "--min-streak" (call 'toString 'cfg.minStreak))))
-                      ('Restart "on-failure")
-                      ('RestartSec 2)
+                            "--device" cfg.device
+                            "--kanata-address" cfg.kanataAddress
+                            "--virtual-key" cfg.virtualKey
+                            "--motion-threshold" (call toString cfg.motionThreshold)
+                            "--min-streak" (call toString cfg.minStreak))))
+                      (Restart "on-failure")
+                      (RestartSec 2)
                       ;; Needs access to input devices
-                      ('SupplementaryGroups (lst "input")))))))))))))
+                      (SupplementaryGroups (lst "input")))))))))))))

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'ghostscript "Ghostscript PostScript interpreter")
+(pkg ghostscript "Ghostscript PostScript interpreter")

@@ -2,26 +2,26 @@
 
 (module-file modules neovim
   (desc "Neovim text editor")
-  (lets ([username 'config.myConfig.modules.users.username]))
+  (lets ([username config.myConfig.modules.users.username]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     ;; Enable neovim system-wide and set as default editor
-    (set 'programs.neovim
-      (att ('enable #t)
-           ('defaultEditor #t)))
+    (set programs.neovim
+      (att (enable #t)
+           (defaultEditor #t)))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
-    (home-of 'username
+    (home-of username
       ;; Neovim configuration file
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"nvim/init.lua\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/neovim/init.lua")))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/neovim/init.lua")))))
 
       ;; Generate stylix colors for neovim (based on stylix neovim.nix)
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"nvim/lua/stylix-colors.lua\"" "text")
-         (with-do 'config.lib.stylix.colors
+         (with-do config.lib.stylix.colors
            (ms "local M = {}"
                ""
                "-- Base16 color palette"

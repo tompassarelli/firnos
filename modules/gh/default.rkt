@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'gh "GitHub CLI")
+(pkg gh "GitHub CLI")

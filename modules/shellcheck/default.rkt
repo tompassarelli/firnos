@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'shellcheck "ShellCheck shell script linter")
+(pkg shellcheck "ShellCheck shell script linter")

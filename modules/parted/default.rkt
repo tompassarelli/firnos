@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'parted "disk partitioning tool")
+(pkg parted "disk partitioning tool")

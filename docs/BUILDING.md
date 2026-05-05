@@ -23,6 +23,34 @@ them visible).
 newer than their `.nix` output, so re-running it after a clean build is a
 no-op.
 
+## Validation: catching typos before `nixos-rebuild`
+
+`scripts/firn-validate` checks every `(set …)` and `(enable …)` path in
+your `.rkt` sources against the cached NixOS options schema. Typos are
+caught at the source line — no waiting for Nix evaluation:
+
+```
+$ ./scripts/firn-validate
+modules/printing/default.rkt:6:7: unknown option services.pipwire.alsa.enable
+  did you mean: services.pipewire.alsa.enable or services.pipewire.pulse.enable?
+```
+
+The schema is extracted once into `.firn-build/schema.json` (gitignored).
+Regenerate after `nix flake update` or after adding/changing options
+in your own modules:
+
+```
+./scripts/firn-extract-schema             # default: whiterabbit
+./scripts/firn-extract-schema thinkpad-x1e # other host
+```
+
+The validator skips paths inside `(home-of …)` bodies (they're inside
+home-manager submodules our schema doesn't go into), paths with `${…}`
+interpolation, and paths whose first segment is one of a small set of
+common HM/submodule roots (`programs`, `home`, `xdg`, etc.). This trades
+some false negatives for zero false positives — real typos in *those*
+namespaces still surface at Nix-eval time.
+
 ## Required modules and bundles
 
 The pipeline runs `racket` on every `.rkt` source, so racket must be on the

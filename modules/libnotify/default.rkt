@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'libnotify "libnotify notification client")
+(pkg libnotify "libnotify notification client")

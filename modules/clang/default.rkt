@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'clang "Clang C/C++ compiler")
+(pkg clang "Clang C/C++ compiler")

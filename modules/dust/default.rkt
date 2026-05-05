@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'dust "Enable dust disk usage analyzer")
+(pkg dust "Enable dust disk usage analyzer")

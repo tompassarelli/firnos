@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'cargo 'pkgs.unstable.cargo "Rust package manager")
+(pkg cargo pkgs.unstable.cargo "Rust package manager")

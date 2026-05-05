@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'slurp "Wayland region selector")
+(pkg slurp "Wayland region selector")

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'imagemagick "ImageMagick image processing")
+(pkg imagemagick "ImageMagick image processing")

@@ -3,12 +3,12 @@
 (module-file modules niri
   (desc "Enable niri compositor configuration")
   (lets
-    ([username 'config.myConfig.modules.users.username]
+    ([username config.myConfig.modules.users.username]
      ;; Viewport navigation script - jumps between "tuples" of windows
      ;; A viewport is what fits on screen: 2x 50% windows or 1x 100% window
      [niri-viewport-nav
-      (call 'pkgs.writers.writePython3Bin "niri-viewport-nav"
-        (att ('libraries (lst)))
+      (call pkgs.writers.writePython3Bin "niri-viewport-nav"
+        (att (libraries (lst)))
         (ms "import json"
             "import subprocess"
             "import sys"
@@ -130,13 +130,13 @@
             "    main()"))]))
   (config-body
     ;; Enable niri compositor at system level
-    (set 'programs.niri.enable #t)
-    (set 'programs.niri.package 'pkgs.unstable.niri)
-    (set 'environment.systemPackages (lst 'niri-viewport-nav))
-    (home-of 'username
+    (set programs.niri.enable #t)
+    (set programs.niri.package pkgs.unstable.niri)
+    (set environment.systemPackages (lst niri-viewport-nav))
+    (home-of username
       ;; Niri configuration file
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"niri/config.kdl\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/niri/config.kdl")))))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/niri/config.kdl")))))))
   (raw-body (imports (p "./xwayland-satellite.nix") (p "./swaybg.nix") (p "./swayidle.nix"))))

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'ffmpeg "FFmpeg video processing")
+(pkg ffmpeg "FFmpeg video processing")

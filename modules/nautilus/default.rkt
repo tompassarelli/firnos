@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'nautilus "Nautilus file manager")
+(pkg nautilus "Nautilus file manager")

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'clippy 'pkgs.unstable.clippy "Rust linter")
+(pkg clippy pkgs.unstable.clippy "Rust linter")

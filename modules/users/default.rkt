@@ -3,4 +3,4 @@
 (raw-file
   (fn-set-rest (lib)
     (att
-      ('imports (lst (p "./users.nix"))))))
+      (imports (lst (p "./users.nix"))))))

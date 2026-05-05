@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'vim "Vim text editor")
+(pkg vim "Vim text editor")

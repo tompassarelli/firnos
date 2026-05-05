@@ -2,4 +2,4 @@
 
 (bundle-file javascript
   (desc "JavaScript / Node.js development")
-  (sub-modules 'nodejs))
+  (sub-modules nodejs))

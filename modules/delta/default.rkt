@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'delta "delta git diff viewer")
+(pkg delta "delta git diff viewer")

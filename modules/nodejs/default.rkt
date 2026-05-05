@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'nodejs "Node.js runtime")
+(pkg nodejs "Node.js runtime")

@@ -6,8 +6,9 @@
          racket/match
          (for-syntax racket/base))
 
-(provide (rename-out [nisp-module-begin #%module-begin])
-         #%top #%app #%datum quote
+(provide (rename-out [nisp-module-begin #%module-begin]
+                     [nisp-top #%top])
+         #%app #%datum quote
          ;; --- existing nisp surface ---
          enable set service pkg hm hm-bare hm-module submodule-impl
          ;; --- atoms ---
@@ -52,10 +53,20 @@
          (struct-out lp-attrs)
          emit emit-toplevel as-value)
 
-;; #%top: standard Racket — unbound identifiers error at compile time.
-;; Use 'foo (Racket quote) to inject a nix-ident from a symbol literal.
-;; `as-value` converts symbols to nix-idents, so quoted symbols flow through
-;; the existing AST builders without special handling.
+;; #%top: this is a configuration language, so unbound identifiers become
+;; nix-ident AST nodes — most tokens in a NixOS config are *names of things*
+;; (packages, services, option paths), not variable references.
+;;
+;; Typo safety is provided by `scripts/firn-validate`, which checks every
+;; option path against the cached NixOS options schema with file:line:col
+;; precision. So `(set foo.bar val)` reads cleanly and typos still surface
+;; at the source line.
+;;
+;; You can still write 'foo explicitly when you mean "the symbol foo" —
+;; e.g. when passing operator names to `bop` like (bop 'or x y).
+(define-syntax (nisp-top stx)
+  (syntax-case stx ()
+    [(_ . id) #'(nix-ident (symbol->string 'id))]))
 
 
 ;; =========================================================================
@@ -204,13 +215,24 @@
     [(_ form ...)
      #'(nix-rec-attrs (flatten-entries (list (att-clause form) ...)))]))
 
-;; (att (k v))  — k is evaluated as a normal Racket expression. To denote a
-;; Nix-identifier key, write 'foo (symbol). mk-entry handles symbols/strings/lists.
-;; For arbitrary entry-producing expressions, just write them at top level of att.
+;; (att (k v))  — the (k v) pair shape is structural: a 2-element form is
+;; always a key-value pair, with k taken as the literal key name. This is
+;; uniform with how Lisp `let` and similar binding forms treat their LHS.
+;;
+;; Bare identifier keys (e.g. (att (enable #t))) are auto-quoted, even
+;; when the identifier happens to also be bound (like our `enable` function).
+;; The kv-pair shape unambiguously signals "this is a key, not a call."
+;;
+;; For an arbitrary expression that returns an entry, use a non-2-element
+;; form: (att (some-fn x y)) — 3 elements, falls through to the expr case.
 (define-syntax (att-clause stx)
-  (syntax-case stx ()
-    [(_ (k v)) #'(mk-entry k v)]
-    [(_ expr)  #'expr]))
+  (syntax-case stx (quote)
+    [(_ ((quote k) v))   #'(mk-entry 'k v)]
+    [(_ (k v))
+     (or (identifier? #'k) (string? (syntax->datum #'k)))
+     #'(mk-entry 'k v)]
+    [(_ (k v))           #'(mk-entry k v)]
+    [(_ expr)            #'expr]))
 
 ;; att*: pass entries as a single list (for dynamic construction)
 (define (att* entries) (nix-attrs entries))
@@ -222,7 +244,8 @@
        (if (regexp-match? #px"\\$\\{" key)
            (parse-attr-path key)
            (smart-split-dot key))]
-      [(symbol? key) (smart-split-dot (symbol->string key))]
+      [(symbol? key)    (smart-split-dot (symbol->string key))]
+      [(nix-ident? key) (smart-split-dot (nix-ident-name key))]
       [(list? key) key]
       [else (list key)]))
   (nix-attr-entry segs (as-value value)))
@@ -253,7 +276,13 @@
 (define (cat a b) (nix-binop '+ (as-value a) (as-value b)))
 
 ;; (bop op a b) -> a op b   (generic binary; op is a symbol like '== '!= '&& '|| '<)
-(define (bop op a b) (nix-binop op (as-value a) (as-value b)))
+(define (bop op a b)
+  (define op-sym
+    (cond [(symbol? op) op]
+          [(string? op) (string->symbol op)]
+          [(nix-ident? op) (string->symbol (nix-ident-name op))]
+          [else (error 'bop "operator must be symbol/string/nix-ident, got: ~v" op)]))
+  (nix-binop op-sym (as-value a) (as-value b)))
 
 ;; =========================================================================
 ;; Expressions
@@ -400,27 +429,41 @@
     [(null? (cdr paths))   (one (car paths))]
     [else                  (map one paths)]))
 
-;; (set 'path val) | (set 'path v1 v2 ...)
-;; path is a symbol/string/segment-list.
-(define (set path . vals)
-  (cond
-    [(null? vals)            (error 'set "(set 'path val ...) — at least one value required")]
-    [(null? (cdr vals))      (mk-entry path (car vals))]
-    [else                    (mk-entry path (apply lst vals))]))
+;; (set path val) | (set path v1 v2 ...)
+;;
+;; The first argument is a *path position* — structurally a literal key
+;; name, like the binding-name in (let ([x 1]) ...). A bare identifier or
+;; string is taken as the literal path; only computed expressions are
+;; evaluated. This sidesteps the name-collision case where DSL functions
+;; (`imports`, `enable`, etc.) are also valid Nix attribute keys.
+(define-syntax (set stx)
+  (syntax-case stx (quote)
+    [(_ (quote path) val)
+     #'(mk-entry 'path val)]
+    [(_ path val)
+     (or (identifier? #'path) (string? (syntax->datum #'path)))
+     #'(mk-entry 'path val)]
+    [(_ path val)
+     #'(mk-entry path val)]
+    [(_ path v1 v2 (... ...))
+     (or (identifier? #'path) (string? (syntax->datum #'path)))
+     #'(mk-entry 'path (lst v1 v2 (... ...)))]
+    [(_ path v1 v2 (... ...))
+     #'(mk-entry path (lst v1 v2 (... ...)))]))
 
-;; (service 'openssh) | (service 'pipewire (att ('alsa #t) ('pulse #t)))
+;; (service openssh) | (service pipewire (att (alsa.enable #t)))
+(define (->name n)
+  (cond [(symbol? n) (symbol->string n)]
+        [(string? n) n]
+        [(nix-ident? n) (nix-ident-name n)]
+        [else (error 'service "name must be symbol/string/nix-ident, got: ~v" n)]))
+
 (define service
   (case-lambda
     [(name)
-     (define s (cond [(symbol? name) (symbol->string name)]
-                     [(string? name) name]
-                     [else (error 'service "name must be symbol or string")]))
-     (mk-entry (string-append "services." s ".enable") #t)]
+     (mk-entry (string-append "services." (->name name) ".enable") #t)]
     [(name body)
-     (define s (cond [(symbol? name) (symbol->string name)]
-                     [(string? name) name]
-                     [else (error 'service "name must be symbol or string")]))
-     (mk-entry (string-append "services." s)
+     (mk-entry (string-append "services." (->name name))
                (cond
                  [(nix-attrs? body)
                   (nix-attrs (cons (mk-entry "enable" #t) (nix-attrs-entries body)))]
@@ -430,24 +473,31 @@
 ;; High-leverage shortcuts for common module shapes
 ;; =========================================================================
 
-;; (pkg 'name)                        — install pkgs.<name>, desc = name
-;; (pkg 'name "desc")                 — install pkgs.<name> with desc
-;; (pkg 'name 'pkg-path "desc")       — install at pkg-path (e.g. 'pkgs.unstable.cargo)
+;; (pkg name)                  — install pkgs.<name>, desc = name
+;; (pkg name "desc")           — install pkgs.<name> with desc
+;; (pkg name pkg-path "desc")  — install at pkg-path (e.g. pkgs.unstable.cargo)
+;; Identifiers are matched as syntax (their literal name); the macro doesn't
+;; need them quoted because it captures the syntactic form, not the value.
 (define-syntax (pkg stx)
   (syntax-case stx (quote)
-    [(_ (quote name))
-     #'(pkg (quote name) (symbol->string 'name))]
-    [(_ (quote name) desc-str)
-     (string? (syntax->datum #'desc-str))
+    [(_ name)
+     (identifier? #'name)
+     #'(module-file modules name
+         (desc (symbol->string 'name))
+         (config-body
+           (set 'environment.systemPackages (with-pkgs name))))]
+    [(_ name desc-str)
+     (and (identifier? #'name) (string? (syntax->datum #'desc-str)))
      #'(module-file modules name
          (desc desc-str)
          (config-body
-           (set 'environment.systemPackages (with-pkgs (quote name)))))]
-    [(_ (quote name) (quote pkg-path) desc-str)
+           (set 'environment.systemPackages (with-pkgs name))))]
+    [(_ name pkg-path desc-str)
+     (and (identifier? #'name) (identifier? #'pkg-path))
      #'(module-file modules name
          (desc desc-str)
          (config-body
-           (set 'environment.systemPackages (lst (quote pkg-path)))))]))
+           (set 'environment.systemPackages (lst pkg-path))))]))
 
 ;; (hm body...) — sugar for (home-of 'username body...). Use inside a
 ;; module-file that has (lets ([username 'config.myConfig.modules.users.username])).
@@ -462,25 +512,29 @@
     [(_ body ...)
      #'(home-of-bare 'username body ...)]))
 
-;; (hm-module 'name "desc" body...) — for HM-only modules: auto-creates the
+;; (hm-module name "desc" body...) — for HM-only modules: auto-creates the
 ;; module-file wrapper, the lets binding for username, and the home-of wrapper.
-;; Use when the module's only config is home-manager.users.<u> = { ... };.
+;; Internal expansion uses quoted forms so identifiers don't go through the
+;; macro's defining scope (nisp/main.rkt) where they'd be unbound.
 (define-syntax (hm-module stx)
-  (syntax-case stx (quote)
-    [(_ (quote name) desc-str body ...)
+  (syntax-case stx ()
+    [(_ name desc-str body ...)
+     (identifier? #'name)
      #'(module-file modules name
          (desc desc-str)
          (lets ([username 'config.myConfig.modules.users.username]))
          (config-body
            (home-of 'username body ...)))]))
 
-;; (submodule-impl '<modname> body...) — for module sub-files (e.g. chrome.rkt
-;; included via imports = [ ./chrome.nix ] from default.rkt). Wraps body in
-;; the standard { config, lib, pkgs, ... }: { config = mkIf ...enable {body}; }
+;; (submodule-impl modname body...) — for module sub-files. Wraps body in the
+;; standard { config, lib, pkgs, ... }: { config = mkIf ...enable { body }; }
 ;; shape so sub-files don't need raw-file + fn-set-rest boilerplate.
+;; Variant: (submodule-impl modname subkey body...) gates on
+;; modname.subkey.enable instead of modname.enable.
 (define-syntax (submodule-impl stx)
-  (syntax-case stx (quote)
-    [(_ (quote modname) body ...)
+  (syntax-case stx ()
+    [(_ modname body ...)
+     (identifier? #'modname)
      #'(raw-file
          (fn-set-rest (config lib pkgs)
            (att
@@ -489,8 +543,8 @@
                                                (symbol->string 'modname)
                                                ".enable"))
                  (att body ...))))))]
-    [(_ (quote modname) (quote subkey) body ...)
-     ;; Variant: gate on a deeper option like firefox.palefox.enable
+    [(_ modname subkey body ...)
+     (and (identifier? #'modname) (identifier? #'subkey))
      #'(raw-file
          (fn-set-rest (config lib pkgs)
            (att
@@ -509,14 +563,16 @@
 (define (with-pkgs . names)
   (with-do (nix-ident "pkgs") (apply lst names)))
 
-;; (imports 'a 'b 'c) -> imports = [ ./a ./b ./c ];
-;;   symbol      -> ./symbol
+;; (imports a b c) -> imports = [ ./a ./b ./c ];
 ;;   string      -> ./string
+;;   symbol      -> ./symbol
+;;   nix-ident   -> ./<name>
 ;;   anything else passes through (assumed to be a path AST already)
 (define (imports . items)
   (define (one x)
     (cond [(string? x) (nix-path x)]
           [(symbol? x) (nix-path (symbol->string x))]
+          [(nix-ident? x) (nix-path (nix-ident-name x))]
           [else x]))
   (mk-entry "imports" (apply lst (map one items))))
 
@@ -610,11 +666,12 @@
      #'(nisp-file 'module
                   (build-module-file 'bundles 'bundles 'name (list (mod-clause body) ...)))]))
 
-;; Helper: coerce a symbol or string to its string form (used in clauses below).
+;; Helper: coerce a symbol/string/nix-ident to its string form (used in clauses below).
 (define (->key k)
-  (cond [(symbol? k) (symbol->string k)]
-        [(string? k) k]
-        [else (error '->key "expected symbol or string, got ~v" k)]))
+  (cond [(symbol? k)    (symbol->string k)]
+        [(string? k)    k]
+        [(nix-ident? k) (nix-ident-name k)]
+        [else (error '->key "expected symbol/string/nix-ident, got ~v" k)]))
 
 ;; Convert each body clause into a tagged pair.
 ;;

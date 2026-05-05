@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'graphviz "Graphviz graph visualization")
+(pkg graphviz "Graphviz graph visualization")

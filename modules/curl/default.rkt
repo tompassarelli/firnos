@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'curl "curl HTTP client")
+(pkg curl "curl HTTP client")

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'cmake "CMake build system")
+(pkg cmake "CMake build system")

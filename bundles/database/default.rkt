@@ -2,4 +2,4 @@
 
 (bundle-file database
   (desc "database tools")
-  (sub-modules 'dbeaver 'sqlite 'postgresql 'freetds))
+  (sub-modules dbeaver sqlite postgresql freetds))

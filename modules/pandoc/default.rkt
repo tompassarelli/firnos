@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'pandoc "Pandoc document converter")
+(pkg pandoc "Pandoc document converter")

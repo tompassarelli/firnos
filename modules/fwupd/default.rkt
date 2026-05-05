@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'fwupd "fwupd firmware updater")
+(pkg fwupd "fwupd firmware updater")

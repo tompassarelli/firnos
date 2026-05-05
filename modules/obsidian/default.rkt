@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'obsidian "Obsidian note-taking")
+(pkg obsidian "Obsidian note-taking")

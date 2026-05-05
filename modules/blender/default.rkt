@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'blender "Blender 3D editor")
+(pkg blender "Blender 3D editor")

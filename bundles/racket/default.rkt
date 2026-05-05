@@ -2,4 +2,4 @@
 
 (bundle-file racket
   (desc "Racket development")
-  (sub-modules 'racket 'drracket))
+  (sub-modules racket drracket))

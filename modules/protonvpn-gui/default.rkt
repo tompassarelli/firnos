@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'protonvpn-gui "ProtonVPN GUI client")
+(pkg protonvpn-gui "ProtonVPN GUI client")

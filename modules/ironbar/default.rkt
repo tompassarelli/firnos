@@ -2,23 +2,23 @@
 
 (module-file modules ironbar
   (desc "Ironbar status bar for Wayland")
-  (lets ([username 'config.myConfig.modules.users.username]))
+  (lets ([username config.myConfig.modules.users.username]))
   (config-body
     ;; SYSTEM: Install ironbar package (unstable for niri workspace support)
-    (set 'environment.systemPackages (lst 'pkgs.unstable.ironbar))
+    (set environment.systemPackages (lst pkgs.unstable.ironbar))
 
     ;; HOME-MANAGER: User configuration, dotfiles, and services
-    (home-of 'username
+    (home-of username
       ;; Dotfiles: Main config
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"ironbar/config.toml\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/config.toml")))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/config.toml")))))
 
       ;; Dotfiles: Stylix-generated CSS (dynamic colors from theme)
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"ironbar/stylix.css\"" "text")
-         (with-do 'config.lib.stylix.colors
+         (with-do config.lib.stylix.colors
            (ms "@define-color base00 #${base00};"
                "@define-color base01 #${base01};"
                "@define-color base02 #${base02};"
@@ -55,45 +55,45 @@
       ;; Dotfiles: Custom styles
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"ironbar/style.css\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/style.css")))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/style.css")))))
 
       ;; Dotfiles: Overview script
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"ironbar/overview-ironbar.py\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/overview-ironbar.py")))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/overview-ironbar.py")))))
 
       ;; Dotfiles: Battery script
       (nix-attrs-entries (att
         ((.> "xdg" "configFile" "\"ironbar/battery.sh\"" "source")
-         (call 'config.lib.file.mkOutOfStoreSymlink
-           (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/battery.sh")))))
+         (call config.lib.file.mkOutOfStoreSymlink
+           (s config.home.homeDirectory "/code/nixos-config/dotfiles/ironbar/battery.sh")))))
 
       ;; Systemd service: Main ironbar daemon
-      (set 'systemd.user.services.ironbar
+      (set systemd.user.services.ironbar
         (att
-          ('Unit (att
-            ('Description "Customizable GTK4 status bar for Wayland")
-            ('PartOf (lst "graphical-session.target"))
-            ('After (lst "graphical-session.target"))
-            ('Requisite (lst "graphical-session.target"))))
-          ('Service (att
-            ('ExecStart (s 'pkgs.unstable.ironbar "/bin/ironbar"))
-            ('Restart "on-failure")))
-          ('Install (att
-            ('WantedBy (lst "niri.service"))))))
+          (Unit (att
+            (Description "Customizable GTK4 status bar for Wayland")
+            (PartOf (lst "graphical-session.target"))
+            (After (lst "graphical-session.target"))
+            (Requisite (lst "graphical-session.target"))))
+          (Service (att
+            (ExecStart (s pkgs.unstable.ironbar "/bin/ironbar"))
+            (Restart "on-failure")))
+          (Install (att
+            (WantedBy (lst "niri.service"))))))
 
       ;; Systemd service: Overview listener script
-      (set 'systemd.user.services.ironbar-overview
+      (set systemd.user.services.ironbar-overview
         (att
-          ('Unit (att
-            ('Description "Ironbar overview listener script")
-            ('PartOf (lst "graphical-session.target"))
-            ('After (lst "ironbar.service"))
-            ('Requires (lst "ironbar.service"))))
-          ('Service (att
-            ('ExecStart "%h/.config/ironbar/overview-ironbar.py")
-            ('Restart "on-failure")))
-          ('Install (att
-            ('WantedBy (lst "niri.service")))))))))
+          (Unit (att
+            (Description "Ironbar overview listener script")
+            (PartOf (lst "graphical-session.target"))
+            (After (lst "ironbar.service"))
+            (Requires (lst "ironbar.service"))))
+          (Service (att
+            (ExecStart "%h/.config/ironbar/overview-ironbar.py")
+            (Restart "on-failure")))
+          (Install (att
+            (WantedBy (lst "niri.service")))))))))

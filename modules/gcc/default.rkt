@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'gcc "GNU C compiler")
+(pkg gcc "GNU C compiler")

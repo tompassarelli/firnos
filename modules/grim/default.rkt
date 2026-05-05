@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'grim "Grim screenshot tool")
+(pkg grim "Grim screenshot tool")

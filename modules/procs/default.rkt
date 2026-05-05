@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'procs "Enable procs (modern ps replacement)")
+(pkg procs "Enable procs (modern ps replacement)")

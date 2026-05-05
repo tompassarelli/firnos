@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'brightnessctl "screen brightness control")
+(pkg brightnessctl "screen brightness control")

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'eza "Enable eza (modern ls replacement)")
+(pkg eza "Enable eza (modern ls replacement)")

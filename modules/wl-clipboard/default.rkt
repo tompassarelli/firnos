@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'wl-clipboard "Wayland clipboard utilities")
+(pkg wl-clipboard "Wayland clipboard utilities")

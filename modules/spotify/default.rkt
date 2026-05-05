@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'spotify "Spotify TUI player")
+(pkg spotify "Spotify TUI player")

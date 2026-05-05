@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'pavucontrol "PulseAudio volume control")
+(pkg pavucontrol "PulseAudio volume control")

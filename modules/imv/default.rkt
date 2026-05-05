@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'imv "imv image viewer")
+(pkg imv "imv image viewer")

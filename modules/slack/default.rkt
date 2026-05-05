@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'slack "Slack messaging")
+(pkg slack "Slack messaging")

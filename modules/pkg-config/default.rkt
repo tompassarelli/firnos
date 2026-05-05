@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'pkg-config "pkg-config build tool")
+(pkg pkg-config "pkg-config build tool")

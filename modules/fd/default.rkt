@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'fd "fd file finder")
+(pkg fd "fd file finder")

@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'ripgrep "ripgrep search tool")
+(pkg ripgrep "ripgrep search tool")

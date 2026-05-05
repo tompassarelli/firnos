@@ -1,3 +1,3 @@
 #lang nisp
 
-(pkg 'libtool "GNU Libtool")
+(pkg libtool "GNU Libtool")

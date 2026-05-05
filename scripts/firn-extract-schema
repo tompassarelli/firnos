@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# firn-extract-schema — dump every NixOS option (path + type-name) into
+# .firn-build/schema.json. Includes custom myConfig.* options + flake-input
+# options (stylix, home-manager, sops, etc.) automatically.
+#
+# Re-run after `nix flake update` or after adding/changing modules with
+# new options. Cached output is read by firn-validate.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+mkdir -p .firn-build
+
+# Pick the host whose options-tree we use as the schema. Whiterabbit's tree
+# already includes everything this repo touches.
+HOST="${1:-whiterabbit}"
+
+echo "firn-extract-schema: extracting options tree for nixosConfigurations.${HOST}..."
+
+# System options (whiterabbit's full merged options tree)
+nix eval --json --impure --expr "
+let
+  flake = builtins.getFlake (toString ./.);
+  opts  = flake.nixosConfigurations.${HOST}.options;
+  walk = path: o:
+    if (o._type or null) == \"option\"
+    then [ { p = path; t = o.type.name or \"?\"; } ]
+    else if builtins.isAttrs o
+    then builtins.concatLists
+      (builtins.attrValues
+        (builtins.mapAttrs (n: v: walk (if path == \"\" then n else \"\${path}.\${n}\") v) o))
+    else [];
+in walk \"\" opts
+" 2>/dev/null > .firn-build/schema.json
+
+count=$(python3 -c 'import json; print(len(json.load(open(".firn-build/schema.json"))))')
+size=$(wc -c < .firn-build/schema.json)
+
+echo "firn-extract-schema: cached $count option paths ($size bytes) → .firn-build/schema.json"
