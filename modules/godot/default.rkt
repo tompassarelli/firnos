@@ -1,6 +1,3 @@
 #lang nisp
 
-(module-file modules godot
-  (desc "Godot game engine")
-  (config-body
-    (set 'environment.systemPackages (lst 'pkgs.unstable.godot_4))))
+(pkg 'godot 'pkgs.unstable.godot_4 "Godot game engine")

@@ -1,6 +1,3 @@
 #lang nisp
 
-(module-file modules wl-clipboard
-  (desc "Wayland clipboard utilities")
-  (config-body
-    (set 'environment.systemPackages (with-pkgs 'wl-clipboard))))
+(pkg 'wl-clipboard "Wayland clipboard utilities")

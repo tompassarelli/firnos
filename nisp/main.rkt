@@ -9,7 +9,7 @@
 (provide (rename-out [nisp-module-begin #%module-begin])
          #%top #%app #%datum quote
          ;; --- existing nisp surface ---
-         enable set service pkg
+         enable set service pkg hm hm-bare hm-module submodule-impl
          ;; --- atoms ---
          s ms p nl
          ;; --- compound ---
@@ -426,7 +426,80 @@
                   (nix-attrs (cons (mk-entry "enable" #t) (nix-attrs-entries body)))]
                  [else (error 'service "second arg must be an attrset (use att)")]))]))
 
-(define (pkg name) (nix-ident (string-append "pkgs." name)))
+;; =========================================================================
+;; High-leverage shortcuts for common module shapes
+;; =========================================================================
+
+;; (pkg 'name)                        — install pkgs.<name>, desc = name
+;; (pkg 'name "desc")                 — install pkgs.<name> with desc
+;; (pkg 'name 'pkg-path "desc")       — install at pkg-path (e.g. 'pkgs.unstable.cargo)
+(define-syntax (pkg stx)
+  (syntax-case stx (quote)
+    [(_ (quote name))
+     #'(pkg (quote name) (symbol->string 'name))]
+    [(_ (quote name) desc-str)
+     (string? (syntax->datum #'desc-str))
+     #'(module-file modules name
+         (desc desc-str)
+         (config-body
+           (set 'environment.systemPackages (with-pkgs (quote name)))))]
+    [(_ (quote name) (quote pkg-path) desc-str)
+     #'(module-file modules name
+         (desc desc-str)
+         (config-body
+           (set 'environment.systemPackages (lst (quote pkg-path)))))]))
+
+;; (hm body...) — sugar for (home-of 'username body...). Use inside a
+;; module-file that has (lets ([username 'config.myConfig.modules.users.username])).
+(define-syntax (hm stx)
+  (syntax-case stx ()
+    [(_ body ...)
+     #'(home-of 'username body ...)]))
+
+;; (hm-bare body...) — like hm but no { config, ... }: wrapper.
+(define-syntax (hm-bare stx)
+  (syntax-case stx ()
+    [(_ body ...)
+     #'(home-of-bare 'username body ...)]))
+
+;; (hm-module 'name "desc" body...) — for HM-only modules: auto-creates the
+;; module-file wrapper, the lets binding for username, and the home-of wrapper.
+;; Use when the module's only config is home-manager.users.<u> = { ... };.
+(define-syntax (hm-module stx)
+  (syntax-case stx (quote)
+    [(_ (quote name) desc-str body ...)
+     #'(module-file modules name
+         (desc desc-str)
+         (lets ([username 'config.myConfig.modules.users.username]))
+         (config-body
+           (home-of 'username body ...)))]))
+
+;; (submodule-impl '<modname> body...) — for module sub-files (e.g. chrome.rkt
+;; included via imports = [ ./chrome.nix ] from default.rkt). Wraps body in
+;; the standard { config, lib, pkgs, ... }: { config = mkIf ...enable {body}; }
+;; shape so sub-files don't need raw-file + fn-set-rest boilerplate.
+(define-syntax (submodule-impl stx)
+  (syntax-case stx (quote)
+    [(_ (quote modname) body ...)
+     #'(raw-file
+         (fn-set-rest (config lib pkgs)
+           (att
+             (set 'config
+               (mkif (nix-ident (string-append "config.myConfig.modules."
+                                               (symbol->string 'modname)
+                                               ".enable"))
+                 (att body ...))))))]
+    [(_ (quote modname) (quote subkey) body ...)
+     ;; Variant: gate on a deeper option like firefox.palefox.enable
+     #'(raw-file
+         (fn-set-rest (config lib pkgs)
+           (att
+             (set 'config
+               (mkif (nix-ident (string-append "config.myConfig.modules."
+                                               (symbol->string 'modname) "."
+                                               (symbol->string 'subkey)
+                                               ".enable"))
+                 (att body ...))))))]))
 
 ;; =========================================================================
 ;; Module convenience
