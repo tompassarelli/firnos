@@ -476,55 +476,58 @@
 ;; (pkg name)                  — install pkgs.<name>, desc = name
 ;; (pkg name "desc")           — install pkgs.<name> with desc
 ;; (pkg name pkg-path "desc")  — install at pkg-path (e.g. pkgs.unstable.cargo)
-;; Identifiers are matched as syntax (their literal name); the macro doesn't
-;; need them quoted because it captures the syntactic form, not the value.
+;;
+;; Templates use explicit AST constructors (mk-entry / nix-ident) for any
+;; Nix-path values, never bare identifiers. This way the templates have no
+;; free identifiers that would resolve in the macro's defining scope —
+;; #%top is a use-site feature for user files, not a definition-site
+;; dependency for macro authors.
 (define-syntax (pkg stx)
-  (syntax-case stx (quote)
+  (syntax-case stx ()
     [(_ name)
      (identifier? #'name)
      #'(module-file modules name
          (desc (symbol->string 'name))
          (config-body
-           (set 'environment.systemPackages (with-pkgs name))))]
+           (mk-entry "environment.systemPackages" (with-pkgs name))))]
     [(_ name desc-str)
      (and (identifier? #'name) (string? (syntax->datum #'desc-str)))
      #'(module-file modules name
          (desc desc-str)
          (config-body
-           (set 'environment.systemPackages (with-pkgs name))))]
+           (mk-entry "environment.systemPackages" (with-pkgs name))))]
     [(_ name pkg-path desc-str)
      (and (identifier? #'name) (identifier? #'pkg-path))
      #'(module-file modules name
          (desc desc-str)
          (config-body
-           (set 'environment.systemPackages (lst pkg-path))))]))
+           (mk-entry "environment.systemPackages" (lst pkg-path))))]))
 
-;; (hm body...) — sugar for (home-of 'username body...). Use inside a
-;; module-file that has (lets ([username 'config.myConfig.modules.users.username])).
+;; (hm body...) — sugar for wrapping body in home-manager.users.${username}.
+;; Use inside a module-file that has a `username` let-binding (typically via
+;; (lets ([username (nix-ident "config.myConfig.modules.users.username")]))).
 (define-syntax (hm stx)
   (syntax-case stx ()
     [(_ body ...)
-     #'(home-of 'username body ...)]))
+     #'(home-of (nix-ident "username") body ...)]))
 
 ;; (hm-bare body...) — like hm but no { config, ... }: wrapper.
 (define-syntax (hm-bare stx)
   (syntax-case stx ()
     [(_ body ...)
-     #'(home-of-bare 'username body ...)]))
+     #'(home-of-bare (nix-ident "username") body ...)]))
 
-;; (hm-module name "desc" body...) — for HM-only modules: auto-creates the
-;; module-file wrapper, the lets binding for username, and the home-of wrapper.
-;; Internal expansion uses quoted forms so identifiers don't go through the
-;; macro's defining scope (nisp/main.rkt) where they'd be unbound.
+;; (hm-module name "desc" body...) — full HM-only module: emits the module-file
+;; wrapper + the username let-binding + the home-of wrapper.
 (define-syntax (hm-module stx)
   (syntax-case stx ()
     [(_ name desc-str body ...)
      (identifier? #'name)
      #'(module-file modules name
          (desc desc-str)
-         (lets ([username 'config.myConfig.modules.users.username]))
+         (lets ([username (nix-ident "config.myConfig.modules.users.username")]))
          (config-body
-           (home-of 'username body ...)))]))
+           (home-of (nix-ident "username") body ...)))]))
 
 ;; (submodule-impl modname body...) — for module sub-files. Wraps body in the
 ;; standard { config, lib, pkgs, ... }: { config = mkIf ...enable { body }; }
@@ -538,7 +541,7 @@
      #'(raw-file
          (fn-set-rest (config lib pkgs)
            (att
-             (set 'config
+             (mk-entry "config"
                (mkif (nix-ident (string-append "config.myConfig.modules."
                                                (symbol->string 'modname)
                                                ".enable"))
@@ -548,7 +551,7 @@
      #'(raw-file
          (fn-set-rest (config lib pkgs)
            (att
-             (set 'config
+             (mk-entry "config"
                (mkif (nix-ident (string-append "config.myConfig.modules."
                                                (symbol->string 'modname) "."
                                                (symbol->string 'subkey)
