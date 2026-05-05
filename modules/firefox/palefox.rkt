@@ -56,7 +56,7 @@
                             (force #t)
                             (packages
                               (lst
-                                (nix-ident "inputs.nur.legacyPackages.${pkgs.system}.repos.rycee.firefox-addons.sidebery")))))))))
+                                (nix-ident "inputs.nur.legacyPackages.${pkgs.stdenv.hostPlatform.system}.repos.rycee.firefox-addons.sidebery")))))))))
 
                 ;; Symlink palefox chrome dir into the profile (out-of-store).
                 (set "home.file.\".mozilla/firefox/${username}/chrome\".source"

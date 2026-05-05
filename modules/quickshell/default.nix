@@ -8,7 +8,7 @@ in
 {
   options.myConfig.modules.quickshell.enable = lib.mkEnableOption "Quickshell (Qt6/QML) status bar";
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ inputs.quickshell.packages.${pkgs.system}.default ];
+    environment.systemPackages = [ inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default ];
     users.users.${username}.extraGroups = [ "input" ];
     home-manager.users.${username} = { config, ... }: {
       xdg.configFile."quickshell/shell.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/shell.qml";
@@ -51,7 +51,7 @@ in
           Requisite = [ "graphical-session.target" ];
         };
         Service = {
-          ExecStart = "${inputs.quickshell.packages.${pkgs.system}.default}/bin/qs";
+          ExecStart = "${inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/qs";
           Restart = "on-failure";
         };
         Install = {

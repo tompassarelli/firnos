@@ -10,7 +10,7 @@
         (mkif config.myConfig.modules.zen-browser.enable
           (att
             (environment.systemPackages
-              (lst (nix-ident "inputs.zen-browser.packages.${pkgs.system}.default")))
+              (lst (nix-ident "inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default")))
             (xdg.mime.defaultApplications
               (mkif config.myConfig.modules.zen-browser.default
                 (att ("${\"text/html\"}" "zen.desktop")

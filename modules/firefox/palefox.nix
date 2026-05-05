@@ -34,7 +34,7 @@ in
           };
           extensions = {
             force = true;
-            packages = [ inputs.nur.legacyPackages.${pkgs.system}.repos.rycee.firefox-addons.sidebery ];
+            packages = [ inputs.nur.legacyPackages.${pkgs.stdenv.hostPlatform.system}.repos.rycee.firefox-addons.sidebery ];
           };
         };
       };

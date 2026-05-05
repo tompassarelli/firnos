@@ -8,7 +8,7 @@
   (config-body
     ;; SYSTEM: Install quickshell
     (set environment.systemPackages
-      (lst (nix-ident "inputs.quickshell.packages.${pkgs.system}.default")))
+      (lst (nix-ident "inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default")))
 
     ;; User needs input group for evdev key release detection
     (set "users.users.${username}.extraGroups" (lst "input"))
@@ -79,6 +79,6 @@
                      (After (lst "graphical-session.target"))
                      (Requisite (lst "graphical-session.target"))))
           (Service (att
-            (ExecStart (s (nix-ident "inputs.quickshell.packages.${pkgs.system}.default") "/bin/qs"))
+            (ExecStart (s (nix-ident "inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default") "/bin/qs"))
             (Restart "on-failure")))
           (Install (att (WantedBy (lst "niri.service")))))))))
