@@ -6,64 +6,72 @@
   </picture>
 </p>
 
-## What is FirnOS?
+**A source-aware NixOS config compiler.** Write your config in a small
+Racket DSL (nisp); validate every option path, type, and enum value
+against the NixOS options schema; emit ordinary Nix.
 
-A NixOS configuration framework with three load-bearing pieces beyond the
-usual module-based config:
+Both `.rkt` and `.nix` are committed. The flake reads regular generated
+Nix. You're not trapped in a custom language — you can drop down to raw
+Nix at any point, and you can stop using FirnOS by deleting the `.rkt`
+files.
 
-- **nisp** — a custom Racket `#lang` for writing config as s-expressions; compiles to Nix.
-- **firn-validate** — schema-aware validator that catches NixOS option typos at the `.rkt` source line, before `nixos-rebuild` ever runs.
-- **firn** — Racket-based CLI that wraps the routine workflow (rebuild, enable/disable, scaffolding, secrets).
+## The dopamine loop
 
-Plus the framework conventions: `myConfig.modules.*` for individual
-packages/services, `myConfig.bundles.*` for composable groups,
-auto-discovery — add a directory to register a module.
+```
+$ firn rebuild
+modules/printing/default.rkt:6:7: unknown option services.pipwire.alsa.enable
+  did you mean: services.pipewire.alsa.enable or services.pipewire.pulse.enable?
+modules/foo/default.rkt:9:34: type mismatch at services.openssh.enable:
+  expected bool, got string
+hosts/laptop/configuration.rkt:11:47: type mismatch at boot.loader.systemd-boot.consoleMode:
+  "atuo" not in enum {"0", "1", "2", "5", "auto", "max", "keep"} — did you mean "auto"?
+```
 
-## Why nisp
+`file:line:col` precision **on the value, not the path**, with did-you-mean
+suggestions, before `nixos-rebuild` runs. That's the whole pitch.
 
-The pitch isn't "Lisp is prettier than Nix" (though it is) — it's that
-nisp moves validation to a place Nix can't put it.
+## What it is
 
-NixOS config is overwhelmingly static declaration. `services.openssh.enable
-= true` doesn't need evaluation to be checked: the path is known, its type
-is known, the value is known. The NixOS options system already exposes the
-full schema — every valid path, expected type, default, legal values. It
-exports cleanly as JSON.
+Three pieces on top of the standard NixOS module system:
 
-The reason Nix itself can't pre-validate this is that Nix is lazy.
-Evaluation is deferred until something forces it, and by then the call
-context has been discarded. Errors surface at the force point, not at the
-mistake. You can't pre-check in a lazy language because deferring is the
-whole point.
+- **nisp** — a Racket `#lang` for writing NixOS config as s-expressions. Compiles to ordinary Nix.
+- **firn-validate** — a static checker that walks every nisp `.rkt`, looks up each option path against the cached NixOS options schema (~16k paths), and type-checks values for bool/str/int/listOf/nullOr/enum/path mismatches.
+- **firn** — a CLI that wraps the daily workflow: rebuild, enable/disable, scaffolding, secrets, watch.
 
-nisp evaluates eagerly at generation time. The AST sits in memory as a
-concrete data structure before any Nix is emitted. `firn-validate` walks
-that AST, extracts every `(set …)` and `(enable …)`, and checks it against
-the cached schema:
+Plus the framework conventions: `myConfig.modules.*` for atomic
+packages/services, `myConfig.bundles.*` for composable groups, directory
+auto-discovery — adding a module is just creating a directory.
 
-- **Path doesn't exist?** — typo, with did-you-mean suggestions.
-- **Wrong type?** — bool/str/int/listOf/nullOr/enum mismatches caught with
-  file:line:col precision *on the value*, not the path.
-- **Enum value not in the allowed set?** — flagged with did-you-mean against
-  the legal values.
+## Why this works
 
-All of this before a single character of Nix is emitted. Compiling from an
-eager language to a lazy one gets you eager validation and lazy evaluation
-at the same time.
+NixOS already validates option paths and types — but it does so during
+module evaluation, after the original authoring context has been
+discarded. By the time an error surfaces, the line that caused it is
+several layers of `mkIf`/`mkMerge`/import indirection away. The error
+message points at where the option got *forced*, not where the typo was
+*written*.
+
+FirnOS validates at a different layer. The nisp AST is a concrete data
+structure in memory before any Nix is emitted. We walk it, extract every
+`(set 'PATH val)` and `(enable 'PATH)`, look the path up in the cached
+schema (exported once via `nix eval` against the options tree), and
+report mismatches with `file:line:col` from the original `.rkt` source.
+
+The result: typo and type errors surface at the line you wrote, in
+milliseconds, before any `nixos-rebuild` evaluation cost.
 
 ## Quick start
 
 ```bash
 nix flake init -t github:tompassarelli/firnos
 cp /etc/nixos/hardware-configuration.nix hosts/my-machine/
-# edit hosts/my-machine/configuration.rkt — set username, enable what you need
-./scripts/firn-build
-sudo nixos-rebuild switch --flake .#my-machine
+# edit hosts/my-machine/configuration.rkt — set username, enable bundles
+firn rebuild   # firn-build → firn-validate → nixos-rebuild → tag generation
 ```
 
 ## Authoring config
 
-A trivial install-package module is one line:
+A trivial install-package module:
 
 ```racket
 ;; modules/vim/default.rkt
@@ -94,76 +102,126 @@ A host config:
           myConfig.bundles.browsers))
 ```
 
-Edit `.rkt`, run `./scripts/firn-build` to regenerate `.nix`, then
-`nixos-rebuild`. Both files are committed (the flake reads from the git
-tree). See [`docs/BUILDING.md`](docs/BUILDING.md) for full DSL reference.
+The pipeline: edit `.rkt` → `firn rebuild` regenerates the `.nix`,
+validates, builds, and tags the resulting generation. Both files are
+committed (the flake reads from the git tree).
+
+See [`docs/BUILDING.md`](docs/BUILDING.md) for the full DSL reference.
 
 ## CLI
 
 ```
-firn rebuild [host]            nixos-rebuild + tag the resulting generation
-firn enable <name>  [host]     toggle a module/bundle on in the host config
-firn disable <name> [host]     toggle off
-firn status [host]             list enabled modules/bundles
-firn list [--used | --unused]
-firn refs <name>               show what references a module/bundle
-firn mod <name>                scaffold a minimal module (.rkt)
-firn bundle <name> <mods...>   scaffold a new bundle (.rkt)
-firn scaffold <pat> <name>     template scaffold (service|submodule|home|host)
-firn diff [target...]          re-emit Nix from .rkt and diff vs committed .nix
-firn secret <name|list|show>   sops edit / list / decrypt
-firn gen                       current and next generation numbers
+firn rebuild [host] [--skip-checks]   firn-build → validate → nixos-rebuild → tag
+firn watch                            re-run validator on .rkt save
+firn enable  <name> [host]            toggle a module/bundle on in the host config
+firn disable <name> [host]            toggle off
+firn status  [host]                   list enabled modules/bundles
+firn list   [--used | --unused]       list modules/bundles, usage filter
+firn refs    <name>                   show what references a module/bundle
+firn diff    [target...]              re-emit Nix and diff vs committed .nix
+firn mod     <name>                   scaffold a minimal module
+firn bundle  <name> <mods...>         scaffold a new bundle
+firn scaffold <pat> <name>            template (service|submodule|home|host)
+firn secret  <name|list|show>         sops edit / list / decrypt
+firn gen                              current/next generation numbers
 ```
 
-Compile to a self-contained binary with `./scripts/firn-build-bin`
-(installs to `~/.local/bin/firn`).
+Compile to a self-contained ~1.3MB binary with `./scripts/firn-build-bin`
+(installs to `~/.local/bin/firn`, ~80ms cold start).
 
-## Validation
+## The escape hatch
 
-Two passes against the cached options schema:
+You will eventually want raw Nix — for an unusual `overrideAttrs`, a
+build-input fixup, vendor module shape that doesn't fit nisp's helpers.
+There are three ways down:
 
-```
-$ ./scripts/firn-validate
-modules/printing/default.rkt:6:7: unknown option services.pipwire.alsa.enable
-  did you mean: services.pipewire.alsa.enable or services.pipewire.pulse.enable?
-modules/foo/default.rkt:9:34: type mismatch at services.openssh.enable: expected bool, got string
-modules/foo/default.rkt:11:47: type mismatch at boot.loader.systemd-boot.consoleMode: "atuo" not in enum {"0", "1", "2", "5", "auto", "max", "keep"} — did you mean "auto"?
-```
+1. **`(raw-file ...)`** — emit a single arbitrary expression, no module wrapping.
+2. **`(nix-ident "any.dotted.path")`** — produce a literal Nix identifier from a string.
+3. **Just write `.nix`** — `firn-build` only rewrites `.rkt` files. Hand-written `.nix` modules sit alongside generated ones; the flake imports them the same way.
 
-Schema is extracted by `./scripts/firn-extract-schema` (re-run after
-`nix flake update` or after changing your own modules' options). The
-extracted JSON captures the full type tree — top-level type, inner element
-types for parameterized containers (`listOf`, `nullOr`, `attrsOf`), and
-the legal values for every `enum` — across ~16k paths including custom
-`myConfig.*` and flake-input options.
+`firn diff` confirms hand-edited `.nix` is byte-equivalent to what nisp
+would emit, which is useful when migrating modules in either direction.
+
+## Validation, in detail
+
+`firn-validate` runs two passes against `.firn-build/schema.json`:
+
+- **Pass 1** — every `(set …)` and `(enable …)` path checked for existence. Levenshtein-based did-you-mean.
+- **Pass 2** — for known paths, statically infer the value's shape and check it against the schema's expected type. Catches bool/str/int/listOf/nullOr/enum/path/float mismatches. Enum violations get did-you-mean against the allowed values.
+
+The schema cache is regenerated by `firn-extract-schema`, which calls
+`nix eval` against the merged options tree of a host. Output captures
+the full type tree — top-level type, inner element types for
+parameterized containers (`listOf`, `nullOr`, `attrsOf`), submodule
+expansion via `getSubOptions`, and the legal values for every `enum` —
+across ~16k option paths including custom `myConfig.*` and flake-input
+options (home-manager, stylix, sops, …).
+
+The validator skips paths inside `home-of` / `hm-module` bodies (a
+heuristic — the system schema doesn't include HM submodules), paths with
+`${…}` interpolation, and a small allowlist of HM-context roots
+(`programs`, `home`, `xdg`, …). This trades some false negatives for
+zero false positives — typos in those namespaces still surface at
+nix-eval time.
+
+## Schema freshness
+
+The schema is host-specific (it's the merged options tree of one host's
+nixosConfiguration) and ages relative to your `flake.lock`. The
+extractor dumps the cheap top-level options once into
+`.firn-build/schema.json` (~16k paths, a couple seconds). Submodule
+contents are *not* eagerly extracted — the validator demand-expands
+only the submodules your config actually references and caches them in
+`.firn-build/schema-submodules.json`, keyed by `flake.lock` hash +
+extractor version + system. First-time references trigger a one-shot
+`nix eval`; subsequent runs are pure cache hits.
+
+Regenerate the base schema after:
+
+- `nix flake update` (nixpkgs / flake inputs change)
+- adding/changing your own `myConfig.*` options
+- swapping flake inputs (e.g. adding home-manager / stylix / sops-nix)
+
+The submodule cache invalidates automatically when the lock hash
+changes — no manual step required.
 
 ## Architecture
 
 ```
 .
-├── flake.rkt          # Source-of-truth flake (compiles to flake.nix)
-├── nisp/              # The DSL implementation (#lang nisp)
-├── modules/           # Atomic modules (one package/service each)
-├── bundles/           # Bundles (compose modules under one toggle)
-├── hosts/             # Host-specific configurations
-├── scripts/           # firn, firn-build, firn-validate, firn-extract-schema
-├── template/          # Starting point for `nix flake init -t`
-├── dotfiles/          # Out-of-store configs (live editing)
-└── docs/              # BUILDING.md, nisp.md, docs.md
+├── flake.rkt          source-of-truth flake (compiles to flake.nix)
+├── nisp/              the DSL itself (#lang nisp implementation)
+├── modules/           atomic modules — one package/service each
+├── bundles/           composition layer — pure module toggles, no packages
+├── hosts/             per-host configurations
+├── scripts/           firn (CLI), firn-build, firn-validate, firn-extract-schema
+├── template/          starting point for `nix flake init -t`
+├── dotfiles/          out-of-store configs (live editing)
+└── docs/              BUILDING.md, nisp.md, docs.md
 ```
 
-**Module** = atom. One package or service. `modules/<name>/default.rkt`.
+**Module** = atom. One package or service.
 
-**Bundle** = molecule. Pure composition. Enables a group of modules; never
-installs packages directly. Sub-modules can be individually toggled.
+**Bundle** = molecule. Pure composition. Enables a group of modules,
+never installs packages directly.
 
-Modules and bundles are auto-discovered — adding a new one is just creating
-the directory + `.rkt`. The flake's dynamic `imports` finds them via
-`builtins.readDir`. No flake edits needed.
+Modules and bundles are auto-discovered — the flake's dynamic `imports`
+walks `modules/` and `bundles/` via `builtins.readDir`. No flake edits
+needed when adding either.
+
+## Tradeoffs
+
+- **Two-language requirement.** Authors need the basics of Racket s-expressions in addition to Nix concepts. The DSL is small (~30 forms) and the surface vocabulary closely mirrors Nix; the [BUILDING.md](docs/BUILDING.md) cheat-sheet maps every form to its Nix output.
+
+- **Two artifacts per file.** Both `.rkt` and `.nix` are committed; CI / pre-commit hooks should run `firn diff` to ensure they stay in sync. Generated `.nix` is gitignored from manual edits in the typical workflow.
+
+- **Schema cache is host-specific and dated.** It's tied to your flake.lock and regenerated when inputs change (see *Schema freshness* above). The validator is unhelpful — but harmless — when the schema is stale.
+
+- **DSL ceiling exists.** Some Nix idioms don't have first-class nisp forms yet. The escape hatch (`raw-file`, hand-written `.nix`, direct `nix-ident`) is the answer; the helper coverage grows as we encounter cases.
 
 ## Using FirnOS in your own repo
 
-### Option 1: bootstrap from template (recommended)
+### Option 1: bootstrap from template
 
 ```bash
 nix flake init -t github:tompassarelli/firnos
@@ -198,13 +256,13 @@ nix flake init -t github:tompassarelli/firnos
 
 ## Documentation
 
-- [docs/BUILDING.md](docs/BUILDING.md) — pipeline, DSL conventions, validator, firn CLI
+- [docs/BUILDING.md](docs/BUILDING.md) — pipeline, DSL forms, validator, firn CLI
 - [docs/nisp.md](docs/nisp.md) — `#lang nisp` reference
-- [docs/docs.md](docs/docs.md) — design philosophy, abstraction spectrum
+- [docs/docs.md](docs/docs.md) — design philosophy
 
 ## Inspired by
 
-- [doomemacs/doomemacs](https://github.com/doomemacs/doomemacs)
+- [doomemacs/doomemacs](https://github.com/doomemacs/doomemacs) — opinionated convention layer + escape hatches
 - [basecamp/omarchy](https://github.com/basecamp/omarchy)
 - [fufexan/dotfiles](https://github.com/fufexan/dotfiles)
 - [redyf/nixdots](https://github.com/redyf/nixdots)

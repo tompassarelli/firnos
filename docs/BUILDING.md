@@ -243,6 +243,7 @@ If you modify `nisp/main.rkt` (adding a new form, fixing the emitter):
 | `(has base 'a.b.c)`             | `base ? a.b.c` |
 | `(assert-do cond body)`         | `assert cond; body` |
 | `(spath "nixpkgs")`             | `<nixpkgs>` |
+| `(pipe-to x f)` / `(pipe-from f x)` | `x \|> f` / `f <\| x` (Nix 2.15+) |
 | `(mkif cond body)`              | `lib.mkIf cond body` |
 | `(mkdefault v)` / `(mkforce v)` | `lib.mkDefault v` / `lib.mkForce v` |
 | `(mkenable "desc")`             | `lib.mkEnableOption "desc"` |

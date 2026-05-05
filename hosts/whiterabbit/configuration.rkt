@@ -14,6 +14,7 @@
           myConfig.modules.remmina
           myConfig.modules.timezone
           myConfig.modules.ssh
+          myConfig.modules.swap
           myConfig.modules.auto-upgrade)
 
   ;; ============ HARDWARE ============

@@ -49,6 +49,11 @@ let
         if tryEnum.success then withInner // { enum = tryEnum.value; } else withInner;
     in withEnum;
 
+  # Top-level walk only — does NOT expand submodule contents. Submodule
+  # expansion is lazy: firn-validate triggers it on-demand for paths that
+  # actually appear in the user's .rkt sources, caches results in
+  # .firn-build/schema-submodules.json. This keeps the base schema dump
+  # cheap (most submodule trees in nixpkgs go unused).
   walk = path: o:
     if (o._type or null) == \"option\"
     then [ ({ p = path; } // describeType (o.type or {})) ]

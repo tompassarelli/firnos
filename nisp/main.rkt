@@ -24,7 +24,7 @@
                      [n-and and] [n-or or] [n-impl impl]
                      [n== ==] [n!= !=] [n< <] [n> >] [n<= <=] [n>= >=]
                      [n+ +] [n- -] [n* *] [n/ /])
-         get get-or has assert-do spath
+         get get-or has assert-do spath pipe-to pipe-from
          ;; --- mk helpers ---
          mkif mkdefault mkforce mkmerge mkenable mkopt
          ;; --- types ---
@@ -367,6 +367,15 @@
 (define (get-or base path d)  (nix-select (as-value base) (->path-segments path) (as-value d)))
 (define (has base path)       (nix-has-attr (as-value base) (->path-segments path)))
 
+;; ---------- pipes (Nix 2.15+) ----------
+;; '|> and '<| can't be written as Racket symbol literals because of the
+;; bar-quote convention; build them via string->symbol like '||.
+(define PIPE-TO-SYM   (string->symbol "|>"))
+(define PIPE-FROM-SYM (string->symbol "<|"))
+
+(define (pipe-to a b)   (nix-binop PIPE-TO-SYM   (as-value a) (as-value b)))
+(define (pipe-from a b) (nix-binop PIPE-FROM-SYM (as-value a) (as-value b)))
+
 ;; ---------- assert ----------
 (define (assert-do cond body)
   (nix-assert (as-value cond) (as-value body)))
@@ -704,13 +713,15 @@
                  (mkif (nix-ident (string-append (symbol->string 'cfg-path) ".enable"))
                        (att* (flatten-entries (list body ...)))) )]))
 
-;; Flatten arbitrary nested lists of entries.
+;; Flatten arbitrary nested lists of entries. Accepts attr-entry and inherit
+;; nodes — both are valid inside an attrset body.
 (define (flatten-entries xs)
   (cond
     [(null? xs) '()]
     [(list? (car xs)) (append (flatten-entries (car xs)) (flatten-entries (cdr xs)))]
-    [(nix-attr-entry? (car xs)) (cons (car xs) (flatten-entries (cdr xs)))]
-    [else (error 'flatten-entries "expected nix-attr-entry, got ~a" (car xs))]))
+    [(or (nix-attr-entry? (car xs)) (nix-inherit? (car xs)))
+     (cons (car xs) (flatten-entries (cdr xs)))]
+    [else (error 'flatten-entries "expected nix-attr-entry or nix-inherit, got ~a" (car xs))]))
 
 ;; (home-of username body...) -> home-manager.users.${username} = { config, ... }: { body... };
 ;; Inner `config` shadows so the body can reference the per-user HM config

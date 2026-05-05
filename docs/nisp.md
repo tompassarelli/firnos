@@ -330,4 +330,5 @@ nisp
 | `(assert-do cond body)` | `assert cond; body` |
 | `(spath "nixpkgs")` | `<nixpkgs>` |
 | `(fn-set@ self (a b) body)` | `{ a, b } @ self: body` |
+| `(pipe-to x f)` / `(pipe-from f x)` | `x \|> f` / `f <\| x` (Nix 2.15+) |
 

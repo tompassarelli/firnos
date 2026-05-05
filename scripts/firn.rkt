@@ -111,13 +111,40 @@
 ;; ---------- command: rebuild ----------
 
 (define (cmd-rebuild args)
-  (define host (and (pair? args) (car args)))
+  ;; Strip --skip-checks if present; everything else flows through to host.
+  (define-values (skip-checks? rest-args)
+    (let loop ([acc '()] [skip? #f] [args args])
+      (cond
+        [(null? args) (values skip? (reverse acc))]
+        [(equal? (car args) "--skip-checks") (loop acc #t (cdr args))]
+        [else (loop (cons (car args) acc) skip? (cdr args))])))
+  (define host (and (pair? rest-args) (car rest-args)))
+
+  (unless skip-checks?
+    ;; Step 1: regenerate any out-of-date .nix from .rkt sources.
+    (printf ">> firn-build\n")
+    (unless (sh (path->string (in-repo "scripts" "firn-build")))
+      (eprintf "firn rebuild: firn-build failed; aborting.\n") (exit 1))
+    ;; Step 1b: warn about untracked .rkt/.nix — Nix can't see them.
+    (define untracked
+      (let ([s (sh-out "git" "-C" ROOT "ls-files" "--others" "--exclude-standard")])
+        (filter (λ (p) (regexp-match? #rx"\\.(rkt|nix)$" p))
+                (string-split s "\n"))))
+    (unless (null? untracked)
+      (eprintf "firn rebuild: untracked files invisible to Nix — git add them first:\n")
+      (for ([p (in-list untracked)]) (eprintf "  ~a\n" p))
+      (exit 1))
+    ;; Step 2: validate paths and value types against the schema.
+    (printf ">> firn-validate\n")
+    (unless (sh (path->string (in-repo "scripts" "firn-validate")))
+      (eprintf "firn rebuild: validation failed; aborting.\n") (exit 1)))
+
+  ;; Step 3: actual rebuild.
+  (printf ">> rebuild\n")
   (define has-nh? (and (find-executable-path "nh") #t))
   (define rc
     (cond
       [has-nh?
-       ;; nh os switch <flake-path> [-H <host>]
-       ;; nh handles sudo and gives us progress UI + generation diff.
        (apply system* (find-executable-path "nh")
               (append (list "os" "switch" ROOT)
                       (if host (list "-H" host) '())))]
@@ -600,6 +627,62 @@
   (printf "\nfirn diff: ~a unchanged, ~a differ, ~a error(s)\n" same diff err)
   (exit (if (or (> diff 0) (> err 0)) 1 0)))
 
+;; ---------- command: watch ----------
+;;
+;; Re-run firn-validate on the changed file whenever a #lang nisp .rkt
+;; source is modified. Uses Racket's filesystem-change-evt so no external
+;; inotify dep — works on Linux/macOS/BSD.
+
+(define (descend? d)
+  ;; in-directory's second arg is `use-dir?` — return #t to recurse, #f
+  ;; to prune. Skip directories that hold no nisp config sources.
+  (define s (path->string d))
+  (not (or (regexp-match? #rx"/\\.git$"        s)
+           (regexp-match? #rx"/\\.direnv$"     s)
+           (regexp-match? #rx"/\\.firn-build$" s)
+           (regexp-match? #rx"/nisp$"          s)
+           (regexp-match? #rx"/scripts$"       s)
+           (regexp-match? #rx"/result"         s))))
+
+(define (gather-nisp-rkts)
+  (sort
+   (for/list ([f (in-directory ROOT descend?)]
+              #:when (and (regexp-match? #rx"\\.rkt$" (path->string f))
+                          (with-handlers ([exn:fail? (λ (_) #f)])
+                            (regexp-match?
+                             #rx"^#lang nisp"
+                             (call-with-input-file f
+                               (λ (p) (read-line p)))))))
+     f)
+   path<?))
+
+(define (cmd-watch _args)
+  ;; Make stdout line-buffered so output appears in real time even when
+  ;; redirected to a non-tty (logs, pipes).
+  (file-stream-buffer-mode (current-output-port) 'line)
+  (define files (gather-nisp-rkts))
+  (printf "firn watch: monitoring ~a .rkt file(s)... (Ctrl-C to exit)\n"
+          (length files))
+  (let loop ([files files])
+    (define evts (map filesystem-change-evt files))
+    (define ready (apply sync evts))
+    (define idx (for/or ([e (in-list evts)] [i (in-naturals)]
+                         #:when (eq? e ready))
+                  i))
+    (define changed (and idx (list-ref files idx)))
+    ;; Cancel remaining events to release watch slots.
+    (for ([e (in-list evts)]) (filesystem-change-evt-cancel e))
+    (cond
+      [(and changed (file-exists? changed))
+       (printf "\n>> ~a changed\n" (relative-to-repo changed))
+       (flush-output)
+       (system* (find-exe "racket")
+                (path->string (in-repo "scripts" "firn-validate"))
+                (path->string changed))
+       (loop (gather-nisp-rkts))]
+      [else
+       (loop (gather-nisp-rkts))])))
+
 ;; ---------- command: scaffold ----------
 ;;
 ;; Template-based generation for module/bundle/host shapes that are richer
@@ -703,7 +786,8 @@ Usage:
   firn <command> [args...]
 
 Commands:
-  rebuild [host]              nixos-rebuild switch + tag generation
+  rebuild [host] [--skip-checks]  firn-build + validate, then nixos-rebuild + tag
+  watch                       re-run validator on .rkt save (no external deps)
   list                        list all modules and bundles
   list --used                 show modules/bundles in use and where
   list --unused               show modules/bundles not referenced anywhere
@@ -733,6 +817,7 @@ HELP
      (define rest (cdr argv))
      (case cmd
        [("rebuild")     (cmd-rebuild rest)]
+       [("watch")       (cmd-watch rest)]
        [("list")        (cmd-list rest)]
        [("refs")        (cmd-refs rest)]
        [("mod")         (cmd-mod rest)]

@@ -10,6 +10,7 @@
   myConfig.modules.remmina.enable = true;
   myConfig.modules.timezone.enable = true;
   myConfig.modules.ssh.enable = true;
+  myConfig.modules.swap.enable = true;
   myConfig.modules.auto-upgrade.enable = true;
   myConfig.modules.framework.enable = true;
   myConfig.modules.fwupd.enable = true;
