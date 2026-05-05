@@ -30,46 +30,19 @@ References: `docs/BUILDING.md` (pipeline + DSL patterns), `docs/nisp.md` (DSL su
 
 When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them. This applies to both `.rkt` sources AND their generated `.nix` outputs.
 
-## Architecture
+## Architecture (summary)
 
-Two namespaces: `myConfig.modules.*` (atoms) and `myConfig.bundles.*` (molecules).
+Two namespaces: `myConfig.modules.*` (atoms — one package or service per module) and `myConfig.bundles.*` (molecules — pure composition, never install packages directly).
 
-### Module pattern (1 package or 1 service, no exceptions)
+Modules use `(module-file modules <name> (desc "...") (config-body ...))` to emit the standard `{ config, lib, pkgs, ... }: let cfg = ... in { options...; config = mkIf cfg.enable {...}; }` wrapper.
 
-Most modules are a single `default.rkt`:
+Bundles use `(bundle-file <name> (desc "...") (sub-modules a b c ...))` to enable a list of modules with mkDefault.
 
-```racket
-;; modules/<name>/default.rkt
-#lang nisp
-(module-file modules <name>
-  (desc "<description>")
-  (config-body
-    (set environment.systemPackages (with-pkgs <name>))))
-```
+Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users) split `default.rkt` (option declarations) and `<name>.rkt` (mkIf config).
 
-`(module-file modules <name> ...)` auto-emits the standard wrapper: `{ config, lib, pkgs, ... }: let cfg = config.myConfig.modules.<name>; in { options.myConfig.modules.<name>.enable = lib.mkEnableOption "..."; config = lib.mkIf cfg.enable { ... }; }`.
+Bundles that expose sub-options of their modules (firefox.palefox.enable, stylix.chosenTheme, etc.) use `option-attrs` + `config-body` to proxy.
 
-Modules with complex options split into two files — `default.rkt` declares the options and pulls in the sibling via `(raw-body (imports (p "./<name>.nix")))`; `<name>.rkt` carries the config under mkIf. Currently split: `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, `users`.
-
-Modules with extra args (`flakeRoot`, `inputs`) use the `(extra-args ...)` clause. Modules with extra let-bindings beyond `cfg` use `(lets ([k v] ...))`. Home-manager wiring uses `(home-of <username> ...)` (with inner `{ config, ... }:` wrapper) or `(home-of-bare <username> ...)` (no wrapper). Sops integration: `(sops-secret "name" ...)` and `(sops-template "name" ...)`. See `BUILDING.md` for the full reference.
-
-### Bundle pattern (pure composition, never installs packages)
-
-```racket
-;; bundles/<name>/default.rkt
-#lang nisp
-(bundle-file <name>
-  (desc "<description>")
-  (sub-modules foo bar baz))                  ;; all default true
-;; OR for mixed defaults:
-;; (sub-modules* (foo #t) (bar #t) (baz #f))
-```
-
-`(sub-modules ...)` collapses the entire convention (option-with-bool-default + `mkDefault cfg.X.enable → myConfig.modules.X.enable`) into one form. The full `option-attrs` + `config-body` form (as in `bundles/lisp/default.rkt`, `bundles/theming/default.rkt`, `bundles/browsers/default.rkt`) is for non-bool options, nested option paths, or bundle-to-bundle proxies (where a bundle option targets `myConfig.bundles.<other>.enable` rather than `myConfig.modules.<X>.enable`).
-
-### Proxying module sub-options through bundles
-
-When a module has options beyond `enable` (e.g. `firefox.palefox.enable`, `stylix.chosenTheme`), the bundle must proxy them via `option-attrs` + `config-body` so users don't reach past the bundle. Example: `bundles/browsers/default.rkt`.
+**Full reference**: [`docs/BUILDING.md`](docs/BUILDING.md) — every form, every clause, examples per pattern.
 
 ## Rules
 
