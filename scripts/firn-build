@@ -35,7 +35,14 @@ while IFS= read -r -d '' rkt; do
   # Skip the nisp package itself.
   case "$rkt" in
     ./nisp/*) continue ;;
+    ./scripts/*) continue ;;
   esac
+
+  # Only process #lang nisp files. Other Racket files (CLI tools, helpers)
+  # aren't config sources and shouldn't be rendered to .nix.
+  if ! head -n 1 "$rkt" | grep -q '^#lang nisp'; then
+    continue
+  fi
 
   nix="${rkt%.rkt}.nix"
 
