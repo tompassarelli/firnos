@@ -2,9 +2,12 @@
  
 A `#lang` for NixOS configuration. Nix + Lisp.
  
-Write your NixOS config in clean s-expressions. No quoting, no
-`enable = true` ceremony, no Nix syntax. Bare words are data.
-`$` escapes into Racket when you need computation.
+Write your NixOS config in clean s-expressions. No `enable = true`
+ceremony, no Nix syntax. Bound identifiers (functions, macros,
+let-bindings) evaluate as Racket. To reference a Nix identifier
+that isn't a Racket binding (`pkgs.vim`, `lib.mkIf`, `config.foo`),
+quote it: `'pkgs.vim`. Standard Lisp `'` — code-as-data, no escape
+forms. Typos surface as "unbound identifier" at the source line.
  
 ```bash
 $ racket config.rkt > /etc/nixos/configuration.nix
@@ -63,41 +66,18 @@ nisp
 (provide (rename-out [nisp-module-begin #%module-begin]
                      [nisp-top #%top])
          #%app #%datum
-         enable set service user packages pkg $)
+         enable set service user packages pkg)
  
 ;; =========================================================================
-;; #%top: unbound identifiers evaluate to their own symbol.
+;; #%top: standard Racket — unbound identifiers error at compile time.
+;; To inject a Nix identifier, quote it explicitly: 'pkgs.vim, 'lib.mkIf, etc.
+;; The `as-value` coercion turns symbols into nix-idents automatically, so
+;; quoted forms flow through the AST builders unchanged.
 ;;
-;;   vim           => 'vim
-;;   pipewire      => 'pipewire
-;;   boot.loader   => 'boot.loader
-;;
-;; DSL keywords (enable, set, ...) are bound, so they work as macros.
-;; Everything else falls through here and becomes data.
+;; This is intentionally Lisp-conventional: bound identifiers are values,
+;; quoted symbols are data. No auto-fall-through magic; typos surface as
+;; "unbound identifier" errors at the source line, not later at Nix-eval time.
 ;; =========================================================================
- 
-(define-syntax (nisp-top stx)
-  (syntax-case stx ()
-    [(_ . id) #''id]))
- 
-;; =========================================================================
-;; $: escape hatch into Racket.
-;;
-;; Single expression:
-;;   (set networking.hostName ($ hostname))
-;;
-;; Multi-expression block:
-;;   ($
-;;     (define hostname "kea")
-;;     (define is-laptop (file-exists? "/sys/class/power_supply/BAT0"))
-;;     (when is-laptop
-;;       (list (nix-attr "services.tlp.enable" #t))))
-;; =========================================================================
- 
-(define-syntax ($ stx)
-  (syntax-case stx ()
-    [(_ expr) #'expr]
-    [(_ expr ...) #'(begin expr ...)]))
  
 ;; =========================================================================
 ;; Data model
@@ -310,26 +290,14 @@ nisp
  
  
 ;; =========================================================================
-;; Escape into Racket with $ for computed config.
-;; One block, all computation in one place:
-;;
-;; ($
-;;   (require racket/system)
+;; Computed config: nisp is just Racket, so use it directly.
+;; (require racket/system) and (define ...) at the top of the file.
+;; Then reference the bound name inline, no escape needed:
 ;;
 ;;   (define hostname
 ;;     (string-trim (with-output-to-string
 ;;                    (λ () (system "hostname")))))
-;;
-;;   (define is-laptop
-;;     (file-exists? "/sys/class/power_supply/BAT0"))
-;;
-;;   (when is-laptop
-;;     (list (nix-attr "services.tlp.enable" #t)
-;;           (nix-attr "services.thermald.enable" #t))))
-;;
-;; Then reference computed values inline:
-;;
-;;   (set networking.hostName ($ hostname))
+;;   (set networking.hostName hostname)
 ;; =========================================================================
 ```
  
@@ -347,5 +315,4 @@ nisp
 | `(service pipewire (alsa #t))` | `services.pipewire = { enable = true; alsa.enable = true; };` |
 | `(packages vim git fd)` | `environment.systemPackages = with pkgs; [ vim git fd ];` |
 | `(user "tom" (shell (pkg "zsh")))` | `users.users.tom = { isNormalUser = true; shell = pkgs.zsh; };` |
-| `($ expr)` or `($ expr ...)` | escape to Racket (single or block) |
 

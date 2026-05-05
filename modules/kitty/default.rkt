@@ -2,9 +2,9 @@
 
 (module-file modules kitty
   (desc "Kitty terminal configuration")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
-    (home-of-bare username
+    (home-of-bare 'username
       (set programs.kitty
         (att (enable #t)
              (settings

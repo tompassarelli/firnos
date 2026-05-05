@@ -3,21 +3,21 @@
 (module-file modules walker
   (desc "Walker modern wayland app launcher")
   (extra-args inputs)
-  (lets ([username config.myConfig.modules.users.username])
+  (lets ([username 'config.myConfig.modules.users.username])
         )
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     (set environment.systemPackages
       (lst
         ;; Helper script for workspace renaming with walker dmenu mode
-        (call pkgs.writeShellScriptBin "walker-rename-workspace"
+        (call 'pkgs.writeShellScriptBin "walker-rename-workspace"
           (ms "name=$(echo \"\" | walker --dmenu)"
               "[ -n \"$name\" ] && niri msg action set-workspace-name \"$name\""))))
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
-    (home-of username
+    (home-of 'username
       ;; Import walker home-manager module
-      (set imports (lst inputs.walker.homeManagerModules.default))
+      (set imports (lst 'inputs.walker.homeManagerModules.default))
 
       ;; Elephant desktop applications config - ensure proper Wayland env vars
       (set home.file

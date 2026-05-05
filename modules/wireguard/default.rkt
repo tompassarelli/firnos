@@ -2,11 +2,11 @@
 
 (module-file modules wireguard
   (desc "WireGuard VPN support")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; Allow user to run wg show without password (for logging)
     (set security.sudo.extraRules
-      (lst (att (users (lst username))
+      (lst (att (users (lst 'username))
                 (commands
                   (lst (att (command (s "${pkgs.wireguard-tools}/bin/wg"))
                             (options (lst "NOPASSWD"))))))))
@@ -26,7 +26,7 @@
                   (ExecStart
                     (let-in
                       ([watchdog
-                        (call pkgs.writeShellScript "wg-watchdog"
+                        (call 'pkgs.writeShellScript "wg-watchdog"
                               (ms "export PATH=\"${lib.makeBinPath [ pkgs.wireguard-tools pkgs.iputils pkgs.gawk pkgs.coreutils ]}:$PATH\""
                                   ""
                                   "MISS_COUNT=0"

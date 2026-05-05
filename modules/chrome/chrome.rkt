@@ -6,14 +6,14 @@
   (fn-set-rest (config lib pkgs)
     (att
       (set config
-        (mkif config.myConfig.modules.chrome.enable
+        (mkif 'config.myConfig.modules.chrome.enable
           (att
             ;; Install Google Chrome
             (set environment.systemPackages (with-pkgs google-chrome))
 
             ;; Set as default browser if specified
             (set xdg.mime.defaultApplications
-              (mkif config.myConfig.modules.chrome.default
+              (mkif 'config.myConfig.modules.chrome.default
                 (att ("\"text/html\""                "google-chrome.desktop")
                      ("\"x-scheme-handler/http\""    "google-chrome.desktop")
                      ("\"x-scheme-handler/https\""   "google-chrome.desktop")

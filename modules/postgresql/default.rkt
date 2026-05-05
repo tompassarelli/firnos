@@ -2,13 +2,13 @@
 
 (module-file modules postgresql
   (desc "PostgreSQL database server for local development")
-  (lets ([postgresPackage pkgs.unstable.postgresql_18]))
+  (lets ([postgresPackage 'pkgs.unstable.postgresql_18]))
   (config-body
     (set services.postgresql
       (att (enable #t)
-           (package postgresPackage)
+           (package 'postgresPackage)
            (authentication
-             (call pkgs.lib.mkOverride 10
+             (call 'pkgs.lib.mkOverride 10
                    (ms "# TYPE  DATABASE        USER            ADDRESS                 METHOD"
                        "local   all             all                                     trust"
                        "host    all             all             127.0.0.1/32            trust"
@@ -17,4 +17,4 @@
            (ensureUsers
              (lst (att (name "postgres")
                        (ensureClauses.superuser #t))))))
-    (set environment.systemPackages (lst postgresPackage))))
+    (set environment.systemPackages (lst 'postgresPackage))))

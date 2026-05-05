@@ -13,4 +13,4 @@
                         "This controls backwards compatibility for stateful data like database"
                         "schemas, service data directories, etc."))))
   (config-body
-    (set system.stateVersion cfg.stateVersion)))
+    (set system.stateVersion 'cfg.stateVersion)))

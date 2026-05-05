@@ -2,13 +2,13 @@
 
 (module-file modules mako
   (desc "Mako notification daemon")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     ;; (None needed - mako is installed via home-manager)
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
-    (home-of-bare username
+    (home-of-bare 'username
       (set services.mako
         (att (enable #t)
              (settings

@@ -14,6 +14,6 @@
                      xorg.libXi
                      libudev-zero)]))
   (config-body
-    (set environment.systemPackages bevyLibs)
+    (set environment.systemPackages 'bevyLibs)
     ;; Make Bevy libraries available via nix-ld
-    (set programs.nix-ld.libraries bevyLibs)))
+    (set programs.nix-ld.libraries 'bevyLibs)))

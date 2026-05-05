@@ -40,29 +40,29 @@
              (extraModules     (lst))
              (extraOverlays    (lst))
              (extraSpecialArgs (att)))
-            (call nixpkgs.lib.nixosSystem
+            (call 'nixpkgs.lib.nixosSystem
               (att
                 (system system)
                 (specialArgs
                   (merge
                     (att
                       (inputs (att
-                                (nur nur)
-                                (walker walker)
-                                (elephant elephant)
-                                (lem lem)
-                                (quickshell quickshell)
-                                (zen-browser zen-browser)
-                                (palefox palefox)))
-                      (flakeRoot self))
+                                (nur 'nur)
+                                (walker 'walker)
+                                (elephant 'elephant)
+                                (lem 'lem)
+                                (quickshell 'quickshell)
+                                (zen-browser 'zen-browser)
+                                (palefox 'palefox)))
+                      (flakeRoot 'self))
                     extraSpecialArgs))
                 (modules
                   (concat-list
                     (lst
                       hardwareConfig
-                      stylix.nixosModules.stylix
-                      home-manager.nixosModules.home-manager
-                      sops-nix.nixosModules.sops
+                      'stylix.nixosModules.stylix
+                      'home-manager.nixosModules.home-manager
+                      'sops-nix.nixosModules.sops
                       hostConfig
 
                       ;; ============ FIRN MODULES (inline module) ============
@@ -81,7 +81,7 @@
                           (systemd.tmpfiles.rules
                             (lst
                               (s "z /var/lib/sops-nix/key.txt 0400 "
-                                 config.myConfig.modules.users.username
+                                 'config.myConfig.modules.users.username
                                  " users -")))
 
                           ;; sops + age CLI tools for editing encrypted secrets
@@ -91,20 +91,20 @@
                           (imports
                             (let-in
                               ([moduleDirs
-                                (call builtins.attrNames
-                                  (call nixpkgs.lib.filterAttrs
+                                (call 'builtins.attrNames
+                                  (call 'nixpkgs.lib.filterAttrs
                                     (fn (n v) (bop '== v (s "directory")))
-                                    (call builtins.readDir (p "./modules"))))]
+                                    (call 'builtins.readDir (p "./modules"))))]
                                [bundleDirs
-                                (call builtins.attrNames
-                                  (call nixpkgs.lib.filterAttrs
+                                (call 'builtins.attrNames
+                                  (call 'nixpkgs.lib.filterAttrs
                                     (fn (n v) (bop '== v (s "directory")))
-                                    (call builtins.readDir (p "./bundles"))))])
+                                    (call 'builtins.readDir (p "./bundles"))))])
                               (concat-list
-                                (call map
+                                (call 'map
                                   (fn m (s firnModules "/" m))
                                   moduleDirs)
-                                (call map
+                                (call 'map
                                   (fn b (s firnBundles "/" b))
                                   bundleDirs))))
 
@@ -114,16 +114,16 @@
                             (merge
                               (att
                                 (inputs (att
-                                          (nur nur)
-                                          (walker walker)
-                                          (elephant elephant)
-                                          (lem lem)
-                                          (quickshell quickshell)
-                                          (zen-browser zen-browser)
-                                          (palefox palefox))))
+                                          (nur 'nur)
+                                          (walker 'walker)
+                                          (elephant 'elephant)
+                                          (lem 'lem)
+                                          (quickshell 'quickshell)
+                                          (zen-browser 'zen-browser)
+                                          (palefox 'palefox))))
                               extraSpecialArgs))
-                          (home-of-bare config.myConfig.modules.users.username
-                            (set home.stateVersion config.myConfig.modules.system.stateVersion)
+                          (home-of-bare 'config.myConfig.modules.users.username
+                            (set home.stateVersion 'config.myConfig.modules.system.stateVersion)
                             (set nixpkgs.config.allowUnfree #t))))
 
                       ;; ============ OVERLAYS ============
@@ -134,58 +134,58 @@
                               (fn (final prev)
                                 (att
                                   (unstable
-                                    (call import nixpkgs-unstable
+                                    (call 'import 'nixpkgs-unstable
                                       (att (system system)
                                            (config.allowUnfree #t))))
                                   (master
-                                    (call import nixpkgs-master
+                                    (call 'import 'nixpkgs-master
                                       (att (system system)
                                            (config.allowUnfree #t))))
                                   (kanata-git
-                                    (call final.unstable.kanata.overrideAttrs
+                                    (call 'final.unstable.kanata.overrideAttrs
                                       (fn old
                                         (att
-                                          (src kanata-git)
+                                          (src 'kanata-git)
                                           (version "git")
                                           (cargoDeps
-                                            (call final.unstable.rustPlatform.importCargoLock
-                                              (att (lockFile (s kanata-git "/Cargo.lock")))))
+                                            (call 'final.unstable.rustPlatform.importCargoLock
+                                              (att (lockFile (s 'kanata-git "/Cargo.lock")))))
                                           (doCheck #f)
                                           (doInstallCheck #f)))))
                                   (glide
-                                    (call final.unstable.rustPlatform.buildRustPackage
+                                    (call 'final.unstable.rustPlatform.buildRustPackage
                                       (att
                                         (pname "glide")
                                         (version "git")
-                                        (src glide)
-                                        (cargoLock.lockFile (s glide "/Cargo.lock")))))
+                                        (src 'glide)
+                                        (cargoLock.lockFile (s 'glide "/Cargo.lock")))))
                                   (nyxt4
                                     (let-in
                                       ([nyxt-tarball
-                                        (call final.fetchurl
+                                        (call 'final.fetchurl
                                           (att
                                             (url "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz")
                                             (hash "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ=")))]
                                        [nyxt-appimage
-                                        (call final.runCommand
+                                        (call 'final.runCommand
                                           "nyxt.AppImage"
                                           (att)
                                           (ms "tar xzf ${nyxt-tarball} -O > $out"
                                               "chmod +x $out"))]
                                        [nyxt-extracted
-                                        (call final.appimageTools.extractType2
+                                        (call 'final.appimageTools.extractType2
                                           (att
                                             (pname "nyxt")
                                             (version "4.0.0")
                                             (src nyxt-appimage)))]
                                        [cl-electron-extracted
-                                        (call final.appimageTools.extractType2
+                                        (call 'final.appimageTools.extractType2
                                           (att
                                             (pname "cl-electron-server")
                                             (version "4.0.0")
                                             (src (s nyxt-extracted "/usr/bin/cl-electron-server"))))]
                                        [nyxt-unwrapped
-                                        (call final.runCommand
+                                        (call 'final.runCommand
                                           "nyxt-unwrapped-4.0.0"
                                           (att)
                                           (ms
@@ -202,7 +202,7 @@
                                             "cp ${nyxt-extracted}/nyxt.desktop $out/share/applications/ 2>/dev/null || true"
                                             "cp ${nyxt-extracted}/nyxt.png $out/share/icons/hicolor/256x256/apps/ 2>/dev/null || true"
                                             "sed -i \"s|Exec=.*|Exec=nyxt %u|\" $out/share/applications/nyxt.desktop 2>/dev/null || true"))])
-                                      (call final.buildFHSEnv
+                                      (call 'final.buildFHSEnv
                                         (att
                                           (pname "nyxt")
                                           (version "4.0.0")
@@ -211,23 +211,23 @@
                                               (with-do p
                                                 (lst
                                                   nyxt-unwrapped
-                                                  glib gobject-introspection gdk-pixbuf cairo pango gtk3
-                                                  webkitgtk_4_1 openssl libfixposix enchant2 sqlite
-                                                  glib-networking gsettings-desktop-schemas
-                                                  gst_all_1.gstreamer
-                                                  gst_all_1.gst-plugins-base
-                                                  gst_all_1.gst-plugins-good
-                                                  xdg-utils wl-clipboard fuse
-                                                  nss nspr atk cups dbus expat libdrm mesa libgbm
-                                                  alsa-lib at-spi2-core libxkbcommon pciutils
-                                                  xorg.libX11 xorg.libXcomposite xorg.libXdamage xorg.libXext
-                                                  xorg.libXfixes xorg.libXrandr xorg.libxcb xorg.libXcursor
-                                                  xorg.libXi xorg.libXrender xorg.libXtst xorg.libXScrnSaver
-                                                  systemd libGL libglvnd egl-wayland))))
+                                                  'glib 'gobject-introspection 'gdk-pixbuf 'cairo 'pango 'gtk3
+                                                  'webkitgtk_4_1 'openssl 'libfixposix 'enchant2 'sqlite
+                                                  'glib-networking 'gsettings-desktop-schemas
+                                                  'gst_all_1.gstreamer
+                                                  'gst_all_1.gst-plugins-base
+                                                  'gst_all_1.gst-plugins-good
+                                                  'xdg-utils 'wl-clipboard 'fuse
+                                                  'nss 'nspr 'atk 'cups 'dbus 'expat 'libdrm 'mesa 'libgbm
+                                                  'alsa-lib 'at-spi2-core 'libxkbcommon 'pciutils
+                                                  'xorg.libX11 'xorg.libXcomposite 'xorg.libXdamage 'xorg.libXext
+                                                  'xorg.libXfixes 'xorg.libXrandr 'xorg.libxcb 'xorg.libXcursor
+                                                  'xorg.libXi 'xorg.libXrender 'xorg.libXtst 'xorg.libXScrnSaver
+                                                  'systemd 'libGL 'libglvnd 'egl-wayland))))
                                           (extraBwrapArgs
                                             (lst (s "--bind " nyxt-unwrapped "/app /app")))
                                           (runScript
-                                            (call final.writeShellScript "nyxt-wrapper"
+                                            (call 'final.writeShellScript "nyxt-wrapper"
                                               (ms
                                                 "export APPDIR=/app/Nyxt"
                                                 "export PATH=\"/app/Nyxt/_build/cl-electron:$PATH\""
@@ -246,8 +246,8 @@
 
         ;; Container image (built directly, not via mkSystem)
         (packages.x86_64-linux.claude-sandbox
-          (call import (p "./modules/containers/claude-sandbox.nix")
-            (att (pkgs (call import nixpkgs-master
+          (call 'import (p "./modules/containers/claude-sandbox.nix")
+            (att (pkgs (call 'import 'nixpkgs-master
                          (att (system "x86_64-linux")
                               (config.allowUnfree #t)))))))
 
@@ -255,13 +255,13 @@
         (nixosConfigurations
           (att
             (whiterabbit
-              (call self.lib.mkSystem
+              (call 'self.lib.mkSystem
                 (att
                   (hostname "whiterabbit")
                   (hostConfig (p "./hosts/whiterabbit/configuration.nix"))
                   (hardwareConfig (p "./hardware-configuration.nix")))))
             (thinkpad-x1e
-              (call self.lib.mkSystem
+              (call 'self.lib.mkSystem
                 (att
                   (hostname "thinkpad-x1e")
                   (hostConfig (p "./hosts/thinkpad-x1e/configuration.nix"))
@@ -275,9 +275,9 @@
 
         (devShells.x86_64-linux.default
           (let-in
-            ([pkgs nixpkgs.legacyPackages.x86_64-linux])
-            (call pkgs.mkShell
+            ([pkgs 'nixpkgs.legacyPackages.x86_64-linux])
+            (call 'pkgs.mkShell
               (att
-                (packages (lst pkgs.pre-commit pkgs.gitleaks))
+                (packages (lst 'pkgs.pre-commit 'pkgs.gitleaks))
                 (shellHook
                   (ms "pre-commit install --allow-missing-config 2>/dev/null"))))))))))

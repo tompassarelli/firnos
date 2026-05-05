@@ -2,9 +2,9 @@
 
 (module-file modules atuin
   (desc "atuin shell history sync")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
-    (home-of username
+    (home-of 'username
       (set programs.atuin
         (att (enable #t)
              (enableFishIntegration #t)

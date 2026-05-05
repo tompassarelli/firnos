@@ -3,22 +3,22 @@
 (module-file modules gtk
   (desc "GTK theming configuration")
   (lets
-    ([username config.myConfig.modules.users.username]
+    ([username 'config.myConfig.modules.users.username]
      ;; Get polarity from system-level stylix config
-     [isDark (bop '== config.stylix.polarity "dark")]))
+     [isDark (bop '== 'config.stylix.polarity "dark")]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     ;; (None needed - gtk is configured via home-manager)
 
     ;; ============ HOME-MANAGER CONFIGURATION ============
     (nix-attr-entry
-      (.> "home-manager" "users" username)
+      (.> "home-manager" "users" 'username)
       (fn-set-rest (config)
         (let-in
           ([stylixGtkFont
-            (cat (cat config.gtk.font.name " ")
-                 (call toString config.gtk.font.size))]
-           [stylixGtkTheme config.gtk.theme.name])
+            (cat (cat 'config.gtk.font.name " ")
+                 (call 'toString 'config.gtk.font.size))]
+           [stylixGtkTheme 'config.gtk.theme.name])
           (att
             ;; Let Stylix handle base GTK config
             (set gtk.enable #t)
@@ -51,4 +51,4 @@
                 (nix-attr-entry
                   (.> "\"org/gnome/desktop/interface\"")
                   (att
-                    (color-scheme (mkforce (if-then isDark "prefer-dark" "prefer-light"))))))))))) ))
+                    (color-scheme (mkforce (if-then 'isDark "prefer-dark" "prefer-light"))))))))))) ))

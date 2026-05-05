@@ -3,4 +3,4 @@
 (module-file modules rustfmt
   (desc "Rust formatter")
   (config-body
-    (set environment.systemPackages (lst pkgs.unstable.rustfmt))))
+    (set environment.systemPackages (lst 'pkgs.unstable.rustfmt))))

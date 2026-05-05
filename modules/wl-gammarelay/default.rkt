@@ -2,17 +2,17 @@
 
 (module-file modules wl-gammarelay
   (desc "Wayland gamma/temperature control")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     (set environment.systemPackages (with-pkgs wl-gammarelay-rs))
 
-    (home-of username
+    (home-of 'username
       ;; Temperature control script
       (set xdg.configFile
         (att ("${\"wl-gammarelay/temperature-control\"}"
               (att (source
-                    (call config.lib.file.mkOutOfStoreSymlink
-                          (s config.home.homeDirectory "/code/nixos-config/dotfiles/wl-gammarelay/temperature-control")))))))
+                    (call 'config.lib.file.mkOutOfStoreSymlink
+                          (s 'config.home.homeDirectory "/code/nixos-config/dotfiles/wl-gammarelay/temperature-control")))))))
 
       ;; wl-gammarelay systemd service
       (set systemd.user.services.wl-gammarelay

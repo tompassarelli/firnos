@@ -2,10 +2,10 @@
 
 (module-file modules unixodbc
   (desc "unixODBC with MSSQL driver")
-  (lets ([msodbcsql18 pkgs.unstable.unixodbcDrivers.msodbcsql18]))
+  (lets ([msodbcsql18 'pkgs.unstable.unixodbcDrivers.msodbcsql18]))
   (config-body
     (set environment.systemPackages
-      (lst pkgs.unixODBC msodbcsql18))
+      (lst 'pkgs.unixODBC 'msodbcsql18))
 
     (set environment.variables
       (att (ODBCSYSINI "/etc")

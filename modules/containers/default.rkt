@@ -2,7 +2,7 @@
 
 (module-file modules containers
   (desc "Podman containers with Distrobox")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     (set virtualisation.podman
       (att (enable #t)

@@ -5,7 +5,7 @@
   ;; Racket packages installed via raco (not available as nix derivations).
   ;; These get installed into ~/.local/share/racket/ per-user.
   (lets ([racoPackages (lst "drracket-vim-tool" "db")]
-         [racoEnsure (call pkgs.writeShellScript "raco-ensure-packages"
+         [racoEnsure (call 'pkgs.writeShellScript "raco-ensure-packages"
                        (ms "for pkg in ${lib.concatStringsSep \" \" racoPackages}; do"
                            "  if ! ${pkgs.racket}/bin/raco pkg show \"$pkg\" 2>/dev/null | grep -q \"Package name:\"; then"
                            "    ${pkgs.racket}/bin/raco pkg install --auto --skip-installed \"$pkg\""

@@ -10,9 +10,9 @@
     ;; Define user account
     (set users.users
       (att ("${cfg.username}"
-            (att (shell pkgs.fish)
+            (att (shell 'pkgs.fish)
                  (isNormalUser #t)
-                 (home (s "/home/" cfg.username))
+                 (home (s "/home/" 'cfg.username))
                  ;; Enable 'sudo' for the user
                  (extraGroups (lst "wheel" "networkmanager" "plugdev"))))))
 
@@ -23,7 +23,7 @@
 
     ;; Create user directories on boot
     (set systemd.tmpfiles.rules
-      (lst (s "d /home/" cfg.username "/Documents 0755 " cfg.username " users -")
-           (s "d /home/" cfg.username "/Pictures/Screenshots 0755 " cfg.username " users -")
-           (s "d /home/" cfg.username "/code 0755 " cfg.username " users -")
-           (s "d /home/" cfg.username "/src 0755 " cfg.username " users -")))))
+      (lst (s "d /home/" 'cfg.username "/Documents 0755 " 'cfg.username " users -")
+           (s "d /home/" 'cfg.username "/Pictures/Screenshots 0755 " 'cfg.username " users -")
+           (s "d /home/" 'cfg.username "/code 0755 " 'cfg.username " users -")
+           (s "d /home/" 'cfg.username "/src 0755 " 'cfg.username " users -")))))

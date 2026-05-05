@@ -3,7 +3,7 @@
 (module-file modules theme-switcher
   (desc "theme switcher script")
   (lets ([switch-theme
-          (call pkgs.writeShellScriptBin "switch-theme"
+          (call 'pkgs.writeShellScriptBin "switch-theme"
             (ms "#!/usr/bin/env bash"
                 ""
                 "# Theme switcher script for NixOS using walker dmenu"
@@ -88,4 +88,4 @@
                 "    exit 1"
                 "fi"))]))
   (config-body
-    (set environment.systemPackages (lst switch-theme))))
+    (set environment.systemPackages (lst 'switch-theme))))

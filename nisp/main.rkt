@@ -6,11 +6,10 @@
          racket/match
          (for-syntax racket/base))
 
-(provide (rename-out [nisp-module-begin #%module-begin]
-                     [nisp-top #%top])
-         #%app #%datum quote
+(provide (rename-out [nisp-module-begin #%module-begin])
+         #%top #%app #%datum quote
          ;; --- existing nisp surface ---
-         enable set service user packages pkg $
+         enable set service user packages pkg
          ;; --- atoms ---
          s ms p nl
          ;; --- compound ---
@@ -53,21 +52,11 @@
          (struct-out lp-attrs)
          emit emit-toplevel as-value)
 
-;; =========================================================================
-;; #%top: unbound bare identifiers become nix-ident AST nodes (so dotted
-;; paths like `pkgs.vim` round-trip as Nix identifier references).
-;; =========================================================================
-(define-syntax (nisp-top stx)
-  (syntax-case stx ()
-    [(_ . id) #'(nix-ident (symbol->string 'id))]))
+;; #%top: standard Racket — unbound identifiers error at compile time.
+;; Use 'foo (Racket quote) to inject a nix-ident from a symbol literal.
+;; `as-value` converts symbols to nix-idents, so quoted symbols flow through
+;; the existing AST builders without special handling.
 
-;; =========================================================================
-;; $: escape into Racket. Single expr or block.
-;; =========================================================================
-(define-syntax ($ stx)
-  (syntax-case stx ()
-    [(_ expr) #'expr]
-    [(_ expr ...) #'(begin expr ...)]))
 
 ;; =========================================================================
 ;; Data model — Nix AST
@@ -185,12 +174,15 @@
 
 (define (at str) (parse-attr-path str))
 
-;; (.> root part ...) — chained access. Each `part` is a symbol, string,
-;; or AST. Returns a list of segments.
+;; (.> root part ...) — chained access. Returns a list of segments.
+;; A string arg is a literal segment (`foo`).
+;; A symbol arg ('foo) becomes a nix-ident, emitted as `${foo}` interpolation
+;;   (so it can reference let-bound names from the surrounding scope).
+;; Any AST node passes through and is emitted as `${expr}`.
 (define (.> root . parts)
   (define (->seg x)
-    (cond [(symbol? x) (symbol->string x)]
-          [(string? x) x]
+    (cond [(string? x) x]
+          [(symbol? x) (nix-ident (symbol->string x))]
           [else x]))
   (cons (->seg root) (map ->seg parts)))
 

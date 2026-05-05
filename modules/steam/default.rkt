@@ -5,4 +5,4 @@
   (config-body
     (set programs.steam
       (att (enable #t)
-           (package pkgs.unstable.steam)))))
+           (package 'pkgs.unstable.steam)))))

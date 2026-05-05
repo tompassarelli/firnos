@@ -2,7 +2,7 @@
 
 (module-file modules direnv
   (desc "direnv for automatic dev shell activation")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     (set programs.direnv
       (att (enable #t)
@@ -10,10 +10,10 @@
            (nix-direnv.enable #t)))
 
     ;; Make devenv available (provides `use devenv` for direnv)
-    (set environment.systemPackages (lst pkgs.unstable.devenv))
+    (set environment.systemPackages (lst 'pkgs.unstable.devenv))
 
     ;; Add shell integration via home-manager
-    (home-of-bare username
+    (home-of-bare 'username
       (set programs.direnv
         (att (enable #t)
              (nix-direnv.enable #t)))

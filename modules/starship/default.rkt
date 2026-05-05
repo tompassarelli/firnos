@@ -2,16 +2,16 @@
 
 (module-file modules starship
   (desc "starship prompt")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
-    (home-of-bare username
+    (home-of-bare 'username
       (set programs.starship
         (att (enable #t)
              (enableFishIntegration #t)
              (settings
                (att (add_newline #f)
                     (format
-                      (call lib.concatStrings
+                      (call 'lib.concatStrings
                             (lst "$directory"
                                  ;; "$git_branch"
                                  ;; "$git_status"

@@ -2,13 +2,13 @@
 
 (module-file modules windows-vm
   (desc "Windows VM via QEMU/KVM with virt-manager")
-  (lets ([username config.myConfig.modules.users.username]))
+  (lets ([username 'config.myConfig.modules.users.username]))
   (config-body
     ;; Enable the libvirt daemon
     (set virtualisation.libvirtd
       (att (enable #t)
            (qemu
-             (att (package pkgs.qemu_kvm)
+             (att (package 'pkgs.qemu_kvm)
                   ;; TPM emulation (required for Windows 11)
                   (swtpm.enable #t)))))
 
@@ -35,10 +35,10 @@
                          ("${\"hosts allow\"}" "192.168.122. 127.0.0.1 localhost")
                          ("${\"hosts deny\"}" "0.0.0.0/0")))
                   (shared
-                    (att (path (s "/home/" username "/shared"))
+                    (att (path (s "/home/" 'username "/shared"))
                          (browseable "yes")
                          ("${\"read only\"}" "no")
-                         ("${\"valid users\"}" username)
+                         ("${\"valid users\"}" 'username)
                          ("${\"create mask\"}" "0644")
                          ("${\"directory mask\"}" "0755")))))))
 
