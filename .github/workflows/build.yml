@@ -14,4 +14,7 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - name: Build whiterabbit
-        run: nix build .#nixosConfigurations.whiterabbit.config.system.build.toplevel
+        # Override palefox: the flake pins it to a local path
+        # (/home/tom/code/palefox) for dev convenience; CI doesn't have
+        # that checkout, so point it at the upstream repo instead.
+        run: nix build --override-input palefox github:tompassarelli/palefox .#nixosConfigurations.whiterabbit.config.system.build.toplevel

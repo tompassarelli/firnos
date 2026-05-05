@@ -22,7 +22,7 @@
   myConfig.modules.bluetooth.enable = true;
   myConfig.modules.input.enable = true;
   myConfig.modules.piper.enable = false;
-  myConfig.modules.g203-led.enable = false;
+  myConfig.modules.g203-led.enable = true;
   myConfig.modules.kanata = {
     enable = true;
     configFile = ../../dotfiles/kanata/kanata.kbd;
@@ -80,8 +80,8 @@
   };
   myConfig.bundles.gaming = {
     enable = true;
-    lutris.enable = false;
-    wowup.enable = false;
+    lutris.enable = true;
+    wowup.enable = true;
   };
   myConfig.bundles.creative = {
     enable = true;
@@ -96,7 +96,7 @@
   myConfig.bundles.communication.enable = true;
   myConfig.bundles.productivity = {
     enable = true;
-    obsidian.enable = false;
+    obsidian.enable = true;
     todoist.enable = false;
     pomodoro.enable = false;
     libreoffice.enable = false;
