@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# firn-build — regenerate every *.nix from its sibling *.rkt source.
+#
+# Source of truth: every nisp file (a .rkt file using `#lang nisp`) anywhere
+# under the repo. The matching .nix file is generated next to it.
+#
+# Files NOT covered:
+#   - nisp/                       (the DSL implementation itself)
+#   - hardware-configuration.nix  (NixOS-generated; left as raw .nix)
+#   - secrets/, dotfiles/, assets/  (non-Nix content, stays as-is)
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v racket >/dev/null 2>&1; then
+  echo "firn-build: racket not found in PATH. Enable myConfig.modules.racket and rebuild first." >&2
+  exit 1
+fi
+
+# Ensure the nisp package is registered with raco. Idempotent; only re-runs
+# raco when the nisp/ directory has changed since the last build.
+nisp_marker=".firn-build/nisp.installed"
+mkdir -p .firn-build
+if [ ! -f "$nisp_marker" ] || [ -n "$(find nisp -newer "$nisp_marker" 2>/dev/null)" ]; then
+  echo "firn-build: (re)installing nisp package..." >&2
+  raco pkg install --auto --force --link --batch ./nisp >/dev/null 2>&1 || true
+  raco setup nisp >/dev/null 2>&1
+  touch "$nisp_marker"
+fi
+
+count=0
+errors=0
+while IFS= read -r -d '' rkt; do
+  # Skip the nisp package itself.
+  case "$rkt" in
+    ./nisp/*) continue ;;
+  esac
+
+  nix="${rkt%.rkt}.nix"
+
+  # Skip if .nix is newer than .rkt and the DSL is older too.
+  if [ -f "$nix" ] && [ "$nix" -nt "$rkt" ] && [ "$nix" -nt "$nisp_marker" ]; then
+    continue
+  fi
+
+  if racket "$rkt" > "$nix.tmp" 2>/dev/null; then
+    mv "$nix.tmp" "$nix"
+    count=$((count + 1))
+  else
+    rm -f "$nix.tmp"
+    echo "firn-build: FAILED $rkt" >&2
+    racket "$rkt" 2>&1 | head -20 >&2 || true
+    errors=$((errors + 1))
+  fi
+done < <(find . -name '*.rkt' -not -path './nisp/*' -not -path './.firn-build/*' -not -path './result*' -print0)
+
+if [ "$errors" -gt 0 ]; then
+  echo "firn-build: $count regenerated, $errors failed." >&2
+  exit 1
+fi
+
+echo "firn-build: $count file(s) regenerated."

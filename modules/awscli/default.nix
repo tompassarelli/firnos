@@ -1,12 +1,12 @@
 { config, lib, pkgs, flakeRoot, ... }:
 
 let
+  cfg = config.myConfig.modules.awscli;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.awscli.enable = lib.mkEnableOption "awscli";
-
-  config = lib.mkIf config.myConfig.modules.awscli.enable {
+  config = lib.mkIf cfg.enable {
     sops.secrets."aws-access-key-id" = {
       sopsFile = flakeRoot + "/secrets/aws.yaml";
       owner = username;
@@ -15,8 +15,6 @@ in
       sopsFile = flakeRoot + "/secrets/aws.yaml";
       owner = username;
     };
-
-    # Generate ~/.aws/credentials from decrypted sops secrets
     sops.templates."aws-credentials" = {
       content = ''
         [default]
@@ -26,8 +24,6 @@ in
       owner = username;
       path = "/home/${username}/.aws/credentials";
     };
-
-    # Default region/output (same dir as credentials, so use sops.templates to avoid permission conflict)
     sops.templates."aws-config" = {
       content = ''
         [default]
@@ -37,7 +33,6 @@ in
       owner = username;
       path = "/home/${username}/.aws/config";
     };
-
-    environment.systemPackages = [ pkgs.awscli2 ];
+    environment.systemPackages = with pkgs; [ awscli2 ];
   };
 }

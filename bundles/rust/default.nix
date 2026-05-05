@@ -1,18 +1,50 @@
-{ config, lib, ... }:
-let cfg = config.myConfig.bundles.rust;
-in {
-  options.myConfig.bundles.rust = {
-    enable = lib.mkEnableOption "Rust development toolchain";
-    rustc.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable rustc"; };
-    cargo.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Cargo"; };
-    rust-analyzer.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable rust-analyzer"; };
-    clippy.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Clippy"; };
-    rustfmt.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable rustfmt"; };
-    pkg-config.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable pkg-config"; };
-    gcc.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GCC"; };
-    bevy.enable = lib.mkOption { type = lib.types.bool; default = false; description = "Enable Bevy game engine libs"; };
-  };
+{ config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.bundles.rust;
+in
+{
+  options.myConfig.bundles.rust.enable = lib.mkEnableOption "Rust development toolchain";
+  options.myConfig.bundles.rust.rustc.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable rustc";
+  };
+  options.myConfig.bundles.rust.cargo.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable cargo";
+  };
+  options.myConfig.bundles.rust.rust-analyzer.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable rust-analyzer";
+  };
+  options.myConfig.bundles.rust.clippy.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable clippy";
+  };
+  options.myConfig.bundles.rust.rustfmt.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable rustfmt";
+  };
+  options.myConfig.bundles.rust.pkg-config.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable pkg-config";
+  };
+  options.myConfig.bundles.rust.gcc.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gcc";
+  };
+  options.myConfig.bundles.rust.bevy.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = "Enable bevy";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.rustc.enable = lib.mkDefault cfg.rustc.enable;
     myConfig.modules.cargo.enable = lib.mkDefault cfg.cargo.enable;

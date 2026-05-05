@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.spotify;
+in
 {
   options.myConfig.modules.spotify.enable = lib.mkEnableOption "Spotify TUI player";
-
-  config = lib.mkIf config.myConfig.modules.spotify.enable {
-    environment.systemPackages = [ pkgs.spotify ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ spotify ];
   };
 }

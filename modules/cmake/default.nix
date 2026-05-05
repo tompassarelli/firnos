@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.cmake;
+in
 {
   options.myConfig.modules.cmake.enable = lib.mkEnableOption "CMake build system";
-
-  config = lib.mkIf config.myConfig.modules.cmake.enable {
-    environment.systemPackages = [ pkgs.cmake ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ cmake ];
   };
 }

@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.nautilus;
+in
 {
   options.myConfig.modules.nautilus.enable = lib.mkEnableOption "Nautilus file manager";
-
-  config = lib.mkIf config.myConfig.modules.nautilus.enable {
-    environment.systemPackages = [ pkgs.nautilus ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ nautilus ];
   };
 }

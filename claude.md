@@ -10,9 +10,23 @@ NEVER chain `git commit && git push` in one command. Always:
 3. If secrets are detected, fix the leak before proceeding
 4. Only then advise the user to push
 
+## Configuration interface: nisp
+
+The *write interface* for this repo is **nisp** — a Racket `#lang` (in `nisp/`). Authors edit `.rkt` files; `scripts/firn-build` regenerates the matching `.nix` next to each `.rkt` via `racket file.rkt > file.nix`. **Nix is the build target, not the source-of-truth.**
+
+```
+*.rkt  ──(./scripts/firn-build)──▶  *.nix  ──(nixos-rebuild)──▶  system
+```
+
+Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
+
+**Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
+
+References: `BUILDING.md` (full pipeline + DSL patterns), `nisp.md` (DSL spec), `nisp/main.rkt` (implementation).
+
 ## Nix Flakes: New Files Must Be Git-Tracked
 
-When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them.
+When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them. This applies to both `.rkt` sources AND their generated `.nix` outputs.
 
 ## Architecture
 
@@ -20,85 +34,50 @@ Two namespaces: `myConfig.modules.*` (atoms) and `myConfig.bundles.*` (molecules
 
 ### Module pattern (1 package or 1 service, no exceptions)
 
-Most modules are a single `default.nix`:
+Most modules are a single `default.rkt`:
 
-```nix
-# modules/<name>/default.nix
-{ config, lib, pkgs, ... }:
-{
-  options.myConfig.modules.<name>.enable = lib.mkEnableOption "<description>";
-
-  config = lib.mkIf config.myConfig.modules.<name>.enable {
-    environment.systemPackages = [ pkgs.<package> ];
-  };
-}
+```racket
+;; modules/<name>/default.rkt
+#lang nisp
+(module-file modules <name>
+  (desc "<description>")
+  (config-body
+    (set environment.systemPackages (with-pkgs <name>))))
 ```
 
-When a module has complex options (multiple `mkOption` beyond `enable`), split into two files — `default.nix` for options, `<name>.nix` for implementation. Currently: `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, `users`.
+`(module-file modules <name> ...)` auto-emits the standard wrapper: `{ config, lib, pkgs, ... }: let cfg = config.myConfig.modules.<name>; in { options.myConfig.modules.<name>.enable = lib.mkEnableOption "..."; config = lib.mkIf cfg.enable { ... }; }`.
+
+Modules with complex options split into two files — `default.rkt` declares the options and pulls in the sibling via `(raw-body (imports (p "./<name>.nix")))`; `<name>.rkt` carries the config under mkIf. Currently split: `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, `users`.
+
+Modules with extra args (`flakeRoot`, `inputs`) use the `(extra-args ...)` clause. Modules with extra let-bindings beyond `cfg` use `(lets ([k v] ...))`. Home-manager wiring uses `(home-of <username> ...)` (with inner `{ config, ... }:` wrapper) or `(home-of-bare <username> ...)` (no wrapper). Sops integration: `(sops-secret "name" ...)` and `(sops-template "name" ...)`. See `BUILDING.md` for the full reference.
 
 ### Bundle pattern (pure composition, never installs packages)
 
-```
-bundles/<name>/default.nix   — option declarations with per-module toggles
-bundles/<name>/<name>.nix    — config propagation via mkDefault
+```racket
+;; bundles/<name>/default.rkt
+#lang nisp
+(bundle-file <name>
+  (desc "<description>")
+  (sub-modules foo bar baz))                  ;; all default true
+;; OR for mixed defaults:
+;; (sub-modules* (foo #t) (bar #t) (baz #f))
 ```
 
-```nix
-# default.nix
-{ lib, ... }:
-{
-  options.myConfig.bundles.<name> = {
-    enable = lib.mkEnableOption "<description>";
-    foo.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable foo"; };
-    bar.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable bar"; };
-  };
-  imports = [ ./<name>.nix ];
-}
-
-# <name>.nix
-{ config, lib, ... }:
-let
-  cfg = config.myConfig.bundles.<name>;
-in
-{
-  config = lib.mkIf cfg.enable {
-    myConfig.modules.foo.enable = lib.mkDefault cfg.foo.enable;
-    myConfig.modules.bar.enable = lib.mkDefault cfg.bar.enable;
-  };
-}
-```
+`(sub-modules ...)` collapses the entire convention (option-with-bool-default + `mkDefault cfg.X.enable → myConfig.modules.X.enable`) into one form. The full `option-attrs` + `config-body` form (as in `bundles/lisp/default.rkt`, `bundles/theming/default.rkt`, `bundles/browsers/default.rkt`) is for non-bool options, nested option paths, or bundle-to-bundle proxies (where a bundle option targets `myConfig.bundles.<other>.enable` rather than `myConfig.modules.<X>.enable`).
 
 ### Proxying module sub-options through bundles
 
-When a module has options beyond just `enable` (e.g. firefox has palefox.enable, stylix has chosenTheme), the bundle must proxy those so users don't reach past the bundle:
-
-```nix
-# In bundle default.nix:
-firefox.palefox.enable = lib.mkOption { type = lib.types.bool; default = false; description = "..."; };
-
-# In bundle <name>.nix:
-myConfig.modules.firefox.palefox.enable = lib.mkDefault cfg.firefox.palefox.enable;
-```
-
-### Bundle-to-bundle composition
-
-Bundles can compose other bundles (e.g. development includes python):
-
-```nix
-# In bundle default.nix:
-python.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable python bundle"; };
-
-# In bundle <name>.nix:
-myConfig.bundles.python.enable = lib.mkDefault cfg.python.enable;
-```
+When a module has options beyond `enable` (e.g. `firefox.palefox.enable`, `stylix.chosenTheme`), the bundle must proxy them via `option-attrs` + `config-body` so users don't reach past the bundle. Example: `bundles/browsers/default.rkt`.
 
 ## Rules
 
 - 1 package = 1 module. No exceptions. Inseparable pairs do not exist.
 - Bundles never install packages. They only enable modules via mkDefault.
-- Auto-import: just create the directory and git-add. No flake.nix edits.
+- **Edit `.rkt`, not `.nix`.** The `.nix` is regenerated by `firn-build`; direct edits get overwritten.
+- **Run `./scripts/firn-build` before any `nix build` / `nixos-rebuild` if `.rkt` sources changed.**
+- Auto-import: create the directory + `.rkt` + run firn-build, then `git add` both files. No flake edits — the flake's dynamic `imports` finds the generated `.nix` via `builtins.readDir`.
 - Assume new modules only get added to whiterabbit host.
-- New files must be git-added before nix can see them (flake uses git tree).
+- New files (both `.rkt` and `.nix`) must be git-added before nix can see them (flake uses git tree).
 
 ## Fish Functions
 
@@ -108,7 +87,10 @@ Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, s
 
 ## Verification
 
+Always regenerate `.nix` first if any `.rkt` changed:
+
 ```
+./scripts/firn-build
 nix build .#nixosConfigurations.whiterabbit.config.system.build.toplevel
 ```
 

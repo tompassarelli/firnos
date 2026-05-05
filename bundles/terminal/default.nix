@@ -1,16 +1,40 @@
-{ config, lib, ... }:
-let cfg = config.myConfig.bundles.terminal;
-in {
-  options.myConfig.bundles.terminal = {
-    enable = lib.mkEnableOption "terminal environment";
-    kitty.enable = lib.mkOption { type = lib.types.bool; default = false; description = "Enable Kitty"; };
-    ghostty.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Ghostty"; };
-    fish.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Fish"; };
-    zoxide.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable zoxide"; };
-    atuin.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Atuin"; };
-    starship.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Starship"; };
-  };
+{ config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.bundles.terminal;
+in
+{
+  options.myConfig.bundles.terminal.enable = lib.mkEnableOption "terminal environment";
+  options.myConfig.bundles.terminal.kitty.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = "Enable kitty";
+  };
+  options.myConfig.bundles.terminal.ghostty.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable ghostty";
+  };
+  options.myConfig.bundles.terminal.fish.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable fish";
+  };
+  options.myConfig.bundles.terminal.zoxide.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable zoxide";
+  };
+  options.myConfig.bundles.terminal.atuin.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable atuin";
+  };
+  options.myConfig.bundles.terminal.starship.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable starship";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.kitty.enable = lib.mkDefault cfg.kitty.enable;
     myConfig.modules.ghostty.enable = lib.mkDefault cfg.ghostty.enable;

@@ -1,33 +1,21 @@
 { config, lib, pkgs, ... }:
+
 let
   cfg = config.myConfig.modules.neovim;
   username = config.myConfig.modules.users.username;
 in
 {
-  options.myConfig.modules.neovim = {
-    enable = lib.mkEnableOption "Neovim text editor";
-  };
-
+  options.myConfig.modules.neovim.enable = lib.mkEnableOption "Neovim text editor";
   config = lib.mkIf cfg.enable {
-    # ============ SYSTEM-LEVEL CONFIGURATION ============
-
-    # Enable neovim system-wide and set as default editor
     programs.neovim = {
       enable = true;
       defaultEditor = true;
     };
-
-    # ============ HOME-MANAGER CONFIGURATION ============
-
     home-manager.users.${username} = { config, ... }: {
-      # Neovim configuration file
-      xdg.configFile."nvim/init.lua".source = config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/code/nixos-config/dotfiles/neovim/init.lua";
-
-      # Generate stylix colors for neovim (based on stylix neovim.nix)
+      xdg.configFile."nvim/init.lua".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/neovim/init.lua";
       xdg.configFile."nvim/lua/stylix-colors.lua".text = with config.lib.stylix.colors; ''
         local M = {}
-
+        
         -- Base16 color palette
         M.palette = {
           base00 = "#${base00}",
@@ -47,7 +35,7 @@ in
           base0E = "#${base0E}",
           base0F = "#${base0F}"
         }
-
+        
         -- Stylix colorscheme setup function (adapted from stylix neovim.nix)
         M.setup = function()
           -- Try to use mini.base16 if available, fallback to manual highlights
@@ -68,7 +56,7 @@ in
             -- vim.cmd.highlight({ "Normal", "guibg=NONE", "ctermbg=NONE" })
           end
         end
-
+        
         return M
       '';
     };

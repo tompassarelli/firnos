@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.cargo;
+in
 {
   options.myConfig.modules.cargo.enable = lib.mkEnableOption "Rust package manager";
-
-  config = lib.mkIf config.myConfig.modules.cargo.enable {
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.unstable.cargo ];
   };
 }

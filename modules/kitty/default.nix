@@ -1,19 +1,12 @@
 { config, lib, pkgs, ... }:
+
 let
   cfg = config.myConfig.modules.kitty;
   username = config.myConfig.modules.users.username;
 in
 {
-  options.myConfig.modules.kitty = {
-    enable = lib.mkEnableOption "Kitty terminal configuration";
-  };
-
+  options.myConfig.modules.kitty.enable = lib.mkEnableOption "Kitty terminal configuration";
   config = lib.mkIf cfg.enable {
-    # ============ SYSTEM-LEVEL CONFIGURATION ============
-    # (None needed - kitty is installed via home-manager)
-
-    # ============ HOME-MANAGER CONFIGURATION ============
-
     home-manager.users.${username} = {
       programs.kitty = {
         enable = true;

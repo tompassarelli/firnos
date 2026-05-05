@@ -1,23 +1,15 @@
 { config, lib, pkgs, ... }:
+
 let
+  cfg = config.myConfig.modules.fastfetch;
   username = config.myConfig.modules.users.username;
 in
 {
-  options.myConfig.modules.fastfetch = {
-    enable = lib.mkEnableOption "Enable fastfetch system info display";
-  };
-
-  config = lib.mkIf config.myConfig.modules.fastfetch.enable {
-    # ============ SYSTEM-LEVEL CONFIGURATION ============
-
+  options.myConfig.modules.fastfetch.enable = lib.mkEnableOption "Enable fastfetch system info display";
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ fastfetch ];
-
-    # ============ HOME-MANAGER CONFIGURATION ============
-
     home-manager.users.${username} = { config, ... }: {
-      # Fastfetch configuration
-      xdg.configFile."fastfetch/config.jsonc".source = config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/code/nixos-config/dotfiles/fastfetch/config.jsonc";
+      xdg.configFile."fastfetch/config.jsonc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/fastfetch/config.jsonc";
     };
   };
 }

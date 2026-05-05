@@ -4,6 +4,10 @@ result-*
 /builds/
 .env
 
+# Racket compiled artifacts (regenerated on every firn-build)
+**/compiled/
+.firn-build/
+
 # sops age private keys — NEVER commit these
 *.age.key
 keys.txt

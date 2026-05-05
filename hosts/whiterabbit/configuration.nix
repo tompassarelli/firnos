@@ -1,12 +1,9 @@
-# Host-specific config for whiterabbit (Framework 13 laptop)
 { lib, ... }:
+
 {
-  # ============ REQUIRED ============
   myConfig.modules.system.stateVersion = "25.05";
   myConfig.modules.users.enable = true;
   myConfig.modules.users.username = "tom";
-
-  # ============ SYSTEM ============
   myConfig.modules.nix-settings.enable = true;
   myConfig.modules.boot.enable = true;
   myConfig.modules.networking.enable = true;
@@ -14,8 +11,6 @@
   myConfig.modules.timezone.enable = true;
   myConfig.modules.ssh.enable = true;
   myConfig.modules.auto-upgrade.enable = true;
-
-  # ============ HARDWARE ============
   myConfig.modules.framework.enable = true;
   myConfig.modules.fwupd.enable = true;
   myConfig.modules.pipewire.enable = true;
@@ -27,15 +22,9 @@
     enable = true;
     configFile = ../../dotfiles/kanata/kanata.kbd;
     port = 7070;
-    devices = [
-      "/dev/input/event0"  # AT Translated Set 2 keyboard
-      "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
-      "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"
-    ];
+    devices = [ "/dev/input/event0" "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse" "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse" ];
   };
   myConfig.modules.glide.enable = true;
-
-  # ============ BUNDLES ============
   myConfig.bundles.terminal.enable = true;
   myConfig.bundles.cli-tools.enable = true;
   myConfig.bundles.desktop = {
@@ -52,11 +41,6 @@
   myConfig.bundles.python.enable = true;
   myConfig.bundles.database = {
     enable = true;
-    # System Postgres disabled — Kea's dev Postgres lives in
-    # ~/code/msa/docker-compose.yml (podman) on port 5433. Keeping a
-    # second machine-wide Postgres around just causes confusion about
-    # which instance is authoritative. Re-enable if another project
-    # genuinely needs a non-dockerized Postgres on the host.
     postgresql.enable = false;
   };
   myConfig.bundles.rust = {
@@ -76,7 +60,6 @@
     chrome.enable = true;
     zen-browser.enable = true;
     qutebrowser.enable = true;
-    # librewolf.enable = true;
   };
   myConfig.bundles.gaming = {
     enable = true;
@@ -106,8 +89,6 @@
     enable = true;
     protonvpn-cli.enable = false;
   };
-
-  # ============ MODULES ============
   myConfig.modules.guix.enable = false;
   myConfig.modules.neovim.enable = true;
   myConfig.modules.password.enable = true;

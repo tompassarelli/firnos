@@ -4,32 +4,25 @@ let
   cfg = config.myConfig.modules.users;
 in
 {
-  options.myConfig.modules.users = {
-    enable = lib.mkEnableOption "Enable user configuration";
-
-    username = lib.mkOption {
-      type = lib.types.str;
-      default = "tom";
-      description = "Primary system username";
-    };
+  options.myConfig.modules.users.enable = lib.mkEnableOption "Enable user configuration";
+  options.myConfig.modules.users.username = lib.mkOption {
+    type = lib.types.str;
+    default = "tom";
+    description = "Primary system username";
   };
-
   config = lib.mkIf cfg.enable {
-    # Define user account
-    users.users.${cfg.username} = {
-      shell = pkgs.fish;
-      isNormalUser = true;
-      home = "/home/${cfg.username}";
-      extraGroups = [ "wheel" "networkmanager" "plugdev" ]; # Enable 'sudo' for the user
+    users.users = {
+      ${cfg.username} = {
+        shell = pkgs.fish;
+        isNormalUser = true;
+        home = "/home/${cfg.username}";
+        extraGroups = [ "wheel" "networkmanager" "plugdev" ];
+      };
     };
-
-    # Sudo configuration - extend timeout to 30 minutes
     security.sudo.extraConfig = ''
       Defaults timestamp_timeout=30
       Defaults timestamp_type=global
     '';
-
-    # Create user directories on boot
     systemd.tmpfiles.rules = [
       "d /home/${cfg.username}/Documents 0755 ${cfg.username} users -"
       "d /home/${cfg.username}/Pictures/Screenshots 0755 ${cfg.username} users -"

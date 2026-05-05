@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.pandoc;
+in
 {
   options.myConfig.modules.pandoc.enable = lib.mkEnableOption "Pandoc document converter";
-
-  config = lib.mkIf config.myConfig.modules.pandoc.enable {
-    environment.systemPackages = [ pkgs.pandoc ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ pandoc ];
   };
 }

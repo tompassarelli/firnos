@@ -1,11 +1,11 @@
 { config, lib, pkgs, ... }:
-{
-  options.myConfig.modules.bluetooth = {
-    enable = lib.mkEnableOption "Enable Bluetooth configuration";
-  };
 
-  config = lib.mkIf config.myConfig.modules.bluetooth.enable {
-    # Enable Bluetooth hardware support
+let
+  cfg = config.myConfig.modules.bluetooth;
+in
+{
+  options.myConfig.modules.bluetooth.enable = lib.mkEnableOption "Enable Bluetooth configuration";
+  config = lib.mkIf cfg.enable {
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
@@ -16,13 +16,7 @@
         };
       };
     };
-
-    # Enable Blueman for GUI management
     services.blueman.enable = true;
-
-    # Make sure bluetooth is available to user session
-    environment.systemPackages = with pkgs; [
-      bluez
-    ];
+    environment.systemPackages = with pkgs; [ bluez ];
   };
 }

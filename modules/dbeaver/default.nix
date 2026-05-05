@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.dbeaver;
+in
 {
   options.myConfig.modules.dbeaver.enable = lib.mkEnableOption "DBeaver database GUI";
-
-  config = lib.mkIf config.myConfig.modules.dbeaver.enable {
-    environment.systemPackages = [ pkgs.dbeaver-bin ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ dbeaver-bin ];
   };
 }

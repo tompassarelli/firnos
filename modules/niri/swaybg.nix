@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
+
 let
   username = config.myConfig.modules.users.username;
   chosenTheme = config.myConfig.modules.stylix.chosenTheme;
-
 in
 {
   config = lib.mkIf config.myConfig.modules.niri.enable {

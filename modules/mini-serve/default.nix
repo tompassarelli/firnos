@@ -1,16 +1,13 @@
 { config, lib, pkgs, ... }:
+
 let
   cfg = config.myConfig.modules.mini-serve;
-
   page = pkgs.writeTextDir "index.html" ''
     <!DOCTYPE html><html><body style="background:#2b3339;margin:0"></body></html>
   '';
 in
 {
-  options.myConfig.modules.mini-serve = {
-    enable = lib.mkEnableOption "Enable mini-serve localhost background page";
-  };
-
+  options.myConfig.modules.mini-serve.enable = lib.mkEnableOption "Enable mini-serve localhost background page";
   config = lib.mkIf cfg.enable {
     systemd.services.mini-serve = {
       description = "Minimal localhost web server";

@@ -1,11 +1,11 @@
-{ config, lib, ... }:
-{
-  options.myConfig.modules.upower = {
-    enable = lib.mkEnableOption "UPower power management";
-  };
+{ config, lib, pkgs, ... }:
 
-  config = lib.mkIf config.myConfig.modules.upower.enable {
-    # Power monitoring
+let
+  cfg = config.myConfig.modules.upower;
+in
+{
+  options.myConfig.modules.upower.enable = lib.mkEnableOption "UPower power management";
+  config = lib.mkIf cfg.enable {
     services.upower.enable = true;
   };
 }

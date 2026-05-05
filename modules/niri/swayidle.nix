@@ -1,4 +1,5 @@
 { config, lib, pkgs, ... }:
+
 let
   username = config.myConfig.modules.users.username;
 in

@@ -1,14 +1,12 @@
 { config, lib, pkgs, ... }:
+
+let
+  cfg = config.myConfig.modules.piper;
+in
 {
-  options.myConfig.modules.piper = {
-    enable = lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)";
-  };
-
-  config = lib.mkIf config.myConfig.modules.piper.enable {
-    # ratbagd daemon for configuring gaming mice
+  options.myConfig.modules.piper.enable = lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)";
+  config = lib.mkIf cfg.enable {
     services.ratbagd.enable = true;
-
-    # Piper - GTK GUI for ratbagd
-    environment.systemPackages = [ pkgs.piper ];
+    environment.systemPackages = with pkgs; [ piper ];
   };
 }

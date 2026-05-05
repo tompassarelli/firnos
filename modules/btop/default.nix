@@ -1,10 +1,11 @@
 { config, lib, pkgs, ... }:
-{
-  options.myConfig.modules.btop = {
-    enable = lib.mkEnableOption "Enable btop system monitor";
-  };
 
-  config = lib.mkIf config.myConfig.modules.btop.enable {
+let
+  cfg = config.myConfig.modules.btop;
+in
+{
+  options.myConfig.modules.btop.enable = lib.mkEnableOption "Enable btop system monitor";
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ btop ];
   };
 }

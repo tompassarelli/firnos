@@ -1,38 +1,28 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
+
 let
+  cfg = config.myConfig.modules.starship;
   username = config.myConfig.modules.users.username;
 in
 {
-  options.myConfig.modules.starship = {
-    enable = lib.mkEnableOption "starship prompt";
-  };
-
-  config = lib.mkIf config.myConfig.modules.starship.enable {
+  options.myConfig.modules.starship.enable = lib.mkEnableOption "starship prompt";
+  config = lib.mkIf cfg.enable {
     home-manager.users.${username} = {
       programs.starship = {
         enable = true;
         enableFishIntegration = true;
         settings = {
           add_newline = false;
-
-          format = lib.concatStrings [
-            "$directory"
-            # "$git_branch"
-            # "$git_status"
-            "$character"
-          ];
-
+          format = lib.concatStrings [ "$directory" "$character" ];
           directory = {
             truncation_length = 0;
             truncate_to_repo = false;
           };
-
           character = {
             success_symbol = "[λ](bold green)";
             error_symbol = "[λ](bold red)";
             vimcmd_symbol = "[λ](bold green)";
           };
-
           username.disabled = true;
           hostname.disabled = true;
         };

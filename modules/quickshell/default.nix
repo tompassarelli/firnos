@@ -1,57 +1,28 @@
 { config, lib, pkgs, inputs, ... }:
+
 let
   cfg = config.myConfig.modules.quickshell;
   username = config.myConfig.modules.users.username;
   monoFont = config.stylix.fonts.monospace.name;
 in
 {
-  options.myConfig.modules.quickshell = {
-    enable = lib.mkEnableOption "Quickshell (Qt6/QML) status bar";
-  };
-
+  options.myConfig.modules.quickshell.enable = lib.mkEnableOption "Quickshell (Qt6/QML) status bar";
   config = lib.mkIf cfg.enable {
-    # SYSTEM: Install quickshell
-    environment.systemPackages = [
-      inputs.quickshell.packages.${pkgs.system}.default
-    ];
-
-    # User needs input group for evdev key release detection
+    environment.systemPackages = [ inputs.quickshell.packages.${pkgs.system}.default ];
     users.users.${username}.extraGroups = [ "input" ];
-
-    # HOME-MANAGER: Dotfiles and services
     home-manager.users.${username} = { config, ... }: {
-      # Dotfiles: QML config (live-edit symlink)
-      xdg.configFile."quickshell/shell.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/shell.qml";
-
-      xdg.configFile."quickshell/Bar.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/Bar.qml";
-
-      xdg.configFile."quickshell/NiriListener.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NiriListener.qml";
-
-      xdg.configFile."quickshell/BarState.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/BarState.qml";
-
-      xdg.configFile."quickshell/WorkspaceRow.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspaceRow.qml";
-
-      xdg.configFile."quickshell/WorkspacePopup.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspacePopup.qml";
-
-      xdg.configFile."quickshell/key-release-monitor.py".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/key-release-monitor.py";
-
-      xdg.configFile."quickshell/LayoutConfig.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/LayoutConfig.qml";
-
-      xdg.configFile."quickshell/NotificationPopup.qml".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NotificationPopup.qml";
-
-      # Generate stylix colors for quickshell
+      xdg.configFile."quickshell/shell.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/shell.qml";
+      xdg.configFile."quickshell/Bar.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/Bar.qml";
+      xdg.configFile."quickshell/NiriListener.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NiriListener.qml";
+      xdg.configFile."quickshell/BarState.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/BarState.qml";
+      xdg.configFile."quickshell/WorkspaceRow.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspaceRow.qml";
+      xdg.configFile."quickshell/WorkspacePopup.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/WorkspacePopup.qml";
+      xdg.configFile."quickshell/key-release-monitor.py".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/key-release-monitor.py";
+      xdg.configFile."quickshell/LayoutConfig.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/LayoutConfig.qml";
+      xdg.configFile."quickshell/NotificationPopup.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NotificationPopup.qml";
       xdg.configFile."quickshell/StylixColors.qml".text = with config.lib.stylix.colors; ''
         import QtQuick
-
+        
         QtObject {
             readonly property color base00: "#${base00}"
             readonly property color base01: "#${base01}"
@@ -72,8 +43,6 @@ in
             readonly property string fontFamily: "${monoFont}"
         }
       '';
-
-      # Systemd service: Quickshell daemon
       systemd.user.services.quickshell = {
         Unit = {
           Description = "Quickshell widget framework";

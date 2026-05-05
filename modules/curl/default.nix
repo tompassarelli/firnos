@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.curl;
+in
 {
   options.myConfig.modules.curl.enable = lib.mkEnableOption "curl HTTP client";
-
-  config = lib.mkIf config.myConfig.modules.curl.enable {
-    environment.systemPackages = [ pkgs.curl ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ curl ];
   };
 }

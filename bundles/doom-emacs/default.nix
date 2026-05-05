@@ -1,24 +1,80 @@
-{ config, lib, ... }:
-let cfg = config.myConfig.bundles.doom-emacs;
-in {
-  options.myConfig.bundles.doom-emacs = {
-    enable = lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)";
-    doom-emacs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Doom Emacs config"; };
-    emacs.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Emacs"; };
-    nerd-fonts.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Nerd Fonts"; };
-    ripgrep.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ripgrep"; };
-    fd.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fd"; };
-    clang.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Clang (vterm)"; };
-    cmake.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable CMake (vterm)"; };
-    gnumake.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GNU Make (vterm)"; };
-    gcc.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GCC (vterm)"; };
-    libtool.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable libtool (vterm)"; };
-    sbcl.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable SBCL"; };
-    gnome-screenshot.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable gnome-screenshot"; };
-    graphviz.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Graphviz"; };
-    shellcheck.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ShellCheck"; };
-  };
+{ config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.bundles.doom-emacs;
+in
+{
+  options.myConfig.bundles.doom-emacs.enable = lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)";
+  options.myConfig.bundles.doom-emacs.doom-emacs.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable doom-emacs";
+  };
+  options.myConfig.bundles.doom-emacs.emacs.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable emacs";
+  };
+  options.myConfig.bundles.doom-emacs.nerd-fonts.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable nerd-fonts";
+  };
+  options.myConfig.bundles.doom-emacs.ripgrep.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable ripgrep";
+  };
+  options.myConfig.bundles.doom-emacs.fd.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable fd";
+  };
+  options.myConfig.bundles.doom-emacs.clang.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable clang";
+  };
+  options.myConfig.bundles.doom-emacs.cmake.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable cmake";
+  };
+  options.myConfig.bundles.doom-emacs.gnumake.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gnumake";
+  };
+  options.myConfig.bundles.doom-emacs.gcc.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gcc";
+  };
+  options.myConfig.bundles.doom-emacs.libtool.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable libtool";
+  };
+  options.myConfig.bundles.doom-emacs.sbcl.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable sbcl";
+  };
+  options.myConfig.bundles.doom-emacs.gnome-screenshot.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gnome-screenshot";
+  };
+  options.myConfig.bundles.doom-emacs.graphviz.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable graphviz";
+  };
+  options.myConfig.bundles.doom-emacs.shellcheck.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable shellcheck";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.doom-emacs.enable = lib.mkDefault cfg.doom-emacs.enable;
     myConfig.modules.emacs.enable = lib.mkDefault cfg.emacs.enable;

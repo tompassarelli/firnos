@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.modules.parted;
+in
 {
   options.myConfig.modules.parted.enable = lib.mkEnableOption "disk partitioning tool";
-
-  config = lib.mkIf config.myConfig.modules.parted.enable {
-    environment.systemPackages = [ pkgs.parted ];
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [ parted ];
   };
 }

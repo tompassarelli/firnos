@@ -1,18 +1,12 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
+
 let
+  cfg = config.myConfig.modules.git;
   username = config.myConfig.modules.users.username;
 in
 {
-  options.myConfig.modules.git = {
-    enable = lib.mkEnableOption "Git configuration";
-  };
-
-  config = lib.mkIf config.myConfig.modules.git.enable {
-    # ============ SYSTEM-LEVEL CONFIGURATION ============
-    # (None needed - git is installed via home-manager)
-
-    # ============ HOME-MANAGER CONFIGURATION ============
-
+  options.myConfig.modules.git.enable = lib.mkEnableOption "Git configuration";
+  config = lib.mkIf cfg.enable {
     home-manager.users.${username} = {
       programs.git = {
         enable = true;

@@ -1,27 +1,95 @@
-{ config, lib, ... }:
-let cfg = config.myConfig.bundles.desktop;
-in {
-  options.myConfig.bundles.desktop = {
-    enable = lib.mkEnableOption "Wayland desktop environment";
-    niri.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable niri"; };
-    upower.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable upower"; };
-    rofi.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable rofi"; };
-    quickshell.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable quickshell"; };
-    wl-clipboard.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable wl-clipboard"; };
-    brightnessctl.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable brightnessctl"; };
-    libnotify.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable libnotify"; };
-    wl-gammarelay.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable wl-gammarelay"; };
-    mako.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable mako"; };
-    nautilus.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Nautilus"; };
-    swaylock.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable swaylock"; };
-    grim.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable grim"; };
-    slurp.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable slurp"; };
-    pavucontrol.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable pavucontrol"; };
-    ffmpeg.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable FFmpeg"; };
-    wf-recorder.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable wf-recorder"; };
-    eyedropper.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Eyedropper"; };
-  };
+{ config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.bundles.desktop;
+in
+{
+  options.myConfig.bundles.desktop.enable = lib.mkEnableOption "Wayland desktop environment";
+  options.myConfig.bundles.desktop.niri.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable niri";
+  };
+  options.myConfig.bundles.desktop.upower.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable upower";
+  };
+  options.myConfig.bundles.desktop.rofi.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable rofi";
+  };
+  options.myConfig.bundles.desktop.quickshell.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable quickshell";
+  };
+  options.myConfig.bundles.desktop.wl-clipboard.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable wl-clipboard";
+  };
+  options.myConfig.bundles.desktop.brightnessctl.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable brightnessctl";
+  };
+  options.myConfig.bundles.desktop.libnotify.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable libnotify";
+  };
+  options.myConfig.bundles.desktop.wl-gammarelay.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable wl-gammarelay";
+  };
+  options.myConfig.bundles.desktop.mako.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable mako";
+  };
+  options.myConfig.bundles.desktop.nautilus.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable nautilus";
+  };
+  options.myConfig.bundles.desktop.swaylock.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable swaylock";
+  };
+  options.myConfig.bundles.desktop.grim.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable grim";
+  };
+  options.myConfig.bundles.desktop.slurp.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable slurp";
+  };
+  options.myConfig.bundles.desktop.pavucontrol.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable pavucontrol";
+  };
+  options.myConfig.bundles.desktop.ffmpeg.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable ffmpeg";
+  };
+  options.myConfig.bundles.desktop.wf-recorder.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable wf-recorder";
+  };
+  options.myConfig.bundles.desktop.eyedropper.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable eyedropper";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.niri.enable = lib.mkDefault cfg.niri.enable;
     myConfig.modules.upower.enable = lib.mkDefault cfg.upower.enable;

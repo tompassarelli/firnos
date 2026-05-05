@@ -1,19 +1,55 @@
-{ config, lib, ... }:
-let cfg = config.myConfig.bundles.development;
-in {
-  options.myConfig.bundles.development = {
-    enable = lib.mkEnableOption "core development workflow";
-    git.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Git"; };
-    gh.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable GitHub CLI"; };
-    delta.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable delta"; };
-    vim.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Vim"; };
-    claude.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable Claude Code"; };
-    direnv.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable direnv"; };
-    containers.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable containers"; };
-    ripgrep.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable ripgrep"; };
-    fd.enable = lib.mkOption { type = lib.types.bool; default = true; description = "Enable fd"; };
-  };
+{ config, lib, pkgs, ... }:
 
+let
+  cfg = config.myConfig.bundles.development;
+in
+{
+  options.myConfig.bundles.development.enable = lib.mkEnableOption "core development workflow";
+  options.myConfig.bundles.development.git.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable git";
+  };
+  options.myConfig.bundles.development.gh.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gh";
+  };
+  options.myConfig.bundles.development.delta.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable delta";
+  };
+  options.myConfig.bundles.development.vim.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable vim";
+  };
+  options.myConfig.bundles.development.claude.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable claude";
+  };
+  options.myConfig.bundles.development.direnv.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable direnv";
+  };
+  options.myConfig.bundles.development.containers.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable containers";
+  };
+  options.myConfig.bundles.development.ripgrep.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable ripgrep";
+  };
+  options.myConfig.bundles.development.fd.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable fd";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.git.enable = lib.mkDefault cfg.git.enable;
     myConfig.modules.gh.enable = lib.mkDefault cfg.gh.enable;
