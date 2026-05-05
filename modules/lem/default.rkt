@@ -13,7 +13,7 @@
         (fn o
           (att
             (postPatch
-              (cat (bop or o.postPatch (s ""))
+              (cat (get-or o 'postPatch (s ""))
                    (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd"))))))]))
   (config-body
     (set environment.systemPackages (lst lem-ncurses))

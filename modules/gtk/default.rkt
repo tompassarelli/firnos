@@ -5,7 +5,7 @@
   (lets
     ([username config.myConfig.modules.users.username]
      ;; Get polarity from system-level stylix config
-     [isDark (bop == config.stylix.polarity "dark")]))
+     [isDark (== config.stylix.polarity "dark")]))
   (config-body
     ;; ============ SYSTEM-LEVEL CONFIGURATION ============
     ;; (None needed - gtk is configured via home-manager)

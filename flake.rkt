@@ -93,12 +93,12 @@
                               ([moduleDirs
                                 (call builtins.attrNames
                                   (call nixpkgs.lib.filterAttrs
-                                    (fn (n v) (bop == v (s "directory")))
+                                    (fn (n v) (== v (s "directory")))
                                     (call builtins.readDir (p "./modules"))))]
                                [bundleDirs
                                 (call builtins.attrNames
                                   (call nixpkgs.lib.filterAttrs
-                                    (fn (n v) (bop == v (s "directory")))
+                                    (fn (n v) (== v (s "directory")))
                                     (call builtins.readDir (p "./bundles"))))])
                               (concat-list
                                 (call map

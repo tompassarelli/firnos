@@ -21,16 +21,16 @@
                 (att (enable #t)
                      (package pkgs.kanata-git)
                      (keyboards
-                       (mkif (bop != cfg.devices (lst))
+                       (mkif (!= cfg.devices (lst))
                          (att
                            (main
                              (att
                                (devices cfg.devices)
-                               (port (mkif (bop != cfg.port (nl)) cfg.port))
+                               (port (mkif (!= cfg.port (nl)) cfg.port))
                                (extraDefCfg "process-unmapped-keys yes")
                                (config (call builtins.readFile cfg.configFile)))))))))
               (set systemd.services.kanata-main.serviceConfig
-                (mkif (bop != cfg.devices (lst))
+                (mkif (!= cfg.devices (lst))
                   (att
                     (DynamicUser (mkforce #f))
                     (User "kanata")))))))))))

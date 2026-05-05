@@ -4,7 +4,7 @@ let
   cfg = config.myConfig.modules.lem;
   username = config.myConfig.modules.users.username;
   lem-ncurses = inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (o: {
-    postPatch = (o.postPatch or "") + ''
+    postPatch = o.postPatch or "" + ''
       sed -i 's/#-os-windows "lem-terminal"//' lem.asd
     '';
   });

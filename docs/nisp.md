@@ -316,3 +316,18 @@ nisp
 | `(packages vim git fd)` | `environment.systemPackages = with pkgs; [ vim git fd ];` |
 | `(user "tom" (shell (pkg "zsh")))` | `users.users.tom = { isNormalUser = true; shell = pkgs.zsh; };` |
 
+### Operators and access
+
+| nisp | nix |
+|------|-----|
+| `(not x)` / `(neg x)` | `!x` / `-x` |
+| `(and a b)` / `(or a b)` / `(impl a b)` | `a && b` / `a \|\| b` / `a -> b` |
+| `(== a b)` / `(!= a b)` / `(< a b)` / `(<= a b)` / `(> a b)` / `(>= a b)` | comparisons |
+| `(+ a b)` / `(- a b)` / `(* a b)` / `(/ a b)` | arithmetic; variadic where it makes sense |
+| `(get base 'a.b.c)` | `base.a.b.c` |
+| `(get-or base 'a.b.c default)` | `base.a.b.c or default` |
+| `(has base 'a.b.c)` | `base ? a.b.c` |
+| `(assert-do cond body)` | `assert cond; body` |
+| `(spath "nixpkgs")` | `<nixpkgs>` |
+| `(fn-set@ self (a b) body)` | `{ a, b } @ self: body` |
+

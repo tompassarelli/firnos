@@ -43,8 +43,7 @@
            [functionFiles
             (call builtins.attrNames
               (call lib.filterAttrs
-                (fn (n v) (bop &&
-                               (bop == v "regular")
+                (fn (n v) (and (== v "regular")
                                (call lib.hasSuffix ".fish" n)))
                 (call builtins.readDir
                       (cat flakeRoot "/dotfiles/fish/functions"))))])

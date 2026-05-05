@@ -4,7 +4,7 @@ let
   username = config.myConfig.modules.users.username;
   palefoxRoot = inputs.palefox;
   palefoxFirefox = pkgs.firefox.overrideAttrs (old: {
-    buildCommand = (old.buildCommand or "") + ''
+    buildCommand = old.buildCommand or "" + ''
       cat >> "$out/lib/firefox/defaults/pref/autoconfig.js" <<'EOF'
       pref("general.config.filename", "config.js");
       pref("general.config.sandbox_enabled", false);

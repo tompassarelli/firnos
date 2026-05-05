@@ -21,7 +21,7 @@
                             lines)]
          [match       (call builtins.match ".*variant: \"([^\"]+)\".*" variantLine)])
         ;; Fallback to "dark" if variant field is missing or malformed.
-        (if-then (bop != match (nl))
+        (if-then (!= match (nl))
                  (call builtins.head match)
                  "dark"))]))
   (config-body

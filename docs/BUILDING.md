@@ -233,7 +233,16 @@ If you modify `nisp/main.rkt` (adding a new form, fixing the emitter):
 | `(let-in ([k v]...) body)`      | `let k = v; ... in body` |
 | `(fn (a b) body)`               | `a: b: body` |
 | `(fn-set-rest (a (b "x")) body)`| `{ a, b ? "x", ... }: body` |
+| `(fn-set@ self (a b) body)`     | `{ a, b } @ self: body` |
 | `(call f x y)`                  | `f x y` |
+| `(not x)` / `(neg x)`           | `!x` / `-x` |
+| `(and a b c)` / `(or a b)` / `(impl a b)` | `a && b && c` / `a \|\| b` / `a -> b` |
+| `(== a b)` / `(!= a b)` / `(< a b)` / `(<= a b)` etc. | `a == b` / `a != b` / `a < b` / `a <= b` |
+| `(+ a b c)` / `(- a b)` / `(* a b)` / `(/ a b)` | `a + b + c` / `a - b` / `a * b` / `a / b` |
+| `(get base 'a.b.c)` / `(get-or base 'a.b.c d)` | `base.a.b.c` / `base.a.b.c or d` |
+| `(has base 'a.b.c)`             | `base ? a.b.c` |
+| `(assert-do cond body)`         | `assert cond; body` |
+| `(spath "nixpkgs")`             | `<nixpkgs>` |
 | `(mkif cond body)`              | `lib.mkIf cond body` |
 | `(mkdefault v)` / `(mkforce v)` | `lib.mkDefault v` / `lib.mkForce v` |
 | `(mkenable "desc")`             | `lib.mkEnableOption "desc"` |

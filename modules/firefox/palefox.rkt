@@ -19,7 +19,7 @@
             (att
               (buildCommand
                 (cat
-                  (bop or old.buildCommand "")
+                  (get-or old 'buildCommand "")
                   (ms "cat >> \"$out/lib/firefox/defaults/pref/autoconfig.js\" <<'EOF'"
                       "pref(\"general.config.filename\", \"config.js\");"
                       "pref(\"general.config.sandbox_enabled\", false);"

@@ -18,7 +18,13 @@
          ;; --- path ---
          at .>
          ;; --- expressions ---
-         if-then let-in with-do fn fn-set fn-set-rest call inh inh-from
+         if-then let-in with-do fn fn-set fn-set-rest fn-set@ call inh inh-from
+         ;; --- ops ---
+         (rename-out [n-not not] [n-neg neg]
+                     [n-and and] [n-or or] [n-impl impl]
+                     [n== ==] [n!= !=] [n< <] [n> >] [n<= <=] [n>= >=]
+                     [n+ +] [n- -] [n* *] [n/ /])
+         get get-or has assert-do spath
          ;; --- mk helpers ---
          mkif mkdefault mkforce mkmerge mkenable mkopt
          ;; --- types ---
@@ -49,6 +55,11 @@
          (struct-out nix-binop)
          (struct-out nix-import)
          (struct-out nix-inherit)
+         (struct-out nix-unop)
+         (struct-out nix-select)
+         (struct-out nix-has-attr)
+         (struct-out nix-assert)
+         (struct-out nix-spath)
          (struct-out lp-simple)
          (struct-out lp-attrs)
          emit emit-toplevel as-value)
@@ -94,6 +105,12 @@
 (struct nix-binop  (op l r)       #:transparent)   ; op is a symbol like '++ '// '+ '-
 (struct nix-import (target)       #:transparent)
 (struct nix-inherit (ns names)    #:transparent)   ; ns: nix-expr or #f
+
+(struct nix-unop      (op expr)            #:transparent) ; op: '! or '-
+(struct nix-select    (base path or-default) #:transparent) ; base.path [or default]
+(struct nix-has-attr  (base path)          #:transparent) ; base ? a.b.c
+(struct nix-assert    (cond body)          #:transparent) ; assert cond; body
+(struct nix-spath     (name)               #:transparent) ; <nixpkgs>
 
 ;; lambda params
 (struct lp-simple (name)                              #:transparent)  ; x:
@@ -283,6 +300,100 @@
           [(nix-ident? op) (string->symbol (nix-ident-name op))]
           [else (error 'bop "operator must be symbol/string/nix-ident, got: ~v" op)]))
   (nix-binop op-sym (as-value a) (as-value b)))
+
+;; ---------- Unary ops ----------
+(define (n-not x)  (nix-unop '! (as-value x)))
+(define (n-neg x)  (nix-unop '- (as-value x)))
+
+;; ---------- Variadic boolean / arithmetic ----------
+;;
+;; Nix has only binary &&, ||, +, -, *, /. We fold left so `(and a b c)`
+;; emits `a && b && c`. Empty/one-arg behavior follows Lisp convention.
+(define (left-fold op identity args)
+  (cond
+    [(null? args) identity]
+    [(null? (cdr args)) (as-value (car args))]
+    [else
+     (define a0 (as-value (car args)))
+     (for/fold ([acc a0]) ([x (in-list (cdr args))])
+       (nix-binop op acc (as-value x)))]))
+
+;; '|| can't be written as a Racket symbol literal (||  reads as the empty
+;; symbol due to the bar-quote convention). Build it via string->symbol.
+(define OR-SYM (string->symbol "||"))
+
+(define (n-and . xs)  (left-fold '&&    (nix-bool #t) xs))
+(define (n-or  . xs)  (left-fold OR-SYM (nix-bool #f) xs))
+(define (n-impl a b)  (nix-binop '-> (as-value a) (as-value b)))
+
+(define (n+ . xs)
+  (cond [(null? xs) (nix-int 0)]
+        [else (left-fold '+ (nix-int 0) xs)]))
+(define (n* . xs)
+  (cond [(null? xs) (nix-int 1)]
+        [else (left-fold '* (nix-int 1) xs)]))
+(define (n- . xs)
+  (cond [(null? xs) (error 'n- "at least one argument required")]
+        [(null? (cdr xs)) (n-neg (car xs))]
+        [else (left-fold '- (nix-int 0) xs)]))
+(define (n/ . xs)
+  (cond [(null? xs) (error 'n/ "at least one argument required")]
+        [(null? (cdr xs)) (error 'n/ "division needs >= 2 args")]
+        [else (left-fold '/ (nix-int 1) xs)]))
+
+;; ---------- Comparison (binary) ----------
+(define (n== a b) (nix-binop '== (as-value a) (as-value b)))
+(define (n!= a b) (nix-binop '!= (as-value a) (as-value b)))
+(define (n<  a b) (nix-binop '<  (as-value a) (as-value b)))
+(define (n>  a b) (nix-binop '>  (as-value a) (as-value b)))
+(define (n<= a b) (nix-binop '<= (as-value a) (as-value b)))
+(define (n>= a b) (nix-binop '>= (as-value a) (as-value b)))
+
+;; ---------- Attribute access / has-attr ----------
+;;
+;; (get base 'a.b.c)            -> base.a.b.c
+;; (get-or base 'a.b.c default) -> base.a.b.c or default
+;; (has base 'a.b.c)            -> base ? a.b.c
+;;
+;; Path arg accepts symbol, string, or list of segment strings/AST nodes.
+(define (->path-segments x)
+  (cond
+    [(symbol? x) (parse-attr-path (symbol->string x))]
+    [(string? x) (parse-attr-path x)]
+    [(list? x)   x]
+    [else (error '->path-segments "expected symbol/string/list, got: ~v" x)]))
+
+(define (get base path)       (nix-select (as-value base) (->path-segments path) #f))
+(define (get-or base path d)  (nix-select (as-value base) (->path-segments path) (as-value d)))
+(define (has base path)       (nix-has-attr (as-value base) (->path-segments path)))
+
+;; ---------- assert ----------
+(define (assert-do cond body)
+  (nix-assert (as-value cond) (as-value body)))
+
+;; ---------- search path ----------
+;; (spath "nixpkgs") -> <nixpkgs>
+(define (spath name)
+  (nix-spath (cond [(string? name) name]
+                   [(symbol? name) (symbol->string name)]
+                   [else (error 'spath "expected string/symbol, got: ~v" name)])))
+
+;; ---------- at-pattern lambda ----------
+;; (fn-set@ name (a b (c "default")) body) -> { a, b, c ? "default" } @ name: body
+(define-syntax (fn-set@ stx)
+  (syntax-case stx ()
+    [(_ at-id (entry ...) body)
+     (with-syntax ([(name ...)
+                    (map (lambda (e)
+                           (syntax-case e ()
+                             [(id _default) #'id]
+                             [id #'id]))
+                         (syntax->list #'(entry ...)))])
+       #'(let ([at-id (nix-ident (symbol->string 'at-id))]
+               [name (nix-ident (symbol->string 'name))] ...)
+           (nix-lambda
+             (lp-attrs (list (fn-set-entry entry) ...) #f (symbol->string 'at-id))
+             (as-value body))))]))
 
 ;; =========================================================================
 ;; Expressions
@@ -987,6 +1098,11 @@
     [(nix-binop? expr) (emit-binop expr depth)]
     [(nix-import? expr) (emit-import expr depth)]
     [(nix-inherit? expr) (emit-inherit expr depth)]
+    [(nix-unop? expr) (emit-unop expr depth)]
+    [(nix-select? expr) (emit-select expr depth)]
+    [(nix-has-attr? expr) (emit-has-attr expr depth)]
+    [(nix-assert? expr) (emit-assert expr depth)]
+    [(nix-spath? expr) (string-append "<" (nix-spath-name expr) ">")]
     [(boolean? expr) (if expr "true" "false")]
     [(string? expr) (string-append "\"" (escape-string expr) "\"")]
     [(number? expr) (number->string expr)]
@@ -1134,7 +1250,10 @@
          (nix-let? node)
          (nix-with? node)
          (nix-if? node)
-         (nix-binop? node))
+         (nix-binop? node)
+         (nix-unop? node)
+         (nix-has-attr? node)
+         (nix-assert? node))
      (string-append "(" text ")")]
     [else text]))
 
@@ -1185,3 +1304,35 @@
     [ns (string-append "inherit (" (emit ns depth) ") "
                        (string-join names " "))]
     [else (string-append "inherit " (string-join names " "))]))
+
+(define (emit-unop expr depth)
+  (define op (nix-unop-op expr))
+  (define e (nix-unop-expr expr))
+  ;; Tight binding for unary ops; parenthesize complex inner.
+  (string-append (symbol->string op) (parens-if-needed (emit e depth) e)))
+
+(define (emit-select expr depth)
+  (define base (nix-select-base expr))
+  (define path (nix-select-path expr))
+  (define orv  (nix-select-or-default expr))
+  (define base-text
+    (cond
+      ;; Bare identifier or path / parenthesize anything else
+      [(or (nix-ident? base) (nix-select? base) (nix-spath? base)) (emit base depth)]
+      [else (string-append "(" (emit base depth) ")")]))
+  (define path-text (emit-attr-path path depth))
+  (define core (string-append base-text "." path-text))
+  (cond
+    [orv (string-append core " or " (parens-if-needed (emit orv depth) orv))]
+    [else core]))
+
+(define (emit-has-attr expr depth)
+  (define base (nix-has-attr-base expr))
+  (define path (nix-has-attr-path expr))
+  (string-append (parens-if-needed (emit base depth) base)
+                 " ? " (emit-attr-path path depth)))
+
+(define (emit-assert expr depth)
+  (define c (nix-assert-cond expr))
+  (define body (nix-assert-body expr))
+  (string-append "assert " (emit c depth) "; " (emit body depth)))
