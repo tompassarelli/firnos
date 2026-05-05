@@ -23,6 +23,29 @@ them visible).
 newer than their `.nix` output, so re-running it after a clean build is a
 no-op.
 
+## The `firn` CLI
+
+`scripts/firn.rkt` is a Racket-based CLI that wraps the routine config
+operations (rebuild, list/refs, scaffolding new modules/bundles, secrets
+management, generation tagging) and adds two new commands that need
+syntax-aware host-config edits:
+
+- `firn enable <name>` — toggle a module/bundle on in the current host
+- `firn disable <name>` — toggle off
+- `firn status` — list what's enabled
+
+`scripts/firn.rkt` is invokable directly (it has a `#lang racket/base`
+shebang) but for daily use it should be compiled and put on PATH:
+
+```
+./scripts/firn-build-bin            # → ~/.local/bin/firn  (~6 MB binary)
+firn help                           # ~110ms cold start
+```
+
+The binary embeds its Racket runtime, so it doesn't depend on the nisp
+package being registered on the target machine — useful if you ever copy
+the binary to a fresh install.
+
 ## Validation: catching typos before `nixos-rebuild`
 
 `scripts/firn-validate` checks every `(set …)` and `(enable …)` path in

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# firn-build-bin — compile scripts/firn.rkt to a standalone binary.
+#
+# Output: ~/.local/bin/firn (added to PATH on most systems).
+# Use `raco exe`'s embedded-runtime mode so the binary doesn't need the
+# nisp package installed on the target machine — it bundles its dependencies.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+OUT="${1:-$HOME/.local/bin/firn}"
+mkdir -p "$(dirname "$OUT")"
+
+echo "firn-build-bin: compiling scripts/firn.rkt → $OUT"
+raco exe -o "$OUT" scripts/firn.rkt
+ls -lh "$OUT"
+echo "firn-build-bin: done. Add $(dirname "$OUT") to PATH if it isn't already."
