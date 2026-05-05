@@ -16,7 +16,7 @@ Nix. You're not trapped in a custom language — you can drop down to raw
 Nix at any point, and you can stop using FirnOS by deleting the `.rkt`
 files.
 
-## The dopamine loop
+## What the checker catches
 
 ```
 $ firn rebuild
