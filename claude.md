@@ -20,7 +20,7 @@ The *write interface* for this repo is **nisp** — a Racket `#lang` for writing
 
 Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
 
-**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp). firn-build expects it cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. The DSL implementation, AST, emitter, and emit tests are over there. firnos consumes it as a `raco pkg` link.
+**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp) — the DSL **and** the full validation toolchain (`nisp-validate`, `nisp-extract-schema`). firn-build expects nisp cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. firnos's `scripts/firn-validate` and `scripts/firn-extract-schema` are thin shims that call the nisp CLIs with FirnOS-specific defaults (NixOS target + HM allowlist).
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 

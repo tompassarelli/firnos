@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: tompassarelli/nisp
-          ref: v0.2.0
+          ref: v0.3.0
           path: nisp
 
       - uses: cachix/install-nix-action@v27

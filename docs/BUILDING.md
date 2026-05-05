@@ -1,9 +1,17 @@
 # Building FirnOS
 
 FirnOS is authored in [nisp](nisp.md) — a Racket `#lang` for writing Nix
-as s-expressions. nisp lives in its own repo at
-[tompassarelli/nisp](https://github.com/tompassarelli/nisp); FirnOS
-consumes it as a `raco pkg` link.
+as s-expressions. nisp ships the language plus the full validation
+toolchain (`nisp-validate`, `nisp-extract-schema`); FirnOS is one
+consumer of that toolchain.
+
+- **nisp** ([repo](https://github.com/tompassarelli/nisp)) — language + library + CLIs
+- **firnos** (this repo) — modules, bundles, hosts, scaffolding, the `firn` CLI for daily workflow
+
+`scripts/firn-validate` and `scripts/firn-extract-schema` in this repo
+are thin wrappers — they invoke `nisp-validate` / `nisp-extract-schema`
+with FirnOS-specific defaults (NixOS target, HM allowlist for the
+home-manager skip-heuristic).
 
 Every `*.nix` file in this repo is generated from a sibling `*.rkt` source by
 `scripts/firn-build`. The `.rkt` files are source-of-truth. The `.nix` files
