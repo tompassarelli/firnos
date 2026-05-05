@@ -34,17 +34,21 @@ syntax-aware host-config edits:
 - `firn disable <name>` — toggle off
 - `firn status` — list what's enabled
 
-`scripts/firn.rkt` is invokable directly (it has a `#lang racket/base`
-shebang) but for daily use it should be compiled and put on PATH:
+`scripts/firn.rkt` is invokable directly via `racket scripts/firn.rkt …`
+but for daily use it should be compiled. `firn-build-bin` uses `raco demod`
+(whole-program optimizer + dead-code elimination) for a small fast result:
 
 ```
-./scripts/firn-build-bin            # → ~/.local/bin/firn  (~6 MB binary)
-firn help                           # ~110ms cold start
+./scripts/firn-build-bin
+# → ~/.local/share/firn/firn.zo   (~1.3 MB bytecode)
+# → ~/.local/bin/firn             (~75 byte wrapper)
+
+firn help                          # ~80ms cold start
 ```
 
-The binary embeds its Racket runtime, so it doesn't depend on the nisp
-package being registered on the target machine — useful if you ever copy
-the binary to a fresh install.
+The wrapper exec's `racket` on the bytecode, so the system needs Racket
+on PATH (already provided by `bundles/racket`). Add `~/.local/bin` to
+PATH if it isn't already.
 
 ## Validation: catching typos before `nixos-rebuild`
 

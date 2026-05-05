@@ -1,18 +1,36 @@
 #!/usr/bin/env bash
-# firn-build-bin — compile scripts/firn.rkt to a standalone binary.
+# firn-build-bin — compile scripts/firn.rkt to a small fast binary.
 #
-# Output: ~/.local/bin/firn (added to PATH on most systems).
-# Use `raco exe`'s embedded-runtime mode so the binary doesn't need the
-# nisp package installed on the target machine — it bundles its dependencies.
+# Uses `raco demod` (whole-program optimizer + dead-code elimination) to
+# produce a ~1.3 MB bytecode file that loads in ~80 ms. Installs:
+#   ~/.local/bin/firn         — wrapper shell script (calls racket on the .zo)
+#   ~/.local/share/firn/firn.zo — compiled bytecode
+#
+# Why not `raco exe`? It works (single 6 MB binary, ~110 ms cold) but produces
+# a noticeably larger artifact and is slower than demod.
+#
+# Why not `raco distribute`? It's for shipping to machines *without* Racket;
+# bundles the whole runtime as a 50 MB directory. We have Racket installed.
 
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-OUT="${1:-$HOME/.local/bin/firn}"
-mkdir -p "$(dirname "$OUT")"
+BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
+SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/firn}"
+mkdir -p "$BIN_DIR" "$SHARE_DIR"
 
-echo "firn-build-bin: compiling scripts/firn.rkt → $OUT"
-raco exe -o "$OUT" scripts/firn.rkt
-ls -lh "$OUT"
-echo "firn-build-bin: done. Add $(dirname "$OUT") to PATH if it isn't already."
+ZO="$SHARE_DIR/firn.zo"
+WRAPPER="$BIN_DIR/firn"
+
+echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
+raco demod -o "$ZO" scripts/firn.rkt
+
+cat > "$WRAPPER" <<EOF
+#!/usr/bin/env bash
+exec racket "$ZO" "\$@"
+EOF
+chmod +x "$WRAPPER"
+
+ls -lh "$ZO" "$WRAPPER" | awk '{print "  ", $5, $9}'
+echo "firn-build-bin: done. Make sure $BIN_DIR is on PATH."
