@@ -87,6 +87,41 @@ Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, s
 
 `firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). Run `firn` with no args to see all commands. It should only contain subcommands that operate on the nixos-config repo itself — general-purpose tools like `sandbox`, `vpn`, `gif` etc. stay as standalone fish functions.
 
+## Schema introspection (use these instead of grepping schema.json)
+
+Before adding/changing options, query the schema:
+
+```bash
+nisp-schema services.openssh.enable               # exact lookup: type, default, enum
+nisp-schema --children services.openssh           # list all sub-options under a prefix
+nisp-schema --search ssh                          # fuzzy substring search
+nisp-schema --json services.openssh.enable        # machine-readable
+```
+
+This is the right way to answer "does option X exist?" or "what type does X want?" — far better than `grep schema.json`.
+
+## Renaming option paths
+
+To rename an option path across all `.rkt` files (e.g., refactoring `myConfig.modules.foo` → `myConfig.modules.bar`):
+
+```bash
+nisp-rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
+nisp-rename myConfig.modules.foo myConfig.modules.bar             # apply
+firn-validate                                                      # verify clean
+```
+
+Word-boundary matching prevents partial collisions; string literals are skipped. After applying, always re-run `firn-validate`.
+
+## Importing existing Nix
+
+If the user has hand-written `.nix` and wants to convert to nisp:
+
+```bash
+nisp-import file.nix > file.rkt
+```
+
+Built on rnix-parser (handles 100% of nixpkgs). Round-trip is byte-equivalent for plain Nix; comments are dropped (logged limitation).
+
 ## Verification
 
 There's a tiered loop — pick the right rung for the change.
