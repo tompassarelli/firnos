@@ -32,11 +32,15 @@
          json)
 
 (define ROOT
-  (let ([p (find-system-path 'orig-dir)])
-    (let loop ([d p])
-      (cond [(file-exists? (build-path d "flake.rkt")) d]
-            [(equal? d (or (path-only d) d)) p]
-            [else (loop (path-only d))]))))
+  (let ([start (path->complete-path (find-system-path 'orig-dir))])
+    (let loop ([d (simple-form-path start)])
+      (cond
+        [(file-exists? (build-path d "flake.rkt")) d]
+        [else
+         (define-values (parent _name _isdir) (split-path d))
+         (cond
+           [(or (not parent) (eq? parent 'relative)) start]
+           [else (loop parent)])]))))
 
 (define SCHEMA-PATH (build-path ROOT ".firn-build" "schema.json"))
 (define SUB-CACHE-PATH (build-path ROOT ".firn-build" "schema-submodules.json"))
