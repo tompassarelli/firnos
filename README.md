@@ -16,6 +16,16 @@ Nix. You're not trapped in a custom language — you can drop down to raw
 Nix at any point, and you can stop using FirnOS by deleting the `.rkt`
 files.
 
+## Who is this for?
+
+**This repository is two things at once:** the FirnOS framework, and the author's real NixOS + nix-darwin config built on it. If you want to use FirnOS for your own machines, **start from [`template/`](template/)** — it's a minimal host setup with the framework wired up. The full repo (`hosts/whiterabbit/`, `dotfiles/`, `secrets/`, all 158 modules) is here as a study reference for what a daily-driver setup looks like, not as something you should fork wholesale.
+
+Three audiences:
+
+- **You want to manage your own NixOS or nix-darwin machine** with source-aware validation and a small workflow CLI → use the [template](#using-firnos-in-your-own-repo).
+- **You want the validation tooling but already have a Nix config** → look at [tompassarelli/nisp](https://github.com/tompassarelli/nisp) directly. The `nisp-validate` / `nisp-extract-schema` / `nisp-import` / `nisp-lsp` CLIs work standalone against any flake.
+- **You want to read a real example of a multi-host Nix config** → browse `hosts/`, `modules/`, `bundles/`. Everything in the repo evaluates and builds.
+
 ## What the checker catches
 
 ```
@@ -63,16 +73,36 @@ milliseconds, before any `nixos-rebuild` evaluation cost.
 
 ## Quick start
 
+For your own setup, scaffold from the template:
+
 ```bash
-git clone https://github.com/tompassarelli/firnos
-git clone https://github.com/tompassarelli/nisp           # sibling clone, firn-build expects ../nisp
-cd firnos
-cp /etc/nixos/hardware-configuration.nix hosts/my-machine/
+nix flake init -t github:tompassarelli/firnos     # drops template/ contents in cwd
+git clone https://github.com/tompassarelli/nisp   # sibling clone — firn-build expects ../nisp
+cp /etc/nixos/hardware-configuration.nix .
 # edit hosts/my-machine/configuration.rkt — set username, enable bundles
-firn rebuild   # firn-build → firn-validate → nixos-rebuild → tag generation
+./scripts/firn-build && nixos-rebuild switch --flake .#my-machine
 ```
 
-On macOS, see [`docs/MACOS.md`](docs/MACOS.md) — FirnOS supports nix-darwin via `lib.mkDarwinSystem` with a curated subset of modules.
+To study the full author config instead:
+
+```bash
+git clone https://github.com/tompassarelli/firnos
+git clone https://github.com/tompassarelli/nisp
+# poke around hosts/, modules/, bundles/. Don't try to rebuild it as-is —
+# it's tuned to a specific Framework 13 laptop.
+```
+
+On macOS, see [`docs/MACOS.md`](docs/MACOS.md) — FirnOS supports nix-darwin via `lib.mkDarwinSystem` with curated `bundles-darwin/`.
+
+## Migrating from existing Nix
+
+If you already have a hand-written Nix config, [`nisp-import`](https://github.com/tompassarelli/nisp) (a CLI from the nisp toolchain) converts `.nix` → `.rkt`:
+
+```bash
+nisp-import path/to/configuration.nix > hosts/my-machine/configuration.rkt
+```
+
+Round-trip is byte-equivalent for plain Nix; `nisp-import` handles 100% of nixpkgs (2,332 modules) via rnix-parser. Comments are dropped (logged limitation). After importing, you can mix raw Nix and nisp freely — `firn-build` only rewrites `.rkt` files; hand-written `.nix` modules sit alongside generated ones and the flake imports them the same way.
 
 ## Authoring config
 
@@ -204,15 +234,17 @@ changes — no manual step required.
 ```
 .
 ├── flake.rkt          source-of-truth flake (compiles to flake.nix)
-├── nisp/              the DSL itself (#lang nisp implementation)
-├── modules/           atomic modules — one package/service each
-├── bundles/           composition layer — pure module toggles, no packages
-├── hosts/             per-host configurations
+├── modules/           atomic modules — one package/service each (NixOS)
+├── bundles/           composition layer — pure module toggles (NixOS)
+├── bundles-darwin/    parallel composition layer for nix-darwin hosts
+├── hosts/             per-host configurations (NixOS + darwin)
 ├── scripts/           firn (CLI), firn-build, firn-validate, firn-extract-schema
 ├── template/          starting point for `nix flake init -t`
 ├── dotfiles/          out-of-store configs (live editing)
 └── docs/              BUILDING.md, docs.md, MACOS.md
 ```
+
+The DSL itself (`#lang nisp`) lives in a separate repo — [tompassarelli/nisp](https://github.com/tompassarelli/nisp), cloned alongside this one as a sibling. `firn-build` expects `../nisp` (override with `NISP_PATH`).
 
 **Module** = atom. One package or service.
 
@@ -235,13 +267,7 @@ needed when adding either.
 
 ## Using FirnOS in your own repo
 
-### Option 1: bootstrap from template
-
-```bash
-nix flake init -t github:tompassarelli/firnos
-```
-
-### Option 2: import from your flake
+The [Quick start](#quick-start) above covers the `nix flake init -t` template path. As an alternative, if you want to consume FirnOS as a flake input from your own repo:
 
 ```nix
 {
@@ -252,11 +278,16 @@ nix flake init -t github:tompassarelli/firnos
       hostConfig = ./hosts/my-machine/configuration.nix;
       hardwareConfig = ./hosts/my-machine/hardware-configuration.nix;
     };
+    # macOS:
+    darwinConfigurations.my-mac = firnos.lib.mkDarwinSystem {
+      hostname = "my-mac";
+      hostConfig = ./hosts/my-mac/configuration.nix;
+    };
   };
 }
 ```
 
-### `lib.mkSystem` options
+### `lib.mkSystem` options (NixOS)
 
 | | required | type | default |
 |---|---|---|---|
@@ -267,6 +298,19 @@ nix flake init -t github:tompassarelli/firnos
 | `extraModules` | no | list | `[]` |
 | `extraOverlays` | no | list | `[]` |
 | `extraSpecialArgs` | no | attrset | `{}` |
+
+### `lib.mkDarwinSystem` options (nix-darwin)
+
+| | required | type | default |
+|---|---|---|---|
+| `hostname` | yes | string | — |
+| `hostConfig` | yes | path | — |
+| `system` | no | string | `"aarch64-darwin"` |
+| `extraModules` | no | list | `[]` |
+| `extraOverlays` | no | list | `[]` |
+| `extraSpecialArgs` | no | attrset | `{}` |
+
+(No `hardwareConfig` on darwin — macOS doesn't have an analogue. See [`docs/MACOS.md`](docs/MACOS.md) for the bootstrap walkthrough.)
 
 ## Documentation
 

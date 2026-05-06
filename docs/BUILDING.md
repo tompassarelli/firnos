@@ -121,13 +121,13 @@ namespaces still surface at Nix-eval time.
 ## Required modules and bundles
 
 The pipeline runs `racket` on every `.rkt` source, so racket must be on the
-system that does the rebuild. Two modules and one bundle are load-bearing:
+system that does the rebuild. Three things are load-bearing:
 
 | Path                   | Why it's required                                              |
 | ---------------------- | -------------------------------------------------------------- |
 | `modules/racket`       | Installs `pkgs.racket-minimal` — the interpreter `firn-build` invokes. |
 | `bundles/racket`       | Top-level toggle that pulls `modules/racket` (and optionally `modules/drracket`) into the host config. |
-| `nisp/`                | The DSL itself — `info.rkt`, `lang/reader.rkt`, `main.rkt`. Registered with `raco pkg install --link ./nisp`. |
+| `../nisp` (sibling)    | The DSL implementation. `firn-build` registers it via `raco pkg install --link` against `$NISP_PATH` (default `../nisp`). |
 
 In every host configuration, set:
 
@@ -232,8 +232,6 @@ A small set of files don't have a `.rkt` source and aren't regenerated:
   (`nixos-generate-config`); leave it as-is.
 - `secrets/` — sops-encrypted YAML, not Nix code.
 - `dotfiles/` and `assets/` — non-Nix content.
-- The `nisp/` package itself — written directly in Racket; it's the
-  implementation, not a target.
 
 ## Bootstrapping nisp
 
@@ -249,13 +247,11 @@ yet be on the system. Bootstrap order:
 
 ## Editing the DSL itself
 
-If you modify `nisp/main.rkt` (adding a new form, fixing the emitter):
+The DSL lives in the [tompassarelli/nisp](https://github.com/tompassarelli/nisp) repo (cloned alongside this one as a sibling). If you modify `../nisp/main.rkt`:
 
-1. Run `raco setup nisp` to recompile.
-2. Run `./scripts/firn-build` to regenerate every `.nix` from its `.rkt`
-   source — the new emitter applies everywhere at once.
-3. Diff the result. Cosmetic differences are fine; semantic differences are
-   bugs.
+1. Run `raco setup nisp` to recompile (or just re-run `./scripts/firn-build`, which `raco pkg install --link`s the sibling clone).
+2. Run `./scripts/firn-build` to regenerate every `.nix` from its `.rkt` source — the new emitter applies everywhere at once.
+3. Diff the result. Cosmetic differences are fine; semantic differences are bugs.
 
 ## Quick reference
 
