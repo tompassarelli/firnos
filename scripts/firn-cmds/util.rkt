@@ -13,6 +13,7 @@
          list-dirs modules bundles hosts
          current-hostname host-config-rkt
          grep-files relative-to-repo
+         paths-referenced-in
          (struct-out cmd))
 
 ;; ---------- command metadata ----------
@@ -109,3 +110,94 @@
   (define root-s (string-append (path->string (simplify-path ROOT)) "/"))
   (cond [(string-prefix? s root-s) (substring s (string-length root-s))]
         [else s]))
+
+;; ---------- option-path extraction from .rkt source ----------
+;;
+;; Walks a .rkt file and returns every option-path string referenced
+;; via (set …), (enable …), or shortcut macros ((pkg X), (svc X),
+;; (sub-modules a b c)). Bodies under home-of / hm-* / hm-module are
+;; skipped — those reference home-manager paths that aren't in the
+;; system schema.
+;;
+;; Handles both bare-identifier paths `(set boot.X val)` and quoted
+;; paths `(set 'boot.X val)`. Tolerant — read errors return '().
+
+(define HM-FORMS '(home-of home-of-bare hm hm-bare hm-module))
+
+(define (count-char c s)
+  (for/sum ([ch (in-string s)] #:when (char=? ch c)) 1))
+
+(define (form-head-symbol datum)
+  (and (pair? datum) (symbol? (car datum)) (car datum)))
+
+(define (path-from-arg arg)
+  (cond
+    [(symbol? arg) (symbol->string arg)]
+    [(and (pair? arg) (eq? (car arg) 'quote)
+          (pair? (cdr arg)) (symbol? (cadr arg)))
+     (symbol->string (cadr arg))]
+    [(string? arg) arg]
+    [else #f]))
+
+(define (collect-paths-from datum acc)
+  (cond
+    [(not (pair? datum)) acc]
+    [else
+     (define head (form-head-symbol datum))
+     (cond
+       [(memq head HM-FORMS) acc]
+       [(eq? head 'set)
+        (define rest (cdr datum))
+        (cond
+          [(null? rest) acc]
+          [else
+           (define p (path-from-arg (car rest)))
+           (define acc2 (if p (cons p acc) acc))
+           (for/fold ([a acc2]) ([d (in-list (cdr rest))])
+             (collect-paths-from d a))])]
+       [(eq? head 'enable)
+        (for/fold ([a acc]) ([arg (in-list (cdr datum))])
+          (define p (path-from-arg arg))
+          (if p (cons (string-append p ".enable") a) a))]
+       [(eq? head 'pkg)
+        (cons "environment.systemPackages" acc)]
+       [(eq? head 'svc)
+        (define args (cdr datum))
+        (cond
+          [(null? args) acc]
+          [(and (= (length args) 3) (string? (cadr args)))
+           (cons (cadr args) acc)]
+          [else
+           (define n (path-from-arg (car args)))
+           (if n (cons (string-append "services." n ".enable") acc) acc)])]
+       [(eq? head 'hm-module) acc]
+       [(or (eq? head 'sub-modules) (eq? head 'sub-modules*))
+        (for/fold ([a acc]) ([arg (in-list (cdr datum))])
+          (define name
+            (cond
+              [(symbol? arg) (symbol->string arg)]
+              [(and (pair? arg) (symbol? (car arg))) (symbol->string (car arg))]
+              [else #f]))
+          (if name (cons (string-append "myConfig.modules." name ".enable") a) a))]
+       [else
+        (for/fold ([a acc]) ([d (in-list datum)])
+          (collect-paths-from d a))])]))
+
+(define (paths-referenced-in rkt-path)
+  (with-handlers ([exn:fail? (λ (_) '())])
+    (define raw (file->string rkt-path))
+    (define-values (lang-prefix rest)
+      (let ([m (regexp-match-positions #rx"^#lang [^\n]*\n" raw)])
+        (cond [m (values (substring raw 0 (cdr (car m)))
+                         (substring raw (cdr (car m))))]
+              [else (values "" raw)])))
+    (define padded (string-append (make-string (count-char #\newline lang-prefix) #\newline)
+                                  rest))
+    (define port (open-input-string padded))
+    (define out '())
+    (let loop ()
+      (define datum (read port))
+      (unless (eof-object? datum)
+        (set! out (collect-paths-from datum out))
+        (loop)))
+    (reverse out)))

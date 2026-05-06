@@ -58,7 +58,9 @@ operations. Command implementations live in `scripts/firn-cmds/*.rkt`;
 - `firn doctor` — five-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, validator)
 - `firn upgrade [--dry-run]` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references
 - `firn diff` — re-emit Nix from `.rkt` and unified-diff against committed `.nix` (drift sentinel)
-- `firn list` / `firn refs` / `firn mod` / `firn bundle` / `firn scaffold` — module/bundle introspection and scaffolding (`scaffold service` queries the schema cache and pre-fills commented stubs)
+- `firn list` / `firn refs` / `firn mod` / `firn bundle` / `firn scaffold` — module/bundle introspection and scaffolding (`scaffold service` queries the schema cache and pre-fills commented stubs). `firn list --unused` finds dead modules — modules not enabled by any host directly or transitively via a bundle.
+- `firn tags` — module tag index. Bundles capture purpose-based grouping (gaming, dev); tags capture cross-cutting facets (gpu-required, gui-only, proprietary, …). Sources: derived from bundle membership + explicit `(tags …)` clauses in the module source. `--filter <tag>` queries by tag; `--index` writes a regenerable jsonl index to `.nisp-cache/tags.jsonl`.
+- `firn platforms` — schema-driven cross-platform compatibility report (NixOS vs darwin). See `docs/MACOS.md`.
 - `firn secret` / `firn gen` — sops wrapper and generation numbers
 
 `scripts/firn.rkt` is invokable directly via `racket scripts/firn.rkt …`

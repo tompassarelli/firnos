@@ -124,6 +124,32 @@ Output: type, declarations (links to upstream NixOS module sources), and every `
 
 `firn doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
 
+## Tagging modules for discovery
+
+Bundles already capture *purpose-based* grouping (gaming, terminal, dev). Tags capture *cross-cutting facets* that don't form a coherent bundle — `gpu-required`, `gui-only`, `headless-ok`, `network`, `proprietary`, `large-closure`. Two sources, unioned per module:
+
+1. **Bundle-derived tags** — a module appearing in `bundles/gaming/default.rkt`'s `(sub-modules …)` automatically gets `bundle:gaming`. No authoring required; covers most modules.
+2. **Explicit `(tags …)` clause** in the module's `.rkt` source. nisp v0.11.0+:
+
+   ```racket
+   (module-file modules steam
+     (desc "Steam gaming platform")
+     (tags gui-only proprietary gpu-required network large-closure)
+     (config-body …))
+   ```
+
+Tags live in source, never get emitted into the generated `.nix`. External tooling reads `.rkt` directly:
+
+```bash
+firn tags                     # tag universe + module counts
+firn tags steam               # tags for one module
+firn tags --filter gpu-required   # all modules with that tag
+firn tags --index             # write .nisp-cache/tags.jsonl (one record per module)
+firn tags --index --stdout    # emit jsonl to stdout (for piping into jq/fzf/etc.)
+```
+
+The jsonl index is regenerated on demand — never authored. Use `firn tags --index --stdout | jq` for ad-hoc queries.
+
 ## Discovering platform compatibility
 
 `firn platforms` answers "which modules / bundles work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
