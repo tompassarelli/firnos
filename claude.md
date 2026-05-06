@@ -124,6 +124,23 @@ Output: type, declarations (links to upstream NixOS module sources), and every `
 
 `firn doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
 
+## Discovering platform compatibility
+
+`firn platforms` answers "which modules / bundles work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
+
+```bash
+firn platforms                  # full matrix
+firn platforms darwin           # only darwin-compatible modules
+firn platforms linux            # NixOS-only
+firn platforms <name>           # single module/bundle, with blocking paths
+firn platforms --bundles        # bundle compat report (which sub-modules block)
+firn platforms --safelist       # safelist snippet for flake.rkt
+```
+
+Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.nisp-cache/schema.json` and `.nisp-cache/schema-darwin.json`). `firn doctor` warns when the darwin cache is stale.
+
+**Limitation**: this is a schema-compatibility check. Pure-pkg modules whose only setter is `environment.systemPackages` always pass — the option path exists on darwin even when the package has no darwin build. Use `darwin-rebuild build` to verify.
+
 ## Bumping inputs
 
 To bump nixpkgs and surface deprecations the schema-driven way:

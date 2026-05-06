@@ -94,6 +94,29 @@
         (values #f (list "schema cache older than flake.lock — re-run firn-extract-schema"))]
        [else (values #t '())])]))
 
+(define (check-darwin-schema-cache)
+  ;; Optional check — the darwin schema only matters if there are
+  ;; darwinConfigurations in flake.rkt. We detect that via a grep.
+  (define has-darwin?
+    (with-handlers ([exn:fail? (λ (_) #f)])
+      (regexp-match? #rx"darwinConfigurations"
+                     (file->string (in-repo "flake.rkt")))))
+  (cond
+    [(not has-darwin?) (values #t '())]
+    [else
+     (define dar-schema (build-path ROOT ".nisp-cache" "schema-darwin.json"))
+     (cond
+       [(not (file-exists? dar-schema))
+        (values #f (list "darwin schema cache missing — run firn-extract-schema --darwin"))]
+       [else
+        (define lock (build-path ROOT "flake.lock"))
+        (cond
+          [(and (file-exists? lock)
+                (> (file-or-directory-modify-seconds lock)
+                   (file-or-directory-modify-seconds dar-schema)))
+           (values #f (list "darwin schema cache older than flake.lock — re-run firn-extract-schema --darwin"))]
+          [else (values #t '())])])]))
+
 (define (check-orphaned-modules)
   (define orphans '())
   (for ([m (in-list (modules))])
@@ -130,6 +153,7 @@
      (check-status "no untracked .rkt/.nix files" check-untracked)
      (check-status ".nix outputs are up-to-date with .rkt sources" check-stale-nix)
      (check-status "schema cache is fresh" check-schema-cache)
+     (check-status "darwin schema cache is fresh (if applicable)" check-darwin-schema-cache)
      (check-status "no orphaned (unreferenced) modules" check-orphaned-modules)
      (check-status "validator passes" check-validator)))
   (define total (length passes))

@@ -23,9 +23,11 @@ fi
 if $DARWIN; then
   HOST="${1:-ashashi}"
   TARGET="darwinConfigurations.$HOST.options"
+  OUT="$REPO/.nisp-cache/schema-darwin.json"
 else
   HOST="${1:-whiterabbit}"
   TARGET="nixosConfigurations.$HOST.options"
+  OUT="$REPO/.nisp-cache/schema.json"
 fi
 
 if [[ ! -x "$NISP_PATH/bin/nisp-extract-schema" ]]; then
@@ -37,5 +39,5 @@ fi
 
 exec "$NISP_PATH/bin/nisp-extract-schema" \
   --target "$TARGET" \
-  --out "$REPO/.nisp-cache/schema.json" \
+  --out "$OUT" \
   --flake "$REPO"

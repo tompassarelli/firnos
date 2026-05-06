@@ -9,13 +9,32 @@ FirnOS targets NixOS but supports macOS via [nix-darwin](https://github.com/LnL7
 - `firn` CLI commands (`rebuild`, `enable`/`disable`, `explain`, `doctor`, `upgrade`, `scaffold`, …) — `firn rebuild` detects Darwin via `uname` and dispatches to `darwin-rebuild` instead of `nh os switch`.
 - A safelist of cross-platform modules: shell tooling (`fish`, `direnv`, `zoxide`, `starship`, `atuin`), CLI utilities (`gh`, `delta`, `ripgrep`, `fd`, `vim`, `tree`, `btop`, `dust`, `eza`), git config — anything whose body only touches options nix-darwin also exposes (`programs.*`, `environment.systemPackages`, `home-manager.*`).
 
-**Doesn't work** (skipped on Darwin):
-- NixOS-only modules: `boot/`, `niri/`, `kanata/`, `bluetooth/`, `networking/`, `containers/` (Podman), `system/` (sets a NixOS-string `stateVersion` incompatible with darwin's integer), anything in `services.*` that nix-darwin doesn't expose.
-- The full bundle layer (most bundles pull in NixOS-only modules).
+**Doesn't work** (skipped on darwin):
+- NixOS-only modules whose `config-body` touches options nix-darwin doesn't declare: `boot/`, `niri/`, `kanata/`, `bluetooth/`, `networking/`, `containers/` (Podman), `system/` (sets a NixOS-string `stateVersion` incompatible with darwin's integer), most things under `services.*`.
 - sops-nix (skipped in the darwin build for v1 — encrypted secrets need a separate pass).
 - Stylix theming (its darwin support is incomplete).
 
-The mechanism: `mkIf` defers a module's *value* but not its option *path*. `boot.kernel.sysctl` is invalid on darwin even when wrapped in `mkIf cfg.enable` with `enable=false`. So FirnOS maintains a hand-curated safelist of darwin-importable modules in `flake.rkt`'s `lib.mkDarwinSystem` rather than auto-discovering everything.
+The mechanism: `mkIf cfg.enable` defers a module's *value* but not its option *path*. `boot.kernel.sysctl` is rejected by nix-darwin even when wrapped in `mkIf` with `enable=false`. So FirnOS uses curated darwin compositions:
+
+- **`bundles-darwin/`** — parallel to `bundles/`. Same `myConfig.bundles.<name>` namespace, so `(enable myConfig.bundles.terminal)` works on either platform and gets the right per-platform composition. Initial bundles: `terminal` (kitty default-on, ghostty dropped — nixpkgs build is Linux-only), `cli-tools`, `development` (NixOS bundle minus `containers`).
+- **Module safelist in `flake.rkt`** — every module referenced by a `bundles-darwin/` bundle plus extras a darwin host might want directly.
+
+## Discovering what works on darwin
+
+Use `firn platforms` to answer "is this module/bundle compatible?" without trial-and-error builds:
+
+```
+$ firn platforms                 # full matrix
+$ firn platforms darwin          # only darwin-compatible modules
+$ firn platforms linux           # NixOS-only modules
+$ firn platforms <name>          # single module/bundle, with reasons
+$ firn platforms --bundles       # bundle compat with blocking sub-modules
+$ firn platforms --safelist      # printable safelist for flake.rkt
+```
+
+The check is *schema*-based: every option path the module sets must exist in the darwin options tree. Pre-req: both schemas extracted (`firn-extract-schema` for NixOS, `firn-extract-schema --darwin` for darwin). `firn doctor` warns when the darwin schema cache is stale.
+
+**Limitation**: schema compatibility is necessary but not sufficient. A pure `(pkg X)` module sets only `environment.systemPackages` — that path exists on darwin, but the package itself may have no darwin build. Use `darwin-rebuild build --flake .#<host>` to confirm.
 
 ## Prerequisites
 
@@ -122,11 +141,21 @@ This populates `.nisp-cache/schema.json` against `darwinConfigurations.<host>.op
 
 If you want a module from `modules/` that isn't in the safelist:
 
-1. Open `flake.rkt`, find the `lib.mkDarwinSystem` block, and add the module name to the `(lst ...)` list of safe imports.
-2. Run `./scripts/firn-build && nix eval .#darwinConfigurations.$(hostname).config.system.build.toplevel.outPath`.
-3. If it errors with `option 'X' does not exist`, the module touches NixOS-only options. Either rewrite the module to be platform-aware, or accept that it stays NixOS-only.
+1. Confirm it's darwin-compatible: `firn platforms <module-name>`. Look for `verdict: both`.
+2. Open `flake.rkt`, find the `lib.mkDarwinSystem` block, and add the module name to the safelist.
+3. Run `./scripts/firn-build && nix eval .#darwinConfigurations.$(hostname).config.system.build.toplevel.outPath`.
+4. If it errors with `option 'X' does not exist`, the module touches NixOS-only options. Either rewrite the module to be platform-aware, or accept that it stays NixOS-only.
 
-Generally safe candidates: any module under `modules/` whose `(config-body …)` only assigns to `programs.*`, `environment.systemPackages`, or `home-manager.*`. Run `head modules/<name>/default.rkt` to peek.
+Generally safe candidates: any module whose `(config-body …)` only assigns to `programs.*`, `environment.systemPackages`, or `home-manager.*`. `firn platforms` does this check automatically by cross-referencing the darwin schema.
+
+## Adding a bundle to `bundles-darwin/`
+
+For an out-of-the-box composition rather than a single module:
+
+1. `firn platforms <existing-bundle>` to see what blocks it on darwin (e.g. `bundles/development` is blocked by `containers`).
+2. Create `bundles-darwin/<name>/default.rkt` mirroring the NixOS bundle minus the blocking sub-modules, plus any darwin-specific defaults (e.g. kitty default-on).
+3. Append any net-new sub-modules to the safelist in `mkDarwinSystem`.
+4. The bundle is auto-discovered on next `firn-build` — no flake edit needed.
 
 ## What you give up vs full FirnOS
 

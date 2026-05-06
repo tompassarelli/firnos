@@ -25,7 +25,8 @@
          (prefix-in s:  "firn-cmds/secret.rkt")
          (prefix-in e:  "firn-cmds/explain.rkt")
          (prefix-in dr: "firn-cmds/doctor.rkt")
-         (prefix-in u:  "firn-cmds/upgrade.rkt"))
+         (prefix-in u:  "firn-cmds/upgrade.rkt")
+         (prefix-in p:  "firn-cmds/platforms.rkt"))
 
 (define ALL-CMDS
   (append r:commands
@@ -37,7 +38,8 @@
           s:commands
           e:commands
           dr:commands
-          u:commands))
+          u:commands
+          p:commands))
 
 (define (cmd-help _args)
   (printf "firn — FirnOS config management\n\n")
