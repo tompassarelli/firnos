@@ -40,7 +40,7 @@ The check is *schema*-based: every option path the module sets must exist in the
 
 - macOS (Apple Silicon assumed; `flake.rkt` defaults the system tuple to `aarch64-darwin`)
 - The Determinate or official Nix installer
-- A friend's user account on the Mac (the username goes in the host config)
+- A macOS user account (the username goes in the host config; nix-darwin attaches home-manager to an existing macOS account, it doesn't create one)
 
 ## Bootstrap
 
