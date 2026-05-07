@@ -85,6 +85,11 @@ in
     default = true;
     description = "Enable wf-recorder";
   };
+  options.myConfig.bundles.desktop.gpu-screen-recorder.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable gpu-screen-recorder";
+  };
   options.myConfig.bundles.desktop.eyedropper.enable = lib.mkOption {
     type = lib.types.bool;
     default = true;
@@ -107,6 +112,7 @@ in
     myConfig.modules.pavucontrol.enable = lib.mkDefault cfg.pavucontrol.enable;
     myConfig.modules.ffmpeg.enable = lib.mkDefault cfg.ffmpeg.enable;
     myConfig.modules.wf-recorder.enable = lib.mkDefault cfg.wf-recorder.enable;
+    myConfig.modules.gpu-screen-recorder.enable = lib.mkDefault cfg.gpu-screen-recorder.enable;
     myConfig.modules.eyedropper.enable = lib.mkDefault cfg.eyedropper.enable;
   };
 }
