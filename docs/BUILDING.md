@@ -2,15 +2,16 @@
 
 FirnOS is authored in [nisp](https://github.com/tompassarelli/nisp) — a Racket
 `#lang` for writing Nix as s-expressions. nisp ships the language plus the
-full validation toolchain (`nisp-validate`, `nisp-extract-schema`,
-`nisp-edit`, `nisp-rename`, `nisp-import`, `nisp-schema`, `nisp-lsp`); FirnOS
-is one consumer of that toolchain.
+full validation toolchain as a single dispatcher (`nisp validate`,
+`nisp extract-schema`, `nisp edit`, `nisp rename`, `nisp import`,
+`nisp schema`) plus the `nisp-lsp` server; FirnOS is one consumer of that
+toolchain.
 
-- **nisp** ([repo](https://github.com/tompassarelli/nisp)) — language + library + CLIs
+- **nisp** ([repo](https://github.com/tompassarelli/nisp)) — language + library + CLI
 - **firnos** (this repo) — modules, bundles, hosts, scaffolding, the `firn` CLI for daily workflow
 
 `scripts/firn-validate` and `scripts/firn-extract-schema` in this repo
-are thin wrappers — they invoke `nisp-validate` / `nisp-extract-schema`
+are thin wrappers — they invoke `nisp validate` / `nisp extract-schema`
 with FirnOS-specific defaults (NixOS target, HM allowlist for the
 home-manager skip-heuristic).
 
@@ -53,7 +54,7 @@ no-op.
 operations. Command implementations live in `scripts/firn-cmds/*.rkt`;
 `firn.rkt` itself is just argv dispatch. Highlights:
 
-- `firn enable <name>` / `firn disable <name>` / `firn status` — syntax-aware host-config edits via `nisp-edit`
+- `firn enable <name>` / `firn disable <name>` / `firn status` — syntax-aware host-config edits via `nisp edit`
 - `firn explain <path | validator-error-line>` — show the schema entry, declarations, and every `.rkt` that references the path. Accepts pasted validator errors directly (extracts the path)
 - `firn doctor` — five-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, validator)
 - `firn upgrade [--dry-run]` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references

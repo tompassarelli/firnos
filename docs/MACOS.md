@@ -5,7 +5,7 @@ FirnOS targets NixOS but supports macOS via [nix-darwin](https://github.com/LnL7
 ## What works on macOS, what doesn't
 
 **Works:**
-- The full nisp DSL and validation toolchain (`nisp-validate`, `nisp-edit`, `nisp-rename`, `nisp-schema`, `nisp-import`, `nisp-lsp`).
+- The full nisp DSL and validation toolchain (`nisp validate`, `nisp edit`, `nisp rename`, `nisp schema`, `nisp import`; `nisp-lsp` server).
 - `firn` CLI commands (`rebuild`, `enable`/`disable`, `explain`, `doctor`, `upgrade`, `scaffold`, …) — `firn rebuild` detects Darwin via `uname` and dispatches to `darwin-rebuild` instead of `nh os switch`.
 - A safelist of cross-platform modules: shell tooling (`fish`, `direnv`, `zoxide`, `starship`, `atuin`), CLI utilities (`gh`, `delta`, `ripgrep`, `fd`, `vim`, `tree`, `btop`, `dust`, `eza`), git config — anything whose body only touches options nix-darwin also exposes (`programs.*`, `environment.systemPackages`, `home-manager.*`).
 

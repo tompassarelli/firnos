@@ -23,7 +23,7 @@ files.
 Three audiences:
 
 - **You want to manage your own NixOS or nix-darwin machine** with source-aware validation and a small workflow CLI → use the [template](#using-firnos-in-your-own-repo).
-- **You want the validation tooling but already have a Nix config** → look at [tompassarelli/nisp](https://github.com/tompassarelli/nisp) directly. The `nisp-validate` / `nisp-extract-schema` / `nisp-import` / `nisp-lsp` CLIs work standalone against any flake.
+- **You want the validation tooling but already have a Nix config** → look at [tompassarelli/nisp](https://github.com/tompassarelli/nisp) directly. The `nisp` dispatcher (`validate` / `extract-schema` / `import` / `schema` / `rename` / `edit`) plus `nisp-lsp` work standalone against any flake.
 - **You want to read a real example of a multi-host Nix config** → browse `hosts/`, `modules/`, `bundles/`. Everything in the repo evaluates and builds.
 
 ## What the checker catches
@@ -96,13 +96,13 @@ On macOS, see [`docs/MACOS.md`](docs/MACOS.md) — FirnOS supports nix-darwin vi
 
 ## Migrating from existing Nix
 
-If you already have a hand-written Nix config, [`nisp-import`](https://github.com/tompassarelli/nisp) (a CLI from the nisp toolchain) converts `.nix` → `.rkt`:
+If you already have a hand-written Nix config, [`nisp import`](https://github.com/tompassarelli/nisp) (a subcommand of the nisp toolchain) converts `.nix` → `.rkt`:
 
 ```bash
-nisp-import path/to/configuration.nix > hosts/my-machine/configuration.rkt
+nisp import path/to/configuration.nix > hosts/my-machine/configuration.rkt
 ```
 
-Round-trip is byte-equivalent for plain Nix; `nisp-import` handles 100% of nixpkgs (2,332 modules) via rnix-parser. Comments are dropped (logged limitation). After importing, you can mix raw Nix and nisp freely — `firn-build` only rewrites `.rkt` files; hand-written `.nix` modules sit alongside generated ones and the flake imports them the same way.
+Round-trip is byte-equivalent for plain Nix; `nisp import` handles 100% of nixpkgs (2,332 modules) via rnix-parser. Comments are dropped (logged limitation). After importing, you can mix raw Nix and nisp freely — `firn-build` only rewrites `.rkt` files; hand-written `.nix` modules sit alongside generated ones and the flake imports them the same way.
 
 ## Authoring config
 
@@ -141,6 +141,14 @@ The pipeline: edit `.rkt` → `firn rebuild` regenerates the `.nix`,
 validates, builds, and tags the resulting generation. Both files are
 committed (the flake reads from the git tree).
 
+> **Heads-up for editors and AI coding agents:** `.rkt` is the
+> source-of-truth, `.nix` is a generated artifact. **Edit the `.rkt`,
+> never the `.nix`** — the next `firn-build` overwrites direct `.nix`
+> edits. If you're an AI agent reaching into this repo via absolute
+> path from another working directory, your CLAUDE.md auto-load
+> probably didn't fire here — read [`claude.md`](claude.md) before
+> making changes.
+
 See [`docs/BUILDING.md`](docs/BUILDING.md) for the full DSL reference.
 
 ## CLI
@@ -167,7 +175,7 @@ firn gen                              current/next generation numbers
 For unambiguous typo cleanup across the whole tree:
 
 ```
-nisp-validate --auto-fix               rewrite unambiguous typos in place
+nisp validate --auto-fix               rewrite unambiguous typos in place
 ```
 
 Compile to a self-contained ~1.3MB binary with `./scripts/firn-build-bin`

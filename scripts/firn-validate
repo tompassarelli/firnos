@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-# firn-validate — thin wrapper around nisp-validate.
+# firn-validate — thin wrapper around `nisp validate`.
 #
-# Configures nisp-validate for this repo's NixOS-specific conventions:
+# Configures the validator for this repo's NixOS-specific conventions:
 #   target:     nixosConfigurations.<hostname>.options
 #   cache-dir:  <repo-root>/.nisp-cache
 #   hm-roots:   programs,home,xdg,accounts,i18n,targets,wayland,qt,gtk,dconf,fonts,nixpkgs
 #
-# Pass-through args go to nisp-validate (e.g. specific files to check).
+# Pass-through args go to `nisp validate` (e.g. specific files to check).
 
 set -euo pipefail
 
 REPO="$(git rev-parse --show-toplevel)"
 NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
 
-if [[ ! -f "$NISP_PATH/bin/nisp-validate" ]]; then
-  echo "firn-validate: nisp-validate not found at $NISP_PATH/bin/nisp-validate" >&2
+if [[ ! -f "$NISP_PATH/bin/nisp" ]]; then
+  echo "firn-validate: nisp dispatcher not found at $NISP_PATH/bin/nisp" >&2
   echo "  clone nisp: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
   echo "  or set NISP_PATH=/path/to/nisp" >&2
   exit 2
 fi
 
-exec racket "$NISP_PATH/bin/nisp-validate" \
+exec racket "$NISP_PATH/bin/nisp" validate \
   --flake "$REPO" \
   --cache-dir "$REPO/.nisp-cache" \
   --hm-roots "programs,home,xdg,accounts,i18n,targets,wayland,qt,gtk,dconf,fonts,nixpkgs" \

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# firn-extract-schema — thin wrapper around nisp-extract-schema.
+# firn-extract-schema — thin wrapper around `nisp extract-schema`.
 #
 # Configures the extractor for this repo:
 #   target: nixosConfigurations.$HOST.options  (default HOST: whiterabbit)
@@ -30,14 +30,14 @@ else
   OUT="$REPO/.nisp-cache/schema.json"
 fi
 
-if [[ ! -x "$NISP_PATH/bin/nisp-extract-schema" ]]; then
-  echo "firn-extract-schema: nisp-extract-schema not found at $NISP_PATH/bin/nisp-extract-schema" >&2
+if [[ ! -x "$NISP_PATH/bin/nisp" ]]; then
+  echo "firn-extract-schema: nisp dispatcher not found at $NISP_PATH/bin/nisp" >&2
   echo "  clone nisp: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
   echo "  or set NISP_PATH=/path/to/nisp" >&2
   exit 2
 fi
 
-exec "$NISP_PATH/bin/nisp-extract-schema" \
+exec "$NISP_PATH/bin/nisp" extract-schema \
   --target "$TARGET" \
   --out "$OUT" \
   --flake "$REPO"

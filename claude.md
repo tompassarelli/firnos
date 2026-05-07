@@ -20,7 +20,7 @@ The *write interface* for this repo is **nisp** — a Racket `#lang` for writing
 
 Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
 
-**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp) — the DSL **and** the full validation toolchain (`nisp-validate`, `nisp-extract-schema`). firn-build expects nisp cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. firnos's `scripts/firn-validate` and `scripts/firn-extract-schema` are thin shims that call the nisp CLIs with FirnOS-specific defaults (NixOS target + HM allowlist).
+**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp) — the DSL **and** the full validation toolchain (single `nisp` dispatcher: `nisp validate`, `nisp extract-schema`, `nisp import`, `nisp schema`, `nisp rename`, `nisp edit`; plus `nisp-lsp`). firn-build expects nisp cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. firnos's `scripts/firn-validate` and `scripts/firn-extract-schema` are thin shims that call the nisp CLI with FirnOS-specific defaults (NixOS target + HM allowlist).
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
@@ -65,10 +65,10 @@ Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, s
 Before adding/changing options, query the schema:
 
 ```bash
-nisp-schema services.openssh.enable               # exact lookup: type, default, enum
-nisp-schema --children services.openssh           # list all sub-options under a prefix
-nisp-schema --search ssh                          # fuzzy substring search
-nisp-schema --json services.openssh.enable        # machine-readable
+nisp schema services.openssh.enable               # exact lookup: type, default, enum
+nisp schema --children services.openssh           # list all sub-options under a prefix
+nisp schema --search ssh                          # fuzzy substring search
+nisp schema --json services.openssh.enable        # machine-readable
 ```
 
 This is the right way to answer "does option X exist?" or "what type does X want?" — far better than `grep schema.json`.
@@ -78,8 +78,8 @@ This is the right way to answer "does option X exist?" or "what type does X want
 To rename an option path across all `.rkt` files (e.g., refactoring `myConfig.modules.foo` → `myConfig.modules.bar`):
 
 ```bash
-nisp-rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
-nisp-rename myConfig.modules.foo myConfig.modules.bar             # apply
+nisp rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
+nisp rename myConfig.modules.foo myConfig.modules.bar             # apply
 firn-validate                                                      # verify clean
 ```
 
@@ -87,22 +87,22 @@ Word-boundary matching prevents partial collisions; string literals are skipped.
 
 ## Programmatic edits to a single file
 
-For surgical edits — replace an option's value, or remove a `(set …)` form — use `nisp-edit`. It's source-text-preserving (uses AST positions to do text-level surgery), so comments and formatting outside the edited region survive intact:
+For surgical edits — replace an option's value, or remove a `(set …)` form — use `nisp edit`. It's source-text-preserving (uses AST positions to do text-level surgery), so comments and formatting outside the edited region survive intact:
 
 ```bash
 # Replace existing value, or insert if not present
-nisp-edit set hosts/whiterabbit/configuration.rkt myConfig.modules.foo.port 8080
-nisp-edit set modules/swap/default.rkt zramSwap.memoryPercent 75
-nisp-edit set hosts/laptop/configuration.rkt services.bluetooth.enable '#t'
-nisp-edit set foo.rkt some.path '(lst 80 443 8080)'
+nisp edit set hosts/whiterabbit/configuration.rkt myConfig.modules.foo.port 8080
+nisp edit set modules/swap/default.rkt zramSwap.memoryPercent 75
+nisp edit set hosts/laptop/configuration.rkt services.bluetooth.enable '#t'
+nisp edit set foo.rkt some.path '(lst 80 443 8080)'
 
 # Remove a (set …) form entirely
-nisp-edit unset hosts/whiterabbit/configuration.rkt myConfig.modules.unused.enable
+nisp edit unset hosts/whiterabbit/configuration.rkt myConfig.modules.unused.enable
 ```
 
 Inserts land inside the surrounding scope (`config-body` for module-files, top-level for host-files) at the right indentation. The value argument is raw nisp source — quote shell-special chars appropriately.
 
-Use `nisp-edit` instead of manual Edit-tool text replacement when:
+Use `nisp edit` instead of manual Edit-tool text replacement when:
 - The change is "set this option to that value" (it's atomic and validates afterwards)
 - You're inserting a new option that may or may not already exist (handles both cases)
 - You're removing a form (handles the trailing-whitespace cleanup)
@@ -181,7 +181,7 @@ The diff phase highlights any **removed** or **type-changed** option paths that 
 ## Auto-fixing typos
 
 ```bash
-nisp-validate --auto-fix
+nisp validate --auto-fix
 ```
 
 Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 with a clear gap to the runner-up). Ambiguous cases are left for human review.
@@ -191,7 +191,7 @@ Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 wi
 If the user has hand-written `.nix` and wants to convert to nisp:
 
 ```bash
-nisp-import file.nix > file.rkt
+nisp import file.nix > file.rkt
 ```
 
 Built on rnix-parser (handles 100% of nixpkgs). Round-trip is byte-equivalent for plain Nix; comments are dropped (logged limitation).
