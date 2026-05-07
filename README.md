@@ -6,10 +6,12 @@
   </picture>
 </p>
 
-**A source-aware NixOS config compiler.** Write your config in a small
-Racket DSL ([nisp](https://github.com/tompassarelli/nisp)); validate
-every option path, type, and enum value against the NixOS options
-schema; emit ordinary Nix.
+**FirnOS is a source-aware authoring layer for NixOS and nix-darwin.**
+It keeps the NixOS module model, but adds a small Racket DSL
+([nisp](https://github.com/tompassarelli/nisp)), scalable
+module/bundle conventions, and pre-eval diagnostics that catch option
+typos and type errors at the original source line — often cutting
+edit/validate loops from ~30 seconds to ~5 seconds.
 
 Both `.rkt` and `.nix` are committed. The flake reads regular generated
 Nix. You're not trapped in a custom language — you can drop down to raw
