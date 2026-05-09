@@ -33,7 +33,6 @@
          (devices (lst "/dev/input/event0"
                        "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
                        "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"))))
-  (enable myConfig.modules.glide)
 
   ;; ============ BUNDLES ============
   (enable myConfig.bundles.terminal

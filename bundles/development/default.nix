@@ -15,6 +15,11 @@ in
     default = true;
     description = "Enable gh";
   };
+  options.myConfig.bundles.development.forgejo-cli.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable forgejo-cli";
+  };
   options.myConfig.bundles.development.delta.enable = lib.mkOption {
     type = lib.types.bool;
     default = true;
@@ -53,6 +58,7 @@ in
   config = lib.mkIf cfg.enable {
     myConfig.modules.git.enable = lib.mkDefault cfg.git.enable;
     myConfig.modules.gh.enable = lib.mkDefault cfg.gh.enable;
+    myConfig.modules.forgejo-cli.enable = lib.mkDefault cfg.forgejo-cli.enable;
     myConfig.modules.delta.enable = lib.mkDefault cfg.delta.enable;
     myConfig.modules.vim.enable = lib.mkDefault cfg.vim.enable;
     myConfig.modules.claude.enable = lib.mkDefault cfg.claude.enable;

@@ -12,6 +12,12 @@
                   ;; TPM emulation (required for Windows 11)
                   (swtpm.enable #t)))))
 
+    ;; IPv4 forwarding so libvirt's NAT (virbr0 → uplink) actually routes.
+    ;; NixOS doesn't flip this on for libvirtd, so the VM gets a DHCP lease
+    ;; on 192.168.122.0/24 but no packets escape virbr0 without it.
+    (set boot.kernel.sysctl
+      (att ("\"net.ipv4.ip_forward\"" 1)))
+
     ;; Virt-manager GUI
     (set programs.virt-manager.enable #t)
 

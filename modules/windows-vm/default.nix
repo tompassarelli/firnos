@@ -14,6 +14,9 @@ in
         swtpm.enable = true;
       };
     };
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+    };
     programs.virt-manager.enable = true;
     users.users = {
       ${username}.extraGroups = [ "libvirtd" ];
