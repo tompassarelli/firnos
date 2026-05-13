@@ -75,6 +75,16 @@ in
     default = false;
     description = "Set LibreWolf as default browser";
   };
+  options.myConfig.bundles.browsers.gjoa.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = "Enable Gjoa (Firefox fork)";
+  };
+  options.myConfig.bundles.browsers.gjoa.default = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = "Set Gjoa as default browser";
+  };
   config = lib.mkIf cfg.enable {
     myConfig.modules.firefox.enable = lib.mkDefault cfg.firefox.enable;
     myConfig.modules.firefox.palefox.enable = lib.mkDefault cfg.firefox.palefox.enable;
@@ -90,5 +100,7 @@ in
     myConfig.modules.zen-browser.default = lib.mkDefault cfg.zen-browser.default;
     myConfig.modules.librewolf.enable = lib.mkDefault cfg.librewolf.enable;
     myConfig.modules.librewolf.default = lib.mkDefault cfg.librewolf.default;
+    myConfig.modules.gjoa.enable = lib.mkDefault cfg.gjoa.enable;
+    myConfig.modules.gjoa.default = lib.mkDefault cfg.gjoa.default;
   };
 }

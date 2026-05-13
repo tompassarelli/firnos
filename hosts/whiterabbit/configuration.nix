@@ -13,6 +13,7 @@
   myConfig.modules.swap.enable = true;
   myConfig.modules.auto-upgrade.enable = true;
   myConfig.modules.framework.enable = true;
+  myConfig.modules.framework13-mic.enable = true;
   myConfig.modules.fwupd.enable = true;
   myConfig.modules.pipewire.enable = true;
   myConfig.modules.bluetooth.enable = true;
@@ -60,6 +61,7 @@
     chrome.enable = true;
     zen-browser.enable = true;
     qutebrowser.enable = true;
+    gjoa.enable = true;
   };
   myConfig.bundles.gaming = {
     enable = true;
@@ -80,6 +82,7 @@
   myConfig.bundles.productivity = {
     enable = true;
     obsidian.enable = true;
+    anytype.enable = true;
     todoist.enable = false;
     pomodoro.enable = false;
     libreoffice.enable = false;

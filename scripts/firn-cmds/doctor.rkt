@@ -9,6 +9,7 @@
 ;;   3. Schema cache freshness (vs flake.lock mtime)
 ;;   4. Orphaned modules (not enabled by any host or bundle)
 ;;   5. Validator clean
+;;   6. Flake inputs use no absolute paths (pure-eval safe)
 ;;
 ;; Exits 0 if all pass, 1 if any fail.
 
@@ -130,6 +131,30 @@
                            (map (λ (m) (string-append "  " m))
                                 (reverse orphans))))]))
 
+(define (check-flake-input-purity)
+  ;; Flake inputs declared as "path:/abs/..." resolve to an absolute filesystem
+  ;; path. Pure-eval (default for flakes) forbids reading outside the flake's
+  ;; own source tree, so any module that *references* such an input will fail
+  ;; the rebuild with: "access to absolute path '/...' is forbidden in pure
+  ;; evaluation mode". The breakage is latent until the input is referenced,
+  ;; which is why firn-validate (schema-only) can't see it.
+  (define flake-path (in-repo "flake.rkt"))
+  (cond
+    [(not (file-exists? flake-path)) (values #t '())]
+    [else
+     (define lines (regexp-split #rx"\n" (file->string flake-path)))
+     (define offenders
+       (for/list ([line (in-list lines)]
+                  [n (in-naturals 1)]
+                  #:when (regexp-match? #px"\"path:/[^\"]+\"" line))
+         (format "flake.rkt:~a: ~a" n (regexp-replace #rx"^\\s+" line ""))))
+     (cond
+       [(null? offenders) (values #t '())]
+       [else (values #f
+                     (cons "absolute path: inputs break pure eval when referenced:"
+                           (append offenders
+                                   (list "fix: publish to a git remote (github:owner/repo), or override locally with --override-input"))))])]))
+
 (define (check-validator)
   (define out (open-output-string))
   (define err (open-output-string))
@@ -155,6 +180,7 @@
      (check-status "schema cache is fresh" check-schema-cache)
      (check-status "darwin schema cache is fresh (if applicable)" check-darwin-schema-cache)
      (check-status "no orphaned (unreferenced) modules" check-orphaned-modules)
+     (check-status "flake inputs are pure-eval safe (no absolute paths)" check-flake-input-purity)
      (check-status "validator passes" check-validator)))
   (define total (length passes))
   (define passed (length (filter values passes)))

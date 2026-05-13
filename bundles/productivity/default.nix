@@ -10,6 +10,11 @@ in
     default = true;
     description = "Enable obsidian";
   };
+  options.myConfig.bundles.productivity.anytype.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable anytype";
+  };
   options.myConfig.bundles.productivity.todoist.enable = lib.mkOption {
     type = lib.types.bool;
     default = true;
@@ -37,6 +42,7 @@ in
   };
   config = lib.mkIf cfg.enable {
     myConfig.modules.obsidian.enable = lib.mkDefault cfg.obsidian.enable;
+    myConfig.modules.anytype.enable = lib.mkDefault cfg.anytype.enable;
     myConfig.modules.todoist.enable = lib.mkDefault cfg.todoist.enable;
     myConfig.modules.pomodoro.enable = lib.mkDefault cfg.pomodoro.enable;
     myConfig.modules.hugo.enable = lib.mkDefault cfg.hugo.enable;

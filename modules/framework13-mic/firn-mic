@@ -1,0 +1,342 @@
+#!/usr/bin/env bash
+# firn-mic — Framework 13 AMD AI 300 microphone administrator.
+#
+# Why this exists
+# ---------------
+# The Realtek ALC285 codec on Framework 13 AMD AI 300 has multiple internal
+# mic pins, but only some are physically wired on this hardware. UCM exposes
+# them as profiles, and the WirePlumber default ("HiFi (Headset, Mic1, Speaker)")
+# picks the WRONG subset:
+#   * "Headset"        = 3.5mm jack mic (works only when something is plugged in)
+#   * "Mic1"           = unconnected pin on Framework 13 AMD — records silence
+#   * "Mic2"           = the actual internal laptop mic — NOT exposed by default
+# This script forces the profile that exposes Mic2 and makes it the default
+# source. AirPods auto-priority via WirePlumber's bluetooth-autoswitch is
+# unaffected; this only fixes the fallback when no Bluetooth mic is connected.
+
+set -euo pipefail
+
+# Stable matcher for the ALC285 codec on this hardware. Won't match the HDMI
+# audio controller (which is on a different PCI path).
+CARD_PATH_MATCH="pci-0000_c1_00.6"
+
+# Profile we want when no headset is plugged. Has Speaker output + Mic1 + Mic2.
+PROFILE_NO_HEADSET="HiFi (Mic1, Mic2, Speaker)"
+
+# Profile we want when 3.5mm headphones are plugged in. Has Headphones + Mic1
+# + Mic2. (Note: jack-detection auto-flips profile availability; WirePlumber
+# normally re-selects when this becomes available.)
+PROFILE_WITH_HEADPHONES="HiFi (Headphones, Mic1, Mic2)"
+
+# Description substring of the desired source (Mic2's label in this UCM).
+WANTED_SOURCE_DESC="Internal Stereo Microphone"
+
+# Default input volume on first ensure. The ALC285 + DMIC analog chain on this
+# hardware runs hot — at vol=1.0 even ambient room noise rail-clips the ADC.
+# 0.40 (perceptual / cubic) ≈ 0.064 linear; ambient sits around 30% peak,
+# voice has plenty of headroom. Override with `firn-mic vol N`.
+SAFE_VOLUME="0.40"
+
+usage() {
+    cat <<'EOF'
+firn-mic — Framework 13 microphone administrator
+
+USAGE
+  firn-mic [status]      Show card, profile, sources, default, volumes.
+  firn-mic ensure        Idempotently pin the right UCM profile and set
+                         Internal Stereo Mic as default. Sets volume to a
+                         non-clipping default (0.40) ONLY if it's still at
+                         the unconfigured 1.00 — your manual adjustments
+                         persist. Run on login by systemd-user.
+  firn-mic vol N         Set the default source's volume to N (0..1).
+                         The ADC on this hardware clips above ~0.55, so
+                         keep N modest and use `firn-mic test` to verify.
+  firn-mic test [N]      Record N seconds (default 2) from the default
+                         source and print peak/RMS to gauge whether the mic
+                         is actually capturing signal.
+  firn-mic profiles      List every UCM profile available on the Ryzen card.
+  firn-mic switch NAME   Force a specific profile by name (substring match).
+                         Example: firn-mic switch "Mic1, Mic2"
+  firn-mic doctor        Long-form explanation of root cause + post-fix
+                         verification. Read this once; never debug from
+                         scratch again.
+  firn-mic -h | --help   This message.
+
+ENVIRONMENT
+  FIRN_MIC_QUIET=1       Suppress non-error output (used by systemd unit).
+EOF
+}
+
+log()  { [[ "${FIRN_MIC_QUIET:-0}" == "1" ]] || echo "$*"; }
+warn() { echo "firn-mic: $*" >&2; }
+die()  { warn "$*"; exit 1; }
+
+# ---------- pw-dump helpers (JSON over jq, never parse wpctl text) ----------
+
+dump() { pw-dump; }
+
+# Find the Ryzen ALC285 card object id. Stable matcher: device.api=alsa AND
+# device.name contains the codec's PCI BDF (object.path uses enumeration
+# order like "alsa:acp:Generic_1" which is NOT stable).
+find_card_id() {
+    dump | jq -r --arg path "$CARD_PATH_MATCH" '
+        .[] | select(.info.props["media.class"] // "" | startswith("Audio/Device"))
+            | select(.info.props["device.api"] == "alsa")
+            | select((.info.props["device.name"] // "") | contains($path))
+            | .id' | head -1
+}
+
+# Return JSON of profiles: [{index, name, available}, ...]
+profiles_json() {
+    local card_id="$1"
+    dump | jq --argjson id "$card_id" '
+        .[] | select(.id == $id)
+            | .info.params.EnumProfile
+            | map({index, name, description, available})'
+}
+
+active_profile_json() {
+    local card_id="$1"
+    dump | jq --argjson id "$card_id" '
+        .[] | select(.id == $id)
+            | (.info.params.Profile[0] // null)
+            | if . == null then null
+              else {index, name, description}
+              end'
+}
+
+# Find a source node id by description substring match.
+find_source_id() {
+    local needle="$1"
+    dump | jq -r --arg needle "$needle" '
+        .[] | select(.info.props["media.class"] == "Audio/Source")
+            | select((.info.props["node.description"] // "") | contains($needle))
+            | .id' | head -1
+}
+
+# ---------- subcommands ----------
+
+cmd_status() {
+    local card_id; card_id=$(find_card_id || true)
+    if [[ -z "$card_id" ]]; then
+        die "no Ryzen ALC285 card found (looked for object.path containing $CARD_PATH_MATCH)"
+    fi
+
+    echo "Card id: $card_id"
+    dump | jq -r --argjson id "$card_id" '
+        .[] | select(.id == $id)
+            | "  description: \(.info.props["device.description"])"
+            + "\n  device.name: \(.info.props["device.name"])"
+            + "\n  api.path:    \(.info.props["object.path"])"'
+
+    echo
+    echo "Active profile:"
+    active_profile_json "$card_id" | jq -r '"  #\(.index) \(.name)  — \(.description)"'
+
+    echo
+    echo "Sources visible to apps:"
+    dump | jq -r '
+        .[] | select(.info.props["media.class"] == "Audio/Source")
+            | "  id=\(.id)  \(.info.props["node.description"])  vol=\((.info.params.Props[0].channelVolumes // [0])[0] | (. * 1000 | round / 1000))"'
+
+    echo
+    echo "Current default source (what apps record from):"
+    local default_line
+    default_line=$(wpctl status 2>/dev/null | sed -n '/Sources:/,/Filters:/p' | grep -F '*' | head -1 || true)
+    if [[ -n "$default_line" ]]; then
+        echo "  $default_line"
+    else
+        echo "  (none — pipewire might not be ready, or no default set)"
+    fi
+}
+
+cmd_profiles() {
+    local card_id; card_id=$(find_card_id) || die "no Ryzen card"
+    profiles_json "$card_id" | jq -r '.[]
+        | "  #\(.index)  \(.name)\n        \(.description)\n        available=\(.available)"'
+}
+
+# Set profile by name (substring match against profile names) on the Ryzen
+# card. Echoes the chosen index for caller use.
+set_profile_by_name() {
+    local needle="$1"
+    local card_id; card_id=$(find_card_id) || return 1
+    local idx
+    idx=$(profiles_json "$card_id" | jq -r --arg needle "$needle" '
+        [.[] | select(.name | contains($needle))]
+        | sort_by(if .available == "yes" then 0 else 1 end)
+        | (.[0].index // empty)')
+    [[ -z "$idx" ]] && { warn "no profile matching: $needle"; return 1; }
+    log "setting card $card_id to profile #$idx ($needle)"
+    wpctl set-profile "$card_id" "$idx"
+    echo "$idx"
+}
+
+cmd_ensure() {
+    local card_id; card_id=$(find_card_id || true)
+    if [[ -z "$card_id" ]]; then
+        warn "no Ryzen card found yet (pipewire still starting?)"
+        return 0   # don't fail systemd unit
+    fi
+
+    # Pick profile based on whether headphones are physically plugged in.
+    # Headphones presence flips Profile #3 (Headphones, Mic1, Mic2) availability
+    # to "yes". Default to the no-headphones profile.
+    local target="$PROFILE_NO_HEADSET"
+    local headphones_avail
+    headphones_avail=$(profiles_json "$card_id" | jq -r --arg n "Headphones, Mic1, Mic2" '
+        [.[] | select(.name | contains($n))][0].available // "unknown"')
+    if [[ "$headphones_avail" == "yes" ]]; then
+        target="$PROFILE_WITH_HEADPHONES"
+    fi
+
+    local active_name
+    active_name=$(active_profile_json "$card_id" | jq -r '.name')
+    if [[ "$active_name" != "$target" ]]; then
+        log "switching profile: $active_name → $target"
+        set_profile_by_name "$target" >/dev/null
+        sleep 0.5
+    else
+        log "profile already correct: $active_name"
+    fi
+
+    # Make Mic2 the default source.
+    local mic_id; mic_id=$(find_source_id "$WANTED_SOURCE_DESC" || true)
+    if [[ -z "$mic_id" ]]; then
+        warn "Internal Stereo Microphone not found after profile switch; aborting"
+        return 0
+    fi
+    wpctl set-default "$mic_id"
+
+    # Reset volume to a non-clipping default ONLY if it's still at the
+    # "unconfigured" sentinel of 1.00. Preserves user adjustments across
+    # reboots — `wpctl set-volume` and pavucontrol changes survive.
+    local cur_vol
+    cur_vol=$(wpctl get-volume "$mic_id" | awk '{print $2}')
+    if [[ "$cur_vol" == "1.00" ]]; then
+        wpctl set-volume "$mic_id" "$SAFE_VOLUME"
+        log "Internal Stereo Microphone (id=$mic_id) → default @ vol $SAFE_VOLUME (was 1.00; codec rail-clips at unity)"
+    else
+        log "Internal Stereo Microphone (id=$mic_id) → default; volume preserved at $cur_vol"
+    fi
+}
+
+cmd_vol() {
+    local v="${1:-}"
+    [[ -z "$v" ]] && die "usage: firn-mic vol <0..1>"
+    wpctl set-volume @DEFAULT_SOURCE@ "$v"
+    log "default source vol → $v"
+}
+
+cmd_test() {
+    local secs="${1:-2}"
+    local tmp
+    tmp=$(mktemp --suffix=.raw)
+    log "recording ${secs}s from default source..."
+    timeout "$secs" pw-record --channels=1 --format=s16 --rate=48000 "$tmp" 2>/dev/null || true
+    if [[ ! -s "$tmp" ]]; then
+        rm -f "$tmp"
+        die "no samples captured (pipewire not running, or no default source)"
+    fi
+    python3 - "$tmp" <<'PY'
+import struct, sys
+d = open(sys.argv[1], "rb").read()
+n = len(d) // 2
+s = struct.unpack(f"<{n}h", d)
+peak = max(abs(x) for x in s)
+rms  = (sum(x*x for x in s) / n) ** 0.5
+pct  = 100 * peak / 32767
+print(f"  samples={n}  peak={peak}/32767 ({pct:.2f}%)  rms={rms:.1f}")
+if pct < 1.0:
+    print("  → noise floor only. mic isn't capturing real audio.")
+elif pct < 10.0:
+    print("  → very quiet. either room is silent or input gain is low.")
+else:
+    print("  → mic is capturing real signal.")
+PY
+    rm -f "$tmp"
+}
+
+cmd_switch() {
+    local needle="${1:-}"
+    [[ -z "$needle" ]] && die "usage: firn-mic switch <name-substring>"
+    set_profile_by_name "$needle"
+}
+
+cmd_doctor() {
+    cat <<'EOF'
+firn-mic doctor — root cause and fix reference
+
+THE PROBLEM
+  On Framework 13 AMD AI 300 + NixOS, the laptop's built-in mic appears
+  not to work. WirePlumber lists "Digital Microphone" and "Headset Mono
+  Microphone" as the only options, and neither captures audio when no
+  headset is plugged in.
+
+ROOT CAUSE
+  The Realtek ALC285 codec exposes multiple mic input pins via UCM
+  (Use Case Manager) profiles. Each profile picks a SUBSET of inputs
+  the codec's ADC can route at once. The default WirePlumber-selected
+  profile is:
+      HiFi (Headset, Mic1, Speaker)
+  which exposes:
+      [In] Headset = the 3.5mm jack mic
+      [In] Mic1    = "Digital Microphone" → unconnected pin on this HW
+  The actual built-in laptop mic is wired to the codec's "Mic2" pin,
+  which is ONLY exposed in profiles like:
+      HiFi (Mic1, Mic2, Speaker)            ← no headphones plugged in
+      HiFi (Headphones, Mic1, Mic2)         ← when 3.5mm headphones plugged
+  Both expose Mic2 = "Internal Stereo Microphone", the working mic.
+
+THE FIX
+  This module forces WirePlumber to pin one of the Mic2-exposing profiles
+  on the ALC285 card and makes "Internal Stereo Microphone" the default
+  source. Two-layer durability:
+    1. WirePlumber rule in /etc/wireplumber/wireplumber.conf.d/
+       biases the policy at device-creation time.
+    2. systemd-user `firn-mic-ensure.service` runs after pipewire on
+       login as belt-and-suspenders, guaranteeing correct state even
+       if the WP policy choice drifts.
+
+INPUT GAIN GOTCHA
+  This codec's analog input chain runs hot — at vol=1.0 (perceptual)
+  even ambient room noise saturates the ADC (peak rail-clips at 32768).
+  ensure sets a sane default of 0.40 (gives ~30% peak on ambient, leaves
+  voice headroom) ONLY if the volume is at the "unconfigured" sentinel
+  of 1.00, so manual `wpctl set-volume` / pavucontrol adjustments persist
+  across reboots. Use `firn-mic vol N` for ad-hoc tweaks; verify with
+  `firn-mic test`.
+
+BLUETOOTH (AirPods etc.)
+  Untouched. WirePlumber's bluetooth-autoswitch policy already auto-
+  promotes a connected BT mic to default; on disconnect it falls back
+  to whatever has highest priority — which, after this fix, is Mic2.
+
+INSPECT
+  firn-mic status            current state at a glance
+  firn-mic profiles          all UCM profiles on the Ryzen card
+  firn-mic test 3            record 3s and check capture level
+
+RECOVER
+  firn-mic ensure            idempotent re-application of the fix
+  firn-mic switch "Mic1, Mic2, Speaker"   force a specific profile
+EOF
+}
+
+main() {
+    local cmd="${1:-status}"; shift || true
+    case "$cmd" in
+        ""|status)      cmd_status "$@" ;;
+        ensure)         cmd_ensure "$@" ;;
+        vol|volume)     cmd_vol "$@" ;;
+        test)           cmd_test "$@" ;;
+        profiles)       cmd_profiles "$@" ;;
+        switch)         cmd_switch "$@" ;;
+        doctor)         cmd_doctor "$@" ;;
+        -h|--help|help) usage ;;
+        --quiet)        FIRN_MIC_QUIET=1 cmd_ensure "$@" ;;
+        *)              warn "unknown subcommand: $cmd"; usage; exit 2 ;;
+    esac
+}
+
+main "$@"

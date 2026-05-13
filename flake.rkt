@@ -20,11 +20,12 @@
     (zen-browser       "github:0xc000022070/zen-browser-flake" (follows nixpkgs))
     (elephant          "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73")
     (walker            "github:abenz1267/walker" (follows elephant))
-    (palefox           "path:/home/tom/code/palefox" (flake #t)))
+    (palefox           "path:/home/tom/code/palefox" (flake #t))
+    (gjoa              "github:tompassarelli/gjoa"))
 
   (outputs (self nixpkgs nixpkgs-unstable nixpkgs-master home-manager nix-darwin
                  stylix sops-nix nur lem elephant walker kanata-git glide quickshell
-                 zen-browser palefox)
+                 zen-browser palefox gjoa)
     (let-in
       ([firnModules (p "./modules")]
        [firnBundles (p "./bundles")]
@@ -55,7 +56,8 @@
                                 (lem lem)
                                 (quickshell quickshell)
                                 (zen-browser zen-browser)
-                                (palefox palefox)))
+                                (palefox palefox)
+                                (gjoa gjoa)))
                       (flakeRoot self))
                     extraSpecialArgs))
                 (modules
@@ -122,7 +124,8 @@
                                           (lem lem)
                                           (quickshell quickshell)
                                           (zen-browser zen-browser)
-                                          (palefox palefox))))
+                                          (palefox palefox)
+                                          (gjoa gjoa))))
                               extraSpecialArgs))
                           (home-of-bare config.myConfig.modules.users.username
                             (set home.stateVersion config.myConfig.modules.system.stateVersion)
@@ -268,7 +271,8 @@
                     (att
                       (inputs (att
                                 (nur nur)
-                                (palefox palefox)))
+                                (palefox palefox)
+                                (gjoa gjoa)))
                       (flakeRoot self))
                     extraSpecialArgs))
                 (modules
@@ -365,7 +369,8 @@
                                   (att
                                     (inputs (att
                                               (nur nur)
-                                              (palefox palefox))))
+                                              (palefox palefox)
+                                              (gjoa gjoa))))
                                   extraSpecialArgs))
                               (home-of-bare config.myConfig.modules.users.username
                                 ;; home-manager defaults home.username and

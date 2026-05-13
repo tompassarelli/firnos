@@ -19,6 +19,7 @@
 
   ;; ============ HARDWARE ============
   (enable myConfig.modules.framework
+          myConfig.modules.framework13-mic
           myConfig.modules.fwupd
           myConfig.modules.pipewire
           myConfig.modules.bluetooth
@@ -64,7 +65,8 @@
          (firefox.palefox.enable #t)
          (chrome.enable #t)
          (zen-browser.enable #t)
-         (qutebrowser.enable #t)))
+         (qutebrowser.enable #t)
+         (gjoa.enable #t)))
   (set myConfig.bundles.gaming
     (att (enable #t)
          (lutris.enable #t)
@@ -81,6 +83,7 @@
   (set myConfig.bundles.productivity
     (att (enable #t)
          (obsidian.enable #t)
+         (anytype.enable #t)
          (todoist.enable #f)
          (pomodoro.enable #f)
          (libreoffice.enable #f)))

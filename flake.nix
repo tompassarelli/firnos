@@ -26,8 +26,9 @@
     walker.inputs.elephant.follows = "elephant";
     palefox.url = "path:/home/tom/code/palefox";
     palefox.flake = true;
+    gjoa.url = "github:tompassarelli/gjoa";
   };
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, ... }: let
+  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, gjoa, ... }: let
     firnModules = ./modules;
     firnBundles = ./bundles;
     firnBundlesDarwin = ./bundles-darwin;
@@ -44,6 +45,7 @@
           quickshell = quickshell;
           zen-browser = zen-browser;
           palefox = palefox;
+          gjoa = gjoa;
         };
         flakeRoot = self;
       } // extraSpecialArgs;
@@ -76,6 +78,7 @@
               quickshell = quickshell;
               zen-browser = zen-browser;
               palefox = palefox;
+              gjoa = gjoa;
             };
           } // extraSpecialArgs;
           home-manager.users.${config.myConfig.modules.users.username} = {
@@ -224,6 +227,7 @@
         inputs = {
           nur = nur;
           palefox = palefox;
+          gjoa = gjoa;
         };
         flakeRoot = self;
       } // extraSpecialArgs;
@@ -279,6 +283,7 @@
               inputs = {
                 nur = nur;
                 palefox = palefox;
+                gjoa = gjoa;
               };
             } // extraSpecialArgs;
             home-manager.users.${config.myConfig.modules.users.username} = {

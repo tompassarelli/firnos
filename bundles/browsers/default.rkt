@@ -18,7 +18,9 @@
     (zen-browser.enable      (mkopt #:type (t-bool) #:default #f #:desc "Enable Zen Browser"))
     (zen-browser.default     (mkopt #:type (t-bool) #:default #f #:desc "Set Zen Browser as default browser"))
     (librewolf.enable        (mkopt #:type (t-bool) #:default #f #:desc "Enable LibreWolf"))
-    (librewolf.default       (mkopt #:type (t-bool) #:default #f #:desc "Set LibreWolf as default browser")))
+    (librewolf.default       (mkopt #:type (t-bool) #:default #f #:desc "Set LibreWolf as default browser"))
+    (gjoa.enable             (mkopt #:type (t-bool) #:default #f #:desc "Enable Gjoa (Firefox fork)"))
+    (gjoa.default            (mkopt #:type (t-bool) #:default #f #:desc "Set Gjoa as default browser")))
   (config-body
     (set myConfig.modules.firefox.enable          (mkdefault cfg.firefox.enable))
     (set myConfig.modules.firefox.palefox.enable  (mkdefault cfg.firefox.palefox.enable))
@@ -33,4 +35,6 @@
     (set myConfig.modules.zen-browser.enable      (mkdefault cfg.zen-browser.enable))
     (set myConfig.modules.zen-browser.default     (mkdefault cfg.zen-browser.default))
     (set myConfig.modules.librewolf.enable        (mkdefault cfg.librewolf.enable))
-    (set myConfig.modules.librewolf.default       (mkdefault cfg.librewolf.default))))
+    (set myConfig.modules.librewolf.default       (mkdefault cfg.librewolf.default))
+    (set myConfig.modules.gjoa.enable             (mkdefault cfg.gjoa.enable))
+    (set myConfig.modules.gjoa.default            (mkdefault cfg.gjoa.default))))
