@@ -57,11 +57,9 @@
   myConfig.bundles.doom-emacs.enable = true;
   myConfig.bundles.browsers = {
     enable = true;
-    firefox.palefox.enable = true;
     chrome.enable = true;
     zen-browser.enable = true;
     qutebrowser.enable = true;
-    gjoa.enable = true;
   };
   myConfig.bundles.gaming = {
     enable = true;

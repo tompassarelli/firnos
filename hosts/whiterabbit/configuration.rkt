@@ -62,11 +62,15 @@
           myConfig.bundles.doom-emacs)
   (set myConfig.bundles.browsers
     (att (enable #t)
-         (firefox.palefox.enable #t)
+         ;; palefox: disabled — replaced by gjoa (and its path:/ input trips pure eval)
+         ;; (firefox.palefox.enable #t)
          (chrome.enable #t)
          (zen-browser.enable #t)
          (qutebrowser.enable #t)
-         (gjoa.enable #t)))
+         ;; gjoa: disabled — gjoa flake.nix build fails on --with-wasi-sysroot
+         ;; (re-enable after fixing gjoa's mozconfig / buildMozillaMach override)
+         ;; (gjoa.enable #t)
+         ))
   (set myConfig.bundles.gaming
     (att (enable #t)
          (lutris.enable #t)
