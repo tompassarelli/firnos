@@ -6,7 +6,7 @@
          racket/system
          "util.rkt")
 
-(provide cmd-diff resolve-rkt-source commands)
+(provide resolve-rkt-source node-edges)
 
 (define (resolve-rkt-source name)
   ;; Resolve a user-facing name to a .rkt path. Accepts:
@@ -80,10 +80,10 @@
         (delete-file tmp)
         'different])]))
 
-(define (cmd-diff args)
+(define (handle-repo-diff leaf)
   (define targets
     (cond
-      [(null? args)
+      [(equal? leaf "all")
        (sort
         (for/list ([f (in-directory ROOT)]
                    #:when (let ([s (path->string f)])
@@ -102,13 +102,10 @@
           f)
         path<?)]
       [else
-       (filter-map
-        (λ (a)
-          (define r (resolve-rkt-source a))
-          (cond
-            [r r]
-            [else (eprintf "firn diff: cannot resolve ~a\n" a) #f]))
-        args)]))
+       (define r (resolve-rkt-source leaf))
+       (cond
+         [r (list r)]
+         [else (eprintf "firn diff: cannot resolve ~a\n" leaf) (exit 1)])]))
   (define same 0)
   (define diff 0)
   (define err 0)
@@ -120,7 +117,8 @@
   (printf "\nfirn diff: ~a unchanged, ~a differ, ~a error(s)\n" same diff err)
   (exit (if (or (> diff 0) (> err 0)) 1 0)))
 
-(define commands
-  (list (cmd "diff" "[target...]"
-             "re-emit Nix from .rkt and diff vs committed .nix"
-             cmd-diff)))
+(define node-edges
+  (list
+   (walk-edge "repo" "diff" "<target>|all" 'all
+              handle-repo-diff
+              "re-emit Nix from .rkt and diff vs committed .nix")))

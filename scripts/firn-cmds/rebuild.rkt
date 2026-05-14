@@ -6,16 +6,17 @@
          racket/system
          "util.rkt")
 
-(provide cmd-rebuild commands)
+(provide node-edges)
 
-(define (cmd-rebuild args)
-  (define-values (skip-checks? rest-args)
-    (let loop ([acc '()] [skip? #f] [args args])
-      (cond
-        [(null? args) (values skip? (reverse acc))]
-        [(equal? (car args) "--skip-checks") (loop acc #t (cdr args))]
-        [else (loop (cons (car args) acc) skip? (cdr args))])))
-  (define host (and (pair? rest-args) (car rest-args)))
+(define (handle-host-rebuild leaf)
+  ;; leaf may be "current" or "<host>" or "<host>+skip" (legacy alias sentinel)
+  (define-values (host-token skip-checks?)
+    (cond
+      [(regexp-match #rx"^([^+]+)\\+skip$" leaf)
+       => (λ (m) (values (cadr m) #t))]
+      [else (values leaf #f)]))
+  (define host (cond [(equal? host-token "current") (current-hostname)]
+                     [else host-token]))
 
   (unless skip-checks?
     ;; Step 1: regenerate any out-of-date .nix from .rkt sources.
@@ -69,7 +70,8 @@
          (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD")
          (printf "Tagged: gen-~a\n" gen)))]))
 
-(define commands
-  (list (cmd "rebuild" "[host] [--skip-checks]"
-             "firn-build → validate → nixos-rebuild → tag generation"
-             cmd-rebuild)))
+(define node-edges
+  (list
+   (walk-edge "host" "rebuild" "<host>" 'current-host
+              handle-host-rebuild
+              "firn-build → validate → nixos-rebuild → tag generation")))

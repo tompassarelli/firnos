@@ -5,7 +5,7 @@
          racket/path
          "util.rkt")
 
-(provide cmd-list cmd-refs host-of-path bundle-of-path commands
+(provide host-of-path bundle-of-path node-edges
          direct-references-by host-bundles host-modules bundle-modules
          live-modules live-bundles)
 
@@ -152,83 +152,109 @@
                           h))
 (define (in-set s) (in-hash-keys s))
 
-;; ---------- the cmd ----------
+;; ---------- handlers ----------
 
-(define (cmd-list args)
-  (define flag (and (pair? args) (car args)))
-  (cond
-    [(equal? flag "--used")
-     (define live-mods (live-modules))
-     (define live-bs (live-bundles))
-     (printf "Used bundles (~a):\n" (length live-bs))
-     (for ([b (in-list live-bs)])
-       (define h (sort
-                  (filter (λ (host) (member b (host-bundles host)))
-                          (hosts))
-                  string<?))
-       (printf "  ~a  (~a)\n" b
-               (cond [(pair? h) (string-join h ", ")]
-                     [else "via another bundle"])))
-     (printf "\nUsed modules (~a):\n" (length live-mods))
-     (for ([m (in-list live-mods)])
-       (define direct-h (filter (λ (host) (member m (host-modules host)))
-                                (hosts)))
-       (define via-b (filter (λ (b) (member m (bundle-modules b)))
-                             (live-bundles)))
-       (define sources
-         (append direct-h (map (λ (b) (string-append "via " b)) via-b)))
-       (printf "  ~a  (~a)\n" m
-               (cond [(pair? sources) (string-join sources ", ")]
-                     [else "—"])))]
-    [(equal? flag "--unused")
-     (define live-mods (list->set (live-modules)))
-     (define live-bs (list->set (live-bundles)))
-     (define dead-bs (sort (filter (λ (b) (not (hash-has-key? live-bs b))) (bundles)) string<?))
-     (define dead-mods (sort (filter (λ (m) (not (hash-has-key? live-mods m))) (modules)) string<?))
-     (printf "Unreferenced bundles (~a):\n" (length dead-bs))
-     (for ([b (in-list dead-bs)]) (printf "  ~a\n" b))
-     (printf "\nUnreferenced modules (~a):\n" (length dead-mods))
-     (for ([m (in-list dead-mods)]) (printf "  ~a\n" m))]
-    [else
-     (define bs (bundles))
+(define (print-used-modules)
+  (define live-mods (live-modules))
+  (printf "Used modules (~a):\n" (length live-mods))
+  (for ([m (in-list live-mods)])
+    (define direct-h (filter (λ (host) (member m (host-modules host))) (hosts)))
+    (define via-b (filter (λ (b) (member m (bundle-modules b))) (live-bundles)))
+    (define sources
+      (append direct-h (map (λ (b) (string-append "via " b)) via-b)))
+    (printf "  ~a  (~a)\n" m
+            (cond [(pair? sources) (string-join sources ", ")]
+                  [else "—"]))))
+
+(define (print-used-bundles)
+  (define live-bs (live-bundles))
+  (printf "Used bundles (~a):\n" (length live-bs))
+  (for ([b (in-list live-bs)])
+    (define h (sort (filter (λ (host) (member b (host-bundles host))) (hosts))
+                    string<?))
+    (printf "  ~a  (~a)\n" b
+            (cond [(pair? h) (string-join h ", ")]
+                  [else "via another bundle"]))))
+
+(define (print-unused-modules)
+  (define live (list->set (live-modules)))
+  (define dead (sort (filter (λ (m) (not (hash-has-key? live m))) (modules)) string<?))
+  (printf "Unreferenced modules (~a):\n" (length dead))
+  (for ([m (in-list dead)]) (printf "  ~a\n" m)))
+
+(define (print-unused-bundles)
+  (define live (list->set (live-bundles)))
+  (define dead (sort (filter (λ (b) (not (hash-has-key? live b))) (bundles)) string<?))
+  (printf "Unreferenced bundles (~a):\n" (length dead))
+  (for ([b (in-list dead)]) (printf "  ~a\n" b)))
+
+(define (handle-module-list leaf)
+  (case (string->symbol leaf)
+    [(all)
      (define ms (modules))
-     (printf "Bundles (~a):\n" (length bs))
-     (for ([b (in-list bs)]) (printf "  myConfig.bundles.~a\n" b))
-     (printf "\nModules (~a):\n" (length ms))
-     (for ([m (in-list ms)]) (printf "  myConfig.modules.~a\n" m))]))
-
-(define (cmd-refs args)
-  (cond
-    [(null? args) (eprintf "Usage: firn refs <name>\n") (exit 1)]
+     (printf "Modules (~a):\n" (length ms))
+     (for ([m (in-list ms)]) (printf "  myConfig.modules.~a\n" m))]
+    [(used)   (print-used-modules)]
+    [(unused) (print-unused-modules)]
     [else
-     (define name (car args))
-     (printf "Bundles:\n")
-     (for ([b (in-list (sort (remove-duplicates
-                              (append
-                               (map bundle-of-path
-                                    (grep-files "bundles"
-                                                (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
-                               (map bundle-of-path
-                                    (grep-files "bundles"
-                                                (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
-                             string<?))])
-       (when b (printf "  ~a\n" b)))
-     (printf "\nHosts:\n")
-     (for ([h (in-list (sort (remove-duplicates
-                              (append
-                               (map host-of-path
-                                    (grep-files "hosts"
-                                                (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
-                               (map host-of-path
-                                    (grep-files "hosts"
-                                                (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
-                             string<?))])
-       (when h (printf "  ~a\n" h)))]))
+     (eprintf "firn module list: expected one of all|used|unused, got '~a'\n" leaf)
+     (exit 1)]))
 
-(define commands
-  (list (cmd "list" "[--used | --unused]"
-             "list modules and bundles (with usage filter)"
-             cmd-list)
-        (cmd "refs" "<name>"
-             "show what references a module or bundle"
-             cmd-refs)))
+(define (handle-bundle-list leaf)
+  (case (string->symbol leaf)
+    [(all)
+     (define bs (bundles))
+     (printf "Bundles (~a):\n" (length bs))
+     (for ([b (in-list bs)]) (printf "  myConfig.bundles.~a\n" b))]
+    [(used)   (print-used-bundles)]
+    [(unused) (print-unused-bundles)]
+    [else
+     (eprintf "firn bundle list: expected one of all|used|unused, got '~a'\n" leaf)
+     (exit 1)]))
+
+(define (handle-host-list _leaf)
+  (define hs (hosts))
+  (printf "Hosts (~a):\n" (length hs))
+  (for ([h (in-list hs)]) (printf "  ~a\n" h)))
+
+(define (print-refs name)
+  (printf "Bundles:\n")
+  (for ([b (in-list (sort (remove-duplicates
+                           (append
+                            (map bundle-of-path
+                                 (grep-files "bundles"
+                                             (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
+                            (map bundle-of-path
+                                 (grep-files "bundles"
+                                             (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
+                          string<?))])
+    (when b (printf "  ~a\n" b)))
+  (printf "\nHosts:\n")
+  (for ([h (in-list (sort (remove-duplicates
+                           (append
+                            (map host-of-path
+                                 (grep-files "hosts"
+                                             (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
+                            (map host-of-path
+                                 (grep-files "hosts"
+                                             (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
+                          string<?))])
+    (when h (printf "  ~a\n" h))))
+
+(define node-edges
+  (list
+   (walk-edge "module" "list" "all|used|unused" 'all
+              handle-module-list
+              "list modules (all, used = enabled somewhere, unused = orphan)")
+   (walk-edge "module" "refs" "<name>" #f
+              print-refs
+              "show which hosts and bundles reference a module")
+   (walk-edge "bundle" "list" "all|used|unused" 'all
+              handle-bundle-list
+              "list bundles (all, used, unused)")
+   (walk-edge "bundle" "refs" "<name>" #f
+              print-refs
+              "show which hosts and bundles reference a bundle")
+   (walk-edge "host"   "list" "all" 'all
+              handle-host-list
+              "list every host directory under hosts/")))

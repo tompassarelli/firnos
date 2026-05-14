@@ -17,7 +17,7 @@
          (only-in nisp/validate find-similar-strs)
          "util.rkt")
 
-(provide cmd-explain commands)
+(provide node-edges)
 
 (define CACHE-DIR (build-path ROOT ".nisp-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
@@ -74,13 +74,13 @@
      f)
    path<? #:key path->string))
 
-(define (cmd-explain args)
+(define (handle-schema-explain leaf)
   (cond
-    [(null? args)
-     (eprintf "Usage: firn explain <option-path | validator-error-line>\n")
+    [(or (not leaf) (equal? leaf ""))
+     (eprintf "Usage: firn schema explain <option-path | validator-error-line>\n")
      (exit 2)]
     [else
-     (define raw (string-join args " "))
+     (define raw leaf)
      (define path (extract-path-from-input raw))
      (cond
        [(not path)
@@ -121,7 +121,8 @@
               (for ([s (in-list sims)]) (eprintf "  ~a\n" s))])
            (exit 1)])])]))
 
-(define commands
-  (list (cmd "explain" "<path | err-line>"
-             "show schema entry + repo references for an option"
-             cmd-explain)))
+(define node-edges
+  (list
+   (walk-edge "schema" "explain" "<path>" #f
+              handle-schema-explain
+              "show schema entry + repo references for an option")))

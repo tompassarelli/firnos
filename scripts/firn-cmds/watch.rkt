@@ -5,7 +5,7 @@
          racket/system
          "util.rkt")
 
-(provide cmd-watch commands)
+(provide node-edges)
 
 (define (descend? d)
   (define s (path->string d))
@@ -28,7 +28,7 @@
      f)
    path<?))
 
-(define (cmd-watch _args)
+(define (handle-repo-watch _leaf)
   (file-stream-buffer-mode (current-output-port) 'line)
   (define files (gather-nisp-rkts))
   (printf "firn watch: monitoring ~a .rkt file(s)... (Ctrl-C to exit)\n"
@@ -52,7 +52,8 @@
       [else
        (loop (gather-nisp-rkts))])))
 
-(define commands
-  (list (cmd "watch" ""
-             "re-run validator on .rkt save (no external deps)"
-             cmd-watch)))
+(define node-edges
+  (list
+   (walk-edge "repo" "watch" "all" 'all
+              handle-repo-watch
+              "re-run validator on .rkt save (no external deps)")))

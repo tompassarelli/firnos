@@ -14,13 +14,45 @@
          current-hostname host-config-rkt
          grep-files relative-to-repo
          paths-referenced-in
-         (struct-out cmd))
+         find-name-kind
+         resolve-default
+         (struct-out walk-edge))
 
-;; ---------- command metadata ----------
-;; Each firn-cmds/*.rkt module exports `commands`, a list of these.
-;; firn.rkt aggregates them for both help-text generation and dispatch,
-;; so the help can never go out of sync with what's actually wired up.
-(struct cmd (name usage desc fn) #:transparent)
+;; ---------- walk-edge metadata ----------
+;;
+;; firn's CLI is an entity-first walkable graph: every command is a
+;; sequence of (node, edge, leaf) triples. Each firn-cmds/*.rkt module
+;; exports a `node-edges` list of these structs; firn.rkt aggregates
+;; them for both dispatch and help-text generation.
+;;
+;;   node          the entity (module, bundle, host, repo, ...)
+;;   edge          the verb (status, enable, add, ...)
+;;   leaf-shape    user-facing string shown in help: "<name>", "all", ...
+;;   default-leaf  what to use if the user omits the leaf token:
+;;                   #f           — required; error if missing
+;;                   'all         — literal "all"
+;;                   'current-host — resolved to (current-hostname)
+;;                   (string val) — any literal
+;;   handler       (λ (leaf ctx) ...) — leaf is the resolved string;
+;;                 ctx is the walk context; may return a new ctx or #f
+;;   desc          one-line help
+(struct walk-edge (node edge leaf-shape default-leaf handler desc) #:transparent)
+
+(define (resolve-default default-leaf)
+  ;; Returns the string to use for an omitted leaf, or #f if required.
+  (cond
+    [(eq? default-leaf #f) #f]
+    [(eq? default-leaf 'all) "all"]
+    [(eq? default-leaf 'current-host) (current-hostname)]
+    [(string? default-leaf) default-leaf]
+    [else #f]))
+
+(define (find-name-kind name)
+  ;; Return 'module, 'bundle, or #f
+  (cond
+    [(directory-exists? (in-repo "modules" name)) 'module]
+    [(directory-exists? (in-repo "bundles" name)) 'bundle]
+    [else #f]))
 
 ;; ---------- repo discovery ----------
 

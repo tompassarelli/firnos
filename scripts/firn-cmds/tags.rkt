@@ -35,7 +35,7 @@
          "util.rkt"
          "list.rkt") ; for bundle-modules
 
-(provide cmd-tags commands)
+(provide node-edges)
 
 (define INDEX-PATH (build-path ROOT ".nisp-cache" "tags.jsonl"))
 
@@ -138,44 +138,39 @@
     (hash-set! u t (cons mod (hash-ref u t '()))))
   u)
 
-;; ---------- output ----------
+;; ---------- handlers ----------
 
-(define (cmd-tags args)
+(define (handle-tag-list _leaf)
   (define index (build-index))
+  (define universe (tag-universe index))
+  (define keys (sort (hash-keys universe) string<?))
+  (define explicit-tags (filter (λ (t) (not (string-prefix? t "bundle:"))) keys))
+  (define bundle-tags  (filter (λ (t) (string-prefix? t "bundle:")) keys))
   (cond
-    ;; firn tags --index [--stdout]
-    [(and (pair? args) (equal? (car args) "--index"))
-     (define stdout? (and (pair? (cdr args)) (equal? (cadr args) "--stdout")))
-     (define lines
-       (for/list ([m (in-list (sort (hash-keys index) string<?))])
-         (jsexpr->string
-          (hash 'name m
-                'tags (hash-ref index m '())))))
-     (cond
-       [stdout?
-        (for ([line (in-list lines)]) (displayln line))]
-       [else
-        (make-directory* (path-only INDEX-PATH))
-        (with-output-to-file INDEX-PATH #:exists 'replace
-          (λ () (for ([line (in-list lines)]) (displayln line))))
-        (printf "firn tags: wrote ~a entries → ~a\n"
-                (length lines) (relative-to-repo INDEX-PATH))])]
+    [(pair? explicit-tags)
+     (printf "Explicit tags (~a):\n" (length explicit-tags))
+     (for ([t (in-list explicit-tags)])
+       (printf "  ~a  (~a)\n" (~a t #:min-width 18)
+               (length (hash-ref universe t))))]
+    [else
+     (printf "Explicit tags: (none authored — add (tags …) clauses to module .rkt files)\n")])
+  (newline)
+  (printf "Bundle-derived tags (~a):\n" (length bundle-tags))
+  (for ([t (in-list bundle-tags)])
+    (printf "  ~a  (~a)\n" (~a t #:min-width 18)
+            (length (hash-ref universe t))))
+  (newline)
+  (define total-modules (hash-count index))
+  (define tagged-modules
+    (for/sum ([(_ tags) (in-hash index)] #:when (pair? tags)) 1))
+  (printf "Coverage: ~a / ~a modules carry at least one tag.\n"
+          tagged-modules total-modules))
 
-    ;; firn tags --filter <tag>
-    [(and (>= (length args) 2) (equal? (car args) "--filter"))
-     (define tag (cadr args))
-     (define mods (sort (filter (λ (m) (member tag (hash-ref index m '())))
-                                (hash-keys index))
-                        string<?))
-     (cond
-       [(null? mods) (printf "no modules tagged '~a'\n" tag)]
-       [else
-        (printf "modules tagged '~a' (~a):\n" tag (length mods))
-        (for ([m (in-list mods)]) (printf "  ~a\n" m))])]
-
-    ;; firn tags <module>
-    [(and (pair? args) (member (car args) (modules)))
-     (define m (car args))
+(define (handle-tag-show m)
+  (cond
+    [(not (member m (modules)))
+     (eprintf "firn tag show: no module named '~a'\n" m) (exit 1)]
+    [else
      (define explicit (explicit-tags-for-module m))
      (define derived (derived-tags-for-module m))
      (printf "module: ~a\n" m)
@@ -188,48 +183,44 @@
        [(pair? derived)
         (printf "derived tags:  ~a\n" (string-join derived ", "))]
        [else
-        (printf "derived tags:  (not in any bundle)\n")])]
+        (printf "derived tags:  (not in any bundle)\n")])]))
 
-    ;; firn tags <unknown-name>
-    [(pair? args)
-     (eprintf "firn tags: no module named '~a'\n" (car args))
-     (eprintf "  use --filter <tag> to query by tag, or no args to list the tag universe.\n")
-     (exit 1)]
-
-    ;; firn tags — show tag universe
+(define (handle-tag-filter tag)
+  (define index (build-index))
+  (define mods (sort (filter (λ (m) (member tag (hash-ref index m '())))
+                             (hash-keys index))
+                     string<?))
+  (cond
+    [(null? mods) (printf "no modules tagged '~a'\n" tag)]
     [else
-     (define universe (tag-universe index))
-     (define keys (sort (hash-keys universe) string<?))
-     (define explicit-tags (filter (λ (t) (not (string-prefix? t "bundle:"))) keys))
-     (define bundle-tags  (filter (λ (t) (string-prefix? t "bundle:")) keys))
+     (printf "modules tagged '~a' (~a):\n" tag (length mods))
+     (for ([m (in-list mods)]) (printf "  ~a\n" m))]))
 
-     (cond
-       [(pair? explicit-tags)
-        (printf "Explicit tags (~a):\n" (length explicit-tags))
-        (for ([t (in-list explicit-tags)])
-          (printf "  ~a  (~a)\n" (~a t #:min-width 18)
-                  (length (hash-ref universe t))))]
-       [else
-        (printf "Explicit tags: (none authored — add (tags …) clauses to module .rkt files)\n")])
+(define (handle-tag-index leaf)
+  (define stdout? (equal? leaf "stdout"))
+  (define index (build-index))
+  (define lines
+    (for/list ([m (in-list (sort (hash-keys index) string<?))])
+      (jsexpr->string
+       (hash 'name m
+             'tags (hash-ref index m '())))))
+  (cond
+    [stdout?
+     (for ([line (in-list lines)]) (displayln line))]
+    [else
+     (make-directory* (path-only INDEX-PATH))
+     (with-output-to-file INDEX-PATH #:exists 'replace
+       (λ () (for ([line (in-list lines)]) (displayln line))))
+     (printf "firn tag index: wrote ~a entries → ~a\n"
+             (length lines) (relative-to-repo INDEX-PATH))]))
 
-     (newline)
-     (printf "Bundle-derived tags (~a):\n" (length bundle-tags))
-     (for ([t (in-list bundle-tags)])
-       (printf "  ~a  (~a)\n" (~a t #:min-width 18)
-               (length (hash-ref universe t))))
-
-     (newline)
-     (define total-modules (hash-count index))
-     (define tagged-modules
-       (for/sum ([(_ tags) (in-hash index)] #:when (pair? tags)) 1))
-     (printf "Coverage: ~a / ~a modules carry at least one tag.\n"
-             tagged-modules total-modules)
-     (newline)
-     (printf "Run `firn tags <module>` to inspect one,\n")
-     (printf "    `firn tags --filter <tag>` to query by tag,\n")
-     (printf "    `firn tags --index` to write .nisp-cache/tags.jsonl.\n")]))
-
-(define commands
-  (list (cmd "tags" "[<module> | --filter <tag> | --index [--stdout]]"
-             "module/bundle tag index (derived from bundle membership + explicit (tags …))"
-             cmd-tags)))
+(define node-edges
+  (list
+   (walk-edge "tag" "list"   "all"        'all    handle-tag-list
+              "tag universe (explicit + bundle-derived) with module counts")
+   (walk-edge "tag" "show"   "<module>"   #f      handle-tag-show
+              "tags for one module")
+   (walk-edge "tag" "filter" "<tag>"      #f      handle-tag-filter
+              "list modules carrying a tag")
+   (walk-edge "tag" "index"  "repo|stdout" 'repo  handle-tag-index
+              "write .nisp-cache/tags.jsonl (or 'stdout' to pipe)")))

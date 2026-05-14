@@ -21,7 +21,7 @@
          "util.rkt"
          "list.rkt")  ; for host-of-path / bundle-of-path / cmd-list machinery
 
-(provide cmd-doctor commands)
+(provide node-edges)
 
 (define (check-status name predicate-thunk)
   ;; predicate-thunk returns (values pass? detail-lines)
@@ -170,7 +170,7 @@
 
 ;; ---------- main ----------
 
-(define (cmd-doctor _args)
+(define (handle-doctor _leaf)
   (printf "firn doctor: running checks on ~a\n\n"
           (if (path? ROOT) (path->string ROOT) ROOT))
   (define passes
@@ -187,7 +187,11 @@
   (printf "\nfirn doctor: ~a/~a checks passed.\n" passed total)
   (exit (if (= passed total) 0 1)))
 
-(define commands
-  (list (cmd "doctor" ""
-             "repo health check (untracked, stale, schema, orphans, validator)"
-             cmd-doctor)))
+(define node-edges
+  (list
+   (walk-edge "repo" "doctor" "all" 'all
+              handle-doctor
+              "repo health check (untracked, stale, schema, orphans, validator)")
+   (walk-edge "host" "doctor" "<host>" 'current-host
+              handle-doctor
+              "alias for repo doctor (host arg ignored)")))

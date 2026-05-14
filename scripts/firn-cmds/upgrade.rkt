@@ -21,7 +21,7 @@
          json
          "util.rkt")
 
-(provide cmd-upgrade commands)
+(provide node-edges)
 
 (define CACHE-DIR (build-path ROOT ".nisp-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
@@ -51,8 +51,8 @@
      (relative-to-repo f))
    string<?))
 
-(define (cmd-upgrade args)
-  (define dry-run? (and (pair? args) (equal? (car args) "--dry-run")))
+(define (handle-repo-upgrade leaf)
+  (define dry-run? (equal? leaf "dry-run"))
 
   ;; 1. Snapshot current schema (if exists)
   (printf ">> snapshotting current schema for diff...\n")
@@ -152,7 +152,8 @@
 
   (printf "\nfirn upgrade: done. Test with `firn rebuild` (or `--skip-checks` if needed).\n"))
 
-(define commands
-  (list (cmd "upgrade" "[--dry-run]"
-             "flake update + schema diff + validate"
-             cmd-upgrade)))
+(define node-edges
+  (list
+   (walk-edge "repo" "upgrade" "now|dry-run" 'now
+              handle-repo-upgrade
+              "flake update + schema diff + validate (use dry-run leaf to preview)")))
