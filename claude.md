@@ -58,7 +58,7 @@ Bundles that expose sub-options of their modules (firefox.palefox.enable, stylix
 
 Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, symlinked via out-of-store symlinks. `modules/fish/fish.nix` auto-discovers them.
 
-`firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). Run `firn` with no args to see all commands. It should only contain subcommands that operate on the nixos-config repo itself — general-purpose tools like `sandbox`, `vpn`, `gif` etc. stay as standalone fish functions.
+`firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). Its grammar is entity-first and walkable: every invocation is one or more `<node> <edge> [<leaf>]` triples (e.g. `firn bundle status all`, `firn module enable swap`, `firn host rebuild`, `firn schema explain X`). Leaves default sensibly when omitted — `all` for aggregate views, current-hostname for host-scoped commands. Run `firn` with no args to see the full grid, or `firn <node>` for one entity's edges. Old shapes (`firn status`, `firn doctor`, `firn tags --filter t`, …) still work with a deprecation warning. It should only contain subcommands that operate on the nixos-config repo itself — general-purpose tools like `sandbox`, `vpn`, `gif` etc. stay as standalone fish functions.
 
 ## Schema introspection (use these instead of grepping schema.json)
 
@@ -111,18 +111,18 @@ Use Edit tool when the change is structural beyond what `set`/`unset` cover (mod
 
 ## Diagnosing schema errors
 
-When the validator reports an unknown option, type mismatch, or you're about to write a new `(set …)`, use `firn explain` instead of digging through `schema.json` by hand:
+When the validator reports an unknown option, type mismatch, or you're about to write a new `(set …)`, use `firn schema explain` instead of digging through `schema.json` by hand:
 
 ```bash
-firn explain services.openssh.enable                     # bare option path
-firn explain "modules/foo.rkt:6:7: unknown option services.opensh.enable"   # paste a validator error directly
+firn schema explain services.openssh.enable                     # bare option path
+firn schema explain "modules/foo.rkt:6:7: unknown option services.opensh.enable"   # paste a validator error directly
 ```
 
 Output: type, declarations (links to upstream NixOS module sources), and every `.rkt` file in this repo that references the path. If the path doesn't exist, prints did-you-mean candidates.
 
 ## Repo health
 
-`firn doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
+`firn repo doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
 
 ## Tagging modules for discovery
 
@@ -141,29 +141,29 @@ Bundles already capture *purpose-based* grouping (gaming, terminal, dev). Tags c
 Tags live in source, never get emitted into the generated `.nix`. External tooling reads `.rkt` directly:
 
 ```bash
-firn tags                     # tag universe + module counts
-firn tags steam               # tags for one module
-firn tags --filter gpu-required   # all modules with that tag
-firn tags --index             # write .nisp-cache/tags.jsonl (one record per module)
-firn tags --index --stdout    # emit jsonl to stdout (for piping into jq/fzf/etc.)
+firn tag list           # tag universe + module counts
+firn tag show steam     # tags for one module
+firn tag filter gpu-required   # all modules with that tag
+firn tag index          # write .nisp-cache/tags.jsonl (one record per module)
+firn tag index stdout   # emit jsonl to stdout (for piping into jq/fzf/etc.)
 ```
 
-The jsonl index is regenerated on demand — never authored. Use `firn tags --index --stdout | jq` for ad-hoc queries.
+The jsonl index is regenerated on demand — never authored. Use `firn tag index stdout | jq` for ad-hoc queries.
 
 ## Discovering platform compatibility
 
-`firn platforms` answers "which modules / bundles work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
+`firn platform list` answers "which modules / bundles work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
 
 ```bash
-firn platforms                  # full matrix
-firn platforms darwin           # only darwin-compatible modules
-firn platforms linux            # NixOS-only
-firn platforms <name>           # single module/bundle, with blocking paths
-firn platforms --bundles        # bundle compat report (which sub-modules block)
-firn platforms --safelist       # safelist snippet for flake.rkt
+firn platform list all          # full matrix
+firn platform list darwin       # only darwin-compatible modules
+firn platform list linux        # NixOS-only
+firn platform show <name>       # single module/bundle, with blocking paths
+firn platform list bundles      # bundle compat report (which sub-modules block)
+firn platform safelist          # safelist snippet for flake.rkt
 ```
 
-Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.nisp-cache/schema.json` and `.nisp-cache/schema-darwin.json`). `firn doctor` warns when the darwin cache is stale.
+Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.nisp-cache/schema.json` and `.nisp-cache/schema-darwin.json`). `firn repo doctor` warns when the darwin cache is stale.
 
 **Limitation**: this is a schema-compatibility check. Pure-pkg modules whose only setter is `environment.systemPackages` always pass — the option path exists on darwin even when the package has no darwin build. Use `darwin-rebuild build` to verify.
 
@@ -172,8 +172,8 @@ Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --da
 To bump nixpkgs and surface deprecations the schema-driven way:
 
 ```bash
-firn upgrade --dry-run     # show what would change without touching flake.lock
-firn upgrade               # snapshot schema, nix flake update, re-extract, diff, validate
+firn repo upgrade dry-run  # show what would change without touching flake.lock
+firn repo upgrade now      # snapshot schema, nix flake update, re-extract, diff, validate
 ```
 
 The diff phase highlights any **removed** or **type-changed** option paths that this repo references — those are the actual breakage candidates, not the thousands of unrelated changes you'd see in a raw `nix flake update` log.
@@ -212,7 +212,7 @@ There's a tiered loop — pick the right rung for the change.
 **Rung 2 — drift check (when refactoring nisp itself, or sanity-checking that hand-edited `.nix` matches what nisp would emit):**
 
 ```bash
-racket scripts/firn.rkt diff   # or `firn diff` if compiled
+firn repo diff             # re-emit every .rkt and unified-diff vs committed .nix
 ```
 
 **Rung 3 — full evaluation (only when Rung 1 isn't sufficient — e.g. you touched flake inputs, complex module logic, evaluation-time conditionals, or anything the static checker can't see):**
@@ -223,8 +223,8 @@ nix build .#nixosConfigurations.whiterabbit.config.system.build.toplevel --no-li
 
 This catches things the validator can't: input mismatches, evaluation errors in submodule freeformType paths, build-time failures.
 
-**Don't** run `firn rebuild` to verify — that activates the system (sudo, generation switch, reboot-relevant). Leave that to the user. Use `nix build --no-link` for build-only verification.
+**Don't** run `firn host rebuild` to verify — that activates the system (sudo, generation switch, reboot-relevant). Leave that to the user. Use `nix build --no-link` for build-only verification.
 
-**Don't** run `nh` directly either; same reason — it switches the system. `firn rebuild` wraps `nh` already; it's the user's command.
+**Don't** run `nh` directly either; same reason — it switches the system. `firn host rebuild` wraps `nh` already; it's the user's command.
 
 Only verify whiterabbit. Skip thinkpad-x1e.

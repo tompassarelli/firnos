@@ -31,7 +31,7 @@ Three audiences:
 ## What the checker catches
 
 ```
-$ firn rebuild
+$ firn host rebuild
 modules/printing/default.rkt:6:7: unknown option services.pipwire.alsa.enable
   did you mean: services.pipewire.alsa.enable or services.pipewire.pulse.enable?
 modules/foo/default.rkt:9:34: type mismatch at services.openssh.enable:
@@ -139,7 +139,7 @@ A host config:
           myConfig.bundles.browsers))
 ```
 
-The pipeline: edit `.rkt` → `firn rebuild` regenerates the `.nix`,
+The pipeline: edit `.rkt` → `firn host rebuild` regenerates the `.nix`,
 validates, builds, and tags the resulting generation. Both files are
 committed (the flake reads from the git tree).
 
@@ -155,24 +155,49 @@ See [`docs/BUILDING.md`](docs/BUILDING.md) for the full DSL reference.
 
 ## CLI
 
+The CLI is an entity-first walkable graph — every invocation is one
+or more `<node> <edge> [<leaf>]` triples, with sensible defaults
+filled in when the leaf is omitted (e.g. `<host>` defaults to the
+current hostname, `<scope>` defaults to `all`):
+
 ```
-firn rebuild [host] [--skip-checks]   firn-build → validate → nixos-rebuild → tag
-firn watch                            re-run validator on .rkt save
-firn enable  <name> [host]            toggle a module/bundle on in the host config
-firn disable <name> [host]            toggle off
-firn status  [host]                   list enabled modules/bundles
-firn list   [--used | --unused]       list modules/bundles, usage filter
-firn refs    <name>                   show what references a module/bundle
-firn diff    [target...]              re-emit Nix and diff vs committed .nix
-firn mod     <name>                   scaffold a minimal module
-firn bundle  <name> <mods...>         scaffold a new bundle
-firn scaffold <pat> <name>            template (service|submodule|home|host)
-firn explain <path | err-line>        schema entry + repo references for an option
-firn doctor                           repo health check (untracked, stale, validator)
-firn upgrade [--dry-run]              flake update + schema diff + flag deprecated paths
-firn secret  <name|list|show>         sops edit / list / decrypt
-firn gen                              current/next generation numbers
+host    rebuild  [<host>]          firn-build → validate → nixos-rebuild → tag
+host    status   [<host>]          list every enabled module + bundle for a host
+host    doctor   [<host>]          repo health check (untracked, stale, validator)
+host    gen      [<host>]          current/next generation numbers
+host    list     all               every host directory under hosts/
+
+module  enable   <name>            toggle a module on in the default host
+module  disable  <name>            toggle off
+module  status   all               flat list of enabled modules
+module  list     all|used|unused   list modules, with usage filter
+module  refs     <name>            show what references this module
+module  add      <name>            scaffold a minimal module
+
+bundle  enable   <name>            toggle a bundle on in the default host
+bundle  disable  <name>
+bundle  status   <name>|all        per-bundle sub-toggle tree (one or all)
+bundle  list     all|used|unused
+bundle  refs     <name>
+bundle  add      <name>            scaffold a new (empty) bundle
+
+repo    diff     [<target>]        re-emit Nix and diff vs committed .nix
+repo    doctor   all               same as `host doctor`
+repo    upgrade  now|dry-run       flake update + schema diff + validate
+repo    watch    all               re-run validator on .rkt save
+
+schema  explain  <path|err-line>   schema entry + repo references for an option
+secret  list|show|edit <name>      sops list / decrypt / edit
+tag     list|show|filter|index     module-tag index (see docs/BUILDING.md)
+platform list|show|safelist        NixOS vs darwin compat report
+template service|submodule|home|host <name>   scaffolded module/host
 ```
+
+Walks chain — `firn module list bundle list` runs both with default
+leaves. `firn` alone shows the full grid, `firn <node>` shows the
+edges for that node. Old shapes (`firn rebuild`, `firn status
+--bundles`, `firn explain X`, `firn tags --filter t`, …) still work
+with a one-line deprecation pointer to the new form.
 
 For unambiguous typo cleanup across the whole tree:
 
@@ -193,7 +218,7 @@ There are three ways down:
 2. **`(nix-ident "any.dotted.path")`** — produce a literal Nix identifier from a string.
 3. **Just write `.nix`** — `firn-build` only rewrites `.rkt` files. Hand-written `.nix` modules sit alongside generated ones; the flake imports them the same way.
 
-`firn diff` confirms hand-edited `.nix` is byte-equivalent to what nisp
+`firn repo diff` confirms hand-edited `.nix` is byte-equivalent to what nisp
 would emit, which is useful when migrating modules in either direction.
 
 ## Validation, in detail
@@ -269,7 +294,7 @@ needed when adding either.
 
 - **Two-language requirement.** Authors need the basics of Racket s-expressions in addition to Nix concepts. The DSL is small (~30 forms) and the surface vocabulary closely mirrors Nix; the [BUILDING.md](docs/BUILDING.md) cheat-sheet maps every form to its Nix output.
 
-- **Two artifacts per file.** Both `.rkt` and `.nix` are committed; CI / pre-commit hooks should run `firn diff` to ensure they stay in sync. Generated `.nix` is gitignored from manual edits in the typical workflow.
+- **Two artifacts per file.** Both `.rkt` and `.nix` are committed; CI / pre-commit hooks should run `firn repo diff` to ensure they stay in sync. Generated `.nix` is gitignored from manual edits in the typical workflow.
 
 - **Schema cache is host-specific and dated.** It's tied to your flake.lock and regenerated when inputs change (see *Schema freshness* above). The validator is unhelpful — but harmless — when the schema is stale.
 

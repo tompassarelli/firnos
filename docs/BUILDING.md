@@ -41,7 +41,7 @@ sudo nixos-rebuild switch --flake .#my-machine
 2. Run `./scripts/firn-build` to regenerate every `*.nix` whose `.rkt` source
    has changed.
 3. `git add` both files.
-4. `nixos-rebuild switch` (or `firn rebuild`) builds from the regenerated
+4. `nixos-rebuild switch` (or `firn host rebuild`) builds from the regenerated
    `flake.nix`.
 
 `firn-build` is idempotent and only re-runs `racket` for `.rkt` files that are
@@ -51,18 +51,25 @@ no-op.
 ## The `firn` CLI
 
 `scripts/firn.rkt` is a Racket-based CLI that wraps the routine config
-operations. Command implementations live in `scripts/firn-cmds/*.rkt`;
-`firn.rkt` itself is just argv dispatch. Highlights:
+operations. The grammar is entity-first and walkable: every invocation
+is one or more `<node> <edge> [<leaf>]` triples. Leaves default
+sensibly when omitted (`'all` for aggregate views, current-hostname
+for host-scoped commands), and walks can be chained for batches.
+Command implementations live in `scripts/firn-cmds/*.rkt`; `firn.rkt`
+itself is dispatcher + legacy-alias rewriter. Highlights:
 
-- `firn enable <name>` / `firn disable <name>` / `firn status` — syntax-aware host-config edits via `nisp edit`
-- `firn explain <path | validator-error-line>` — show the schema entry, declarations, and every `.rkt` that references the path. Accepts pasted validator errors directly (extracts the path)
-- `firn doctor` — five-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, validator)
-- `firn upgrade [--dry-run]` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references
-- `firn diff` — re-emit Nix from `.rkt` and unified-diff against committed `.nix` (drift sentinel)
-- `firn list` / `firn refs` / `firn mod` / `firn bundle` / `firn scaffold` — module/bundle introspection and scaffolding (`scaffold service` queries the schema cache and pre-fills commented stubs). `firn list --unused` finds dead modules — modules not enabled by any host directly or transitively via a bundle.
-- `firn tags` — module tag index. Bundles capture purpose-based grouping (gaming, dev); tags capture cross-cutting facets (gpu-required, gui-only, proprietary, …). Sources: derived from bundle membership + explicit `(tags …)` clauses in the module source. `--filter <tag>` queries by tag; `--index` writes a regenerable jsonl index to `.nisp-cache/tags.jsonl`.
-- `firn platforms` — schema-driven cross-platform compatibility report (NixOS vs darwin). See `docs/MACOS.md`.
-- `firn secret` / `firn gen` — sops wrapper and generation numbers
+- `firn module enable <name>` / `firn module disable <name>` / `firn bundle enable <name>` / `firn bundle disable <name>` — syntax-aware host-config edits via `nisp edit`
+- `firn host status` / `firn bundle status all` — flat enabled list, or per-bundle sub-toggle tree
+- `firn schema explain <path | validator-error-line>` — show the schema entry, declarations, and every `.rkt` that references the path. Accepts pasted validator errors directly (extracts the path)
+- `firn repo doctor` — six-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, flake-input purity, validator)
+- `firn repo upgrade now` / `firn repo upgrade dry-run` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references
+- `firn repo diff` — re-emit Nix from `.rkt` and unified-diff against committed `.nix` (drift sentinel)
+- `firn module list <all|used|unused>` / `firn bundle list <…>` / `firn module refs <name>` / `firn bundle refs <name>` / `firn module add <name>` / `firn bundle add <name>` / `firn template <service|submodule|home|host> <name>` — module/bundle introspection and scaffolding (`template service` queries the schema cache and pre-fills commented stubs). `firn module list unused` finds dead modules — modules not enabled by any host directly or transitively via a bundle.
+- `firn tag list` / `firn tag show <module>` / `firn tag filter <tag>` / `firn tag index` — module tag index. Bundles capture purpose-based grouping (gaming, dev); tags capture cross-cutting facets (gpu-required, gui-only, proprietary, …). Sources: derived from bundle membership + explicit `(tags …)` clauses in the module source. `tag index` writes a regenerable jsonl to `.nisp-cache/tags.jsonl`; pass leaf `stdout` to pipe instead.
+- `firn platform list` / `firn platform show <name>` / `firn platform safelist` — schema-driven cross-platform compatibility report (NixOS vs darwin). See `docs/MACOS.md`.
+- `firn secret list|show|edit` / `firn host gen` — sops wrapper and generation numbers
+
+Old top-level shapes (`firn status`, `firn doctor`, `firn rebuild`, `firn tags`, `firn platforms`, …) still work with a one-line deprecation pointing to the new form, so muscle memory degrades gracefully.
 
 `scripts/firn.rkt` is invokable directly via `racket scripts/firn.rkt …`
 but for daily use it should be compiled. `firn-build-bin` uses `raco demod`
@@ -80,15 +87,15 @@ The wrapper exec's `racket` on the bytecode, so the system needs Racket
 on PATH (already provided by `bundles/racket`). Add `~/.local/bin` to
 PATH if it isn't already.
 
-## `firn rebuild` and `nh`
+## `firn host rebuild` and `nh`
 
-`firn rebuild` runs `firn-build → firn-validate → rebuild → tag generation`.
+`firn host rebuild` runs `firn-build → firn-validate → rebuild → tag generation`.
 The rebuild step prefers [`nh`](https://github.com/nix-community/nh) (a
 Rust wrapper around `nixos-rebuild`) when it's on PATH — `nh os switch`
 gives nicer progress output, a generation diff after activation, and
 handles `sudo` itself. `modules/nh/default.rkt` installs it.
 
-When `nh` isn't available, `firn rebuild` falls back to
+When `nh` isn't available, `firn host rebuild` falls back to
 `sudo nixos-rebuild switch --flake …` automatically. To force the
 fallback, remove `nh` from your config or use `--skip-checks` and call
 `nixos-rebuild` directly.
