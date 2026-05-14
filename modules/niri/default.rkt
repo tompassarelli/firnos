@@ -133,6 +133,17 @@
     (set programs.niri.enable #t)
     (set programs.niri.package pkgs.unstable.niri)
     (set environment.systemPackages (lst niri-viewport-nav))
+    ;; Electron apps (anytype, vscode, slack, …) gate --ozone-platform-hint=auto
+    ;; on NIXOS_OZONE_WL in their nixpkgs wrapper. Without it they default to
+    ;; X11 mode; on niri (Wayland-only) the window is created but never gets a
+    ;; visible surface.
+    (set environment.sessionVariables.NIXOS_OZONE_WL "1")
+    ;; Install the setuid chrome-sandbox helper. Without it Electron's
+    ;; renderer-process sandbox fails to bootstrap (NixOS doesn't ship the
+    ;; helper by default, and unprivileged user namespaces aren't enabled
+    ;; either), the renderer dies silently, and no window ever gets mapped.
+    ;; Visible symptom: app launches, process stays alive, no window.
+    (set security.chromiumSuidSandbox.enable #t)
     (home-of username
       ;; Niri configuration file
       (nix-attrs-entries (att
