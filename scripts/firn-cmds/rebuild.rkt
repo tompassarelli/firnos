@@ -241,8 +241,20 @@
          (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD")
          (printf "Tagged: gen-~a\n" gen)))]))
 
+;; fi host impact [<host>]  — dry-run rebuild impact prediction
+
+(define (handle-host-impact leaf)
+  (define host (cond [(equal? leaf "current") (current-hostname)]
+                     [else leaf]))
+  (printf ">> rebuild impact (~a)\n" host)
+  (unless (sh (path->string (in-repo "scripts" "firn-rebuild-impact")) host)
+    (eprintf "fi host impact: failed.\n") (exit 1)))
+
 (define node-edges
   (list
    (walk-edge "host" "rebuild" "<host>" 'current-host
               handle-host-rebuild
-              "firn-build → validate → nixos-rebuild → tag generation")))
+              "firn-build → validate → nixos-rebuild → tag generation")
+   (walk-edge "host" "impact" "[<host>]" 'current-host
+              handle-host-impact
+              "dry-run impact prediction (what will rebuild, estimated time)")))

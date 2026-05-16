@@ -74,6 +74,21 @@
      f)
    path<? #:key path->string))
 
+;; fi schema extract [<host>]  — regenerate options schema cache
+;; fi schema packages [<host>] — regenerate package name cache
+
+(define (handle-schema-extract leaf)
+  (define host (if (equal? leaf "current") (current-hostname) leaf))
+  (printf ">> firn-extract-schema ~a\n" host)
+  (unless (sh (path->string (in-repo "scripts" "firn-extract-schema")) host)
+    (eprintf "fi schema extract: failed.\n") (exit 1)))
+
+(define (handle-schema-packages leaf)
+  (define host (if (equal? leaf "current") (current-hostname) leaf))
+  (printf ">> firn-extract-packages ~a\n" host)
+  (unless (sh (path->string (in-repo "scripts" "firn-extract-packages")) host)
+    (eprintf "fi schema packages: failed.\n") (exit 1)))
+
 (define (handle-schema-explain leaf)
   (cond
     [(or (not leaf) (equal? leaf ""))
@@ -125,4 +140,10 @@
   (list
    (walk-edge "schema" "explain" "<path>" #f
               handle-schema-explain
-              "show schema entry + repo references for an option")))
+              "show schema entry + repo references for an option")
+   (walk-edge "schema" "extract" "[<host>]" 'current-host
+              handle-schema-extract
+              "regenerate options schema cache from nix eval")
+   (walk-edge "schema" "packages" "[<host>]" 'current-host
+              handle-schema-packages
+              "regenerate package name cache from nixpkgs")))

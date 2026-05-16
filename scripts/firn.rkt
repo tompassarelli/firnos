@@ -41,7 +41,8 @@
          (prefix-in dr: "firn-cmds/doctor.rkt")
          (prefix-in u:  "firn-cmds/upgrade.rkt")
          (prefix-in p:  "firn-cmds/platforms.rkt")
-         (prefix-in tg: "firn-cmds/tags.rkt"))
+         (prefix-in tg: "firn-cmds/tags.rkt")
+         (prefix-in pl: "firn-cmds/pipeline.rkt"))
 
 (define ALL-EDGES
   (append r:node-edges
@@ -55,7 +56,8 @@
           dr:node-edges
           u:node-edges
           p:node-edges
-          tg:node-edges))
+          tg:node-edges
+          pl:node-edges))
 
 (define (lookup-edge node edge)
   (findf (λ (e) (and (equal? (walk-edge-node e) node)
@@ -270,7 +272,13 @@
                           [(equal? (car args) "linux")      (list "platform" "list" "linux")]
                           [(equal? (car args) "--bundles")  (list "platform" "list" "bundles")]
                           [(equal? (car args) "--safelist") (list "platform" "safelist" "all")]
-                          [else (list "platform" "show" (car args))])))))
+                          [else (list "platform" "show" (car args))])))
+    (cons "build"    (λ (_) (list "repo" "build")))
+    (cons "validate" (λ (_) (list "repo" "validate")))
+    (cons "lint"     (λ (_) (list "repo" "lint")))
+    (cons "impact"   (λ (args)
+                       (define host (if (pair? args) (car args) "current"))
+                       (list "host" "impact" host)))))
 
 (define (maybe-legacy-rewrite tokens)
   ;; Returns the rewritten token list if the first token is a legacy
