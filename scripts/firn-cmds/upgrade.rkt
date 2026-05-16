@@ -60,7 +60,7 @@
     [(file-exists? SCHEMA-PATH)
      (copy-file SCHEMA-PATH PREV-SCHEMA-PATH #:exists-ok? #t)]
     [else
-     (eprintf "firn upgrade: no current schema at ~a; skipping diff.\n" SCHEMA-PATH)])
+     (eprintf "fi upgrade: no current schema at ~a; skipping diff.\n" SCHEMA-PATH)])
 
   ;; 2. Update flake inputs (skipped on --dry-run)
   (cond
@@ -69,7 +69,7 @@
     [else
      (printf ">> nix flake update\n")
      (unless (sh "nix" "flake" "update")
-       (eprintf "firn upgrade: nix flake update failed\n") (exit 1))])
+       (eprintf "fi upgrade: nix flake update failed\n") (exit 1))])
 
   ;; 3. Re-extract schema
   (cond
@@ -78,7 +78,7 @@
     [else
      (printf ">> firn-extract-schema\n")
      (unless (sh (path->string (in-repo "scripts" "firn-extract-schema")))
-       (eprintf "firn upgrade: firn-extract-schema failed\n") (exit 1))])
+       (eprintf "fi upgrade: firn-extract-schema failed\n") (exit 1))])
 
   ;; 4. Diff schemas
   (cond
@@ -147,7 +147,7 @@
     [else
      (printf "\n>> firn-validate\n")
      (unless (sh (path->string (in-repo "scripts" "firn-validate")))
-       (eprintf "firn upgrade: validation failed — check the schema diff above for clues\n")
+       (eprintf "fi upgrade: validation failed — check the schema diff above for clues\n")
        (exit 1))])
 
   (printf "\nfirn upgrade: done. Test with `firn rebuild` (or `--skip-checks` if needed).\n"))

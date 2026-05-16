@@ -26,6 +26,7 @@
     port = 7070;
     devices = [ "/dev/input/event0" "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse" "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse" ];
   };
+  myConfig.modules.glide.enable = true;
   myConfig.bundles.terminal.enable = true;
   myConfig.bundles.cli-tools.enable = true;
   myConfig.bundles.desktop = {
@@ -60,6 +61,7 @@
     chrome.enable = true;
     zen-browser.enable = true;
     qutebrowser.enable = true;
+    gjoa.enable = false;
   };
   myConfig.bundles.gaming = {
     enable = true;
@@ -103,4 +105,5 @@
   myConfig.modules.vscode.enable = true;
   myConfig.modules.windows-vm.enable = true;
   myConfig.modules.nh.enable = true;
+  myConfig.modules.babashka.enable = true;
 }

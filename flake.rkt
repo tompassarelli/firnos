@@ -20,7 +20,7 @@
     (zen-browser       "github:0xc000022070/zen-browser-flake" (follows nixpkgs))
     (elephant          "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73")
     (walker            "github:abenz1267/walker" (follows elephant))
-    (palefox           "path:/home/tom/code/palefox" (flake #t))
+    (palefox           "github:tompassarelli/palefox")
     (gjoa              "github:tompassarelli/gjoa"))
 
   (outputs (self nixpkgs nixpkgs-unstable nixpkgs-master home-manager nix-darwin

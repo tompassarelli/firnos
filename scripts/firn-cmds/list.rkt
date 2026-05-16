@@ -197,7 +197,7 @@
     [(used)   (print-used-modules)]
     [(unused) (print-unused-modules)]
     [else
-     (eprintf "firn module list: expected one of all|used|unused, got '~a'\n" leaf)
+     (eprintf "fi module list: expected one of all|used|unused, got '~a'\n" leaf)
      (exit 1)]))
 
 (define (handle-bundle-list leaf)
@@ -209,7 +209,7 @@
     [(used)   (print-used-bundles)]
     [(unused) (print-unused-bundles)]
     [else
-     (eprintf "firn bundle list: expected one of all|used|unused, got '~a'\n" leaf)
+     (eprintf "fi bundle list: expected one of all|used|unused, got '~a'\n" leaf)
      (exit 1)]))
 
 (define (handle-host-list _leaf)

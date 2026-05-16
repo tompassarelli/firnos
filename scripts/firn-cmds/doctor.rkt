@@ -134,26 +134,18 @@
 (define (check-flake-input-purity)
   ;; Flake inputs declared as "path:/abs/..." resolve to an absolute filesystem
   ;; path. Pure-eval (default for flakes) forbids reading outside the flake's
-  ;; own source tree, so any module that *references* such an input will fail
-  ;; the rebuild with: "access to absolute path '/...' is forbidden in pure
-  ;; evaluation mode". The breakage is latent until the input is referenced,
-  ;; which is why firn-validate (schema-only) can't see it.
-  (define flake-path (in-repo "flake.rkt"))
+  ;; own source tree, so any module that *references* such an input — directly
+  ;; or via flake-lock resolution — fails the rebuild with: "access to absolute
+  ;; path '/...' is forbidden in pure evaluation mode". firn-validate is
+  ;; schema-only and can't see this; firn rebuild runs the same check
+  ;; pre-flight.
+  (define offenders (flake-input-purity-violations))
   (cond
-    [(not (file-exists? flake-path)) (values #t '())]
-    [else
-     (define lines (regexp-split #rx"\n" (file->string flake-path)))
-     (define offenders
-       (for/list ([line (in-list lines)]
-                  [n (in-naturals 1)]
-                  #:when (regexp-match? #px"\"path:/[^\"]+\"" line))
-         (format "flake.rkt:~a: ~a" n (regexp-replace #rx"^\\s+" line ""))))
-     (cond
-       [(null? offenders) (values #t '())]
-       [else (values #f
-                     (cons "absolute path: inputs break pure eval when referenced:"
-                           (append offenders
-                                   (list "fix: publish to a git remote (github:owner/repo), or override locally with --override-input"))))])]))
+    [(null? offenders) (values #t '())]
+    [else (values #f
+                  (cons "absolute path: inputs break pure eval when referenced:"
+                        (append offenders
+                                (list "fix: publish to a git remote (github:owner/repo), or override locally with --override-input"))))]))
 
 (define (check-validator)
   (define out (open-output-string))
@@ -171,7 +163,7 @@
 ;; ---------- main ----------
 
 (define (handle-doctor _leaf)
-  (printf "firn doctor: running checks on ~a\n\n"
+  (printf "fi doctor: running checks on ~a\n\n"
           (if (path? ROOT) (path->string ROOT) ROOT))
   (define passes
     (list

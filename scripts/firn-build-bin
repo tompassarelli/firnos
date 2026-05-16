@@ -14,14 +14,14 @@
 
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
-SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/firn}"
+SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/fi}"
 mkdir -p "$BIN_DIR" "$SHARE_DIR"
 
-ZO="$SHARE_DIR/firn.zo"
-WRAPPER="$BIN_DIR/firn"
+ZO="$SHARE_DIR/fi.zo"
+WRAPPER="$BIN_DIR/fi"
 
 echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
 raco demod -o "$ZO" scripts/firn.rkt

@@ -15,7 +15,9 @@
 
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+# Resolve repo root from this script's location so firn-build works
+# regardless of cwd. FIRN_REPO env var takes precedence if set.
+cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 if ! command -v racket >/dev/null 2>&1; then
   echo "firn-build: racket not found in PATH. Enable myConfig.modules.racket and rebuild first." >&2

@@ -52,7 +52,7 @@
   (cond
     [ok? (get-output-string out)]
     [else
-     (eprintf "firn diff: failed to evaluate ~a\n" (path->string rkt-path))
+     (eprintf "fi diff: failed to evaluate ~a\n" (path->string rkt-path))
      (eprintf "~a" (get-output-string err))
      #f]))
 
@@ -105,7 +105,7 @@
        (define r (resolve-rkt-source leaf))
        (cond
          [r (list r)]
-         [else (eprintf "firn diff: cannot resolve ~a\n" leaf) (exit 1)])]))
+         [else (eprintf "fi diff: cannot resolve ~a\n" leaf) (exit 1)])]))
   (define same 0)
   (define diff 0)
   (define err 0)

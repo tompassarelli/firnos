@@ -169,7 +169,7 @@
 (define (handle-tag-show m)
   (cond
     [(not (member m (modules)))
-     (eprintf "firn tag show: no module named '~a'\n" m) (exit 1)]
+     (eprintf "fi tag show: no module named '~a'\n" m) (exit 1)]
     [else
      (define explicit (explicit-tags-for-module m))
      (define derived (derived-tags-for-module m))
@@ -211,7 +211,7 @@
      (make-directory* (path-only INDEX-PATH))
      (with-output-to-file INDEX-PATH #:exists 'replace
        (λ () (for ([line (in-list lines)]) (displayln line))))
-     (printf "firn tag index: wrote ~a entries → ~a\n"
+     (printf "fi tag index: wrote ~a entries → ~a\n"
              (length lines) (relative-to-repo INDEX-PATH))]))
 
 (define node-edges

@@ -34,6 +34,7 @@
          (devices (lst "/dev/input/event0"
                        "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
                        "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"))))
+  (enable myConfig.modules.glide)
 
   ;; ============ BUNDLES ============
   (enable myConfig.bundles.terminal
@@ -67,10 +68,10 @@
          (chrome.enable #t)
          (zen-browser.enable #t)
          (qutebrowser.enable #t)
-         ;; gjoa: disabled — gjoa flake.nix build fails on --with-wasi-sysroot
-         ;; (re-enable after fixing gjoa's mozconfig / buildMozillaMach override)
-         ;; (gjoa.enable #t)
-         ))
+         ;; gjoa: developed standalone via `cd ~/code/gjoa && nix develop`
+         ;; + `mach build faster` (~30s). Flip to #t only for release
+         ;; installs — that's a full ~45 min Firefox compile.
+         (gjoa.enable #f)))
   (set myConfig.bundles.gaming
     (att (enable #t)
          (lutris.enable #t)
@@ -109,5 +110,5 @@
           myConfig.modules.codex
           myConfig.modules.vscode
           myConfig.modules.windows-vm)
-    (enable myConfig.modules.nh)
+    (enable myConfig.modules.nh myConfig.modules.babashka)
 )

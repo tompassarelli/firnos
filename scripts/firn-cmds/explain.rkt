@@ -77,14 +77,14 @@
 (define (handle-schema-explain leaf)
   (cond
     [(or (not leaf) (equal? leaf ""))
-     (eprintf "Usage: firn schema explain <option-path | validator-error-line>\n")
+     (eprintf "Usage: fi schema explain <option-path | validator-error-line>\n")
      (exit 2)]
     [else
      (define raw leaf)
      (define path (extract-path-from-input raw))
      (cond
        [(not path)
-        (eprintf "firn explain: couldn't extract an option path from: ~a\n" raw)
+        (eprintf "fi explain: couldn't extract an option path from: ~a\n" raw)
         (exit 1)]
        [else
         (define schema (load-schema-table))

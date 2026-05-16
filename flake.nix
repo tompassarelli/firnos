@@ -24,8 +24,7 @@
     elephant.url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";
     walker.url = "github:abenz1267/walker";
     walker.inputs.elephant.follows = "elephant";
-    palefox.url = "path:/home/tom/code/palefox";
-    palefox.flake = true;
+    palefox.url = "github:tompassarelli/palefox";
     gjoa.url = "github:tompassarelli/gjoa";
   };
   outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, gjoa, ... }: let

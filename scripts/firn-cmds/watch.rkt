@@ -31,7 +31,7 @@
 (define (handle-repo-watch _leaf)
   (file-stream-buffer-mode (current-output-port) 'line)
   (define files (gather-nisp-rkts))
-  (printf "firn watch: monitoring ~a .rkt file(s)... (Ctrl-C to exit)\n"
+  (printf "fi watch: monitoring ~a .rkt file(s)... (Ctrl-C to exit)\n"
           (length files))
   (let loop ([files files])
     (define evts (map filesystem-change-evt files))

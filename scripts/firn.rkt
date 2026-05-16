@@ -71,7 +71,7 @@
 ;; ---------- dispatch ----------
 
 (define (print-edge-usage e)
-  (eprintf "Usage: firn ~a ~a ~a\n"
+  (eprintf "Usage: fi ~a ~a ~a\n"
            (walk-edge-node e) (walk-edge-edge e) (walk-edge-leaf-shape e))
   (eprintf "  ~a\n" (walk-edge-desc e)))
 
@@ -98,11 +98,11 @@
        [(member node (nodes))
         (printf "Edges on '~a':\n" node)
         (for ([e (in-list (edges-of node))])
-          (printf "  firn ~a ~a ~a\n      ~a\n"
+          (printf "  fi ~a ~a ~a\n      ~a\n"
                   (walk-edge-node e) (walk-edge-edge e)
                   (walk-edge-leaf-shape e) (walk-edge-desc e)))]
        [else
-        (eprintf "firn: incomplete walk; expected <node> <edge> [<leaf>]\n")
+        (eprintf "fi: incomplete walk; expected <node> <edge> [<leaf>]\n")
         (suggest-node node)
         (exit 1)])]
     [else
@@ -110,7 +110,7 @@
        (cond
          [(null? tokens) (void)]
          [(< (length tokens) 2)
-          (eprintf "firn: dangling token after a complete walk: ~a\n" (car tokens))
+          (eprintf "fi: dangling token after a complete walk: ~a\n" (car tokens))
           (exit 1)]
          [else
           (define node (car tokens))
@@ -118,7 +118,7 @@
           (define e (lookup-edge node edge))
           (cond
             [(not e)
-             (eprintf "firn: unknown walk '~a ~a'\n" node edge)
+             (eprintf "fi: unknown walk '~a ~a'\n" node edge)
              (suggest-edge node)
              (exit 1)]
             [else
@@ -138,7 +138,7 @@
                   (cond
                     [def (values def '())]
                     [else
-                     (eprintf "firn: '~a ~a' requires a leaf node\n" node edge)
+                     (eprintf "fi: '~a ~a' requires a leaf node\n" node edge)
                      (print-edge-usage e)
                      (exit 1)])]
                  [else (values (car rest) (cdr rest))]))
@@ -292,19 +292,15 @@
           [alias
            (define rewritten ((cdr alias) rest))
            (cond
-             [rewritten
-              (eprintf "firn: '~a' is deprecated — using '~a' instead\n"
-                       (string-join (cons first rest) " ")
-                       (string-join rewritten " "))
-              rewritten]
+             [rewritten rewritten]
              [else tokens])]
           [else tokens])])]))
 
 ;; ---------- help ----------
 
 (define (cmd-help _args)
-  (printf "firn — FirnOS config management\n\n")
-  (printf "Usage:\n  firn <node> <edge> [<leaf>]  [<node> <edge> [<leaf>] ...]\n\n")
+  (printf "fi — FirnOS config management\n\n")
+  (printf "Usage:\n  fi <node> <edge> [<leaf>]  [<node> <edge> [<leaf>] ...]\n\n")
   (printf "Nodes and edges:\n\n")
   (for ([n (in-list (nodes))])
     (printf "~a\n" n)

@@ -16,6 +16,7 @@
          paths-referenced-in
          find-name-kind
          resolve-default
+         flake-input-purity-violations
          (struct-out walk-edge))
 
 ;; ---------- walk-edge metadata ----------
@@ -56,17 +57,35 @@
 
 ;; ---------- repo discovery ----------
 
+(define (looks-like-firn-repo? p)
+  (and (directory-exists? p)
+       (file-exists? (build-path p "scripts" "firn-build"))
+       (file-exists? (build-path p "flake.rkt"))))
+
 (define (find-repo-root)
+  ;; Repo discovery, in order of preference:
+  ;;   1. FIRN_REPO env var — explicit override, only accepted if it looks
+  ;;      like a firn repo (has scripts/firn-build + flake.rkt).
+  ;;   2. `git rev-parse --show-toplevel` from cwd, but ONLY if the result
+  ;;      also looks like a firn repo. This keeps firn commands working
+  ;;      when invoked from inside the nixos-config tree, but avoids
+  ;;      misfiring when the user is in some unrelated git repo.
+  ;;   3. Fallback: $HOME/code/nixos-config.
   (define home (or (getenv "HOME") "/home/tom"))
-  (define default (build-path home "code" "nixos-config"))
-  (with-handlers ([exn:fail? (λ (_) (path->string default))])
-    (define o (open-output-string))
-    (parameterize ([current-output-port o])
-      (system "git rev-parse --show-toplevel 2>/dev/null"))
-    (define s (string-trim (get-output-string o)))
-    (cond
-      [(and (non-empty-string? s) (directory-exists? s)) s]
-      [else (path->string default)])))
+  (define default (path->string (build-path home "code" "nixos-config")))
+  (define from-env (getenv "FIRN_REPO"))
+  (cond
+    [(and from-env (non-empty-string? from-env) (looks-like-firn-repo? from-env))
+     from-env]
+    [else
+     (with-handlers ([exn:fail? (λ (_) default)])
+       (define o (open-output-string))
+       (parameterize ([current-output-port o])
+         (system "git rev-parse --show-toplevel 2>/dev/null"))
+       (define s (string-trim (get-output-string o)))
+       (cond
+         [(and (non-empty-string? s) (looks-like-firn-repo? s)) s]
+         [else default]))]))
 
 (define ROOT (find-repo-root))
 
@@ -142,6 +161,24 @@
   (define root-s (string-append (path->string (simplify-path ROOT)) "/"))
   (cond [(string-prefix? s root-s) (substring s (string-length root-s))]
         [else s]))
+
+;; ---------- flake input purity ----------
+;;
+;; Returns a list of "flake.rkt:<line>: <text>" strings for every line
+;; that declares a flake input with an absolute path: URL (path:/...).
+;; Such inputs trip Nix's pure-eval ("access to absolute path '/...' is
+;; forbidden") as soon as anything reaches into `inputs.<name>`, even
+;; transitively via flake-lock resolution. Empty list ⇒ pure-eval safe.
+(define (flake-input-purity-violations)
+  (define flake-path (in-repo "flake.rkt"))
+  (cond
+    [(not (file-exists? flake-path)) '()]
+    [else
+     (define lines (regexp-split #rx"\n" (file->string flake-path)))
+     (for/list ([line (in-list lines)]
+                [n (in-naturals 1)]
+                #:when (regexp-match? #px"\"path:/[^\"]+\"" line))
+       (format "flake.rkt:~a: ~a" n (regexp-replace #rx"^\\s+" line "")))]))
 
 ;; ---------- option-path extraction from .rkt source ----------
 ;;

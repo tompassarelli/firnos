@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# firn-extract-packages — extract package attr names for validation.
+set -euo pipefail
+
+REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
+
+HOST="${1:-whiterabbit}"
+
+if [[ ! -x "$NISP_PATH/bin/nisp" ]]; then
+  echo "firn-extract-packages: nisp dispatcher not found at $NISP_PATH/bin/nisp" >&2
+  exit 2
+fi
+
+exec "$NISP_PATH/bin/nisp" extract-packages \
+  --flake "$REPO" \
+  --host "$HOST"

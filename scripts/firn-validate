@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-REPO="$(git rev-parse --show-toplevel)"
+REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
 
 if [[ ! -f "$NISP_PATH/bin/nisp" ]]; then
@@ -18,6 +18,19 @@ if [[ ! -f "$NISP_PATH/bin/nisp" ]]; then
   echo "  clone nisp: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
   echo "  or set NISP_PATH=/path/to/nisp" >&2
   exit 2
+fi
+
+# Auto-extract package cache if missing or stale (flake.lock newer)
+PKG_CACHE="$REPO/.nisp-cache/packages.json"
+if [[ ! -f "$PKG_CACHE" ]] || [[ "$REPO/flake.lock" -nt "$PKG_CACHE" ]]; then
+  echo "firn-validate: refreshing package cache..."
+  "$REPO/scripts/firn-extract-packages" || true
+fi
+
+# Syntax-check generated .nix files
+if ! "$REPO/scripts/firn-lint-nix"; then
+  echo "firn-validate: generated .nix has syntax errors (firn-build codegen bug?)" >&2
+  exit 1
 fi
 
 exec racket "$NISP_PATH/bin/nisp" validate \

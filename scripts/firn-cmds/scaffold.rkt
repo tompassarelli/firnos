@@ -11,7 +11,7 @@
 
 (define (write-and-add path contents)
   (when (file-exists? path)
-    (eprintf "firn scaffold: refusing to overwrite ~a\n" path)
+    (eprintf "fi scaffold: refusing to overwrite ~a\n" path)
     (exit 1))
   (make-directory* (path-only path))
   (display-to-file contents path)

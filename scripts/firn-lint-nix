@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# firn-lint-nix — syntax-check generated .nix files.
+# Catches codegen bugs in firn-build before they reach nix build.
+set -euo pipefail
+
+REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+errors=0
+
+while IFS= read -r -d '' nix_file; do
+  # Skip hardware-configuration.nix (NixOS-generated, no .rkt source)
+  [[ "$nix_file" == *hardware-configuration* ]] && continue
+  # Skip .nisp-cache
+  [[ "$nix_file" == *.nisp-cache* ]] && continue
+
+  if ! nix-instantiate --parse-only "$nix_file" >/dev/null 2>&1; then
+    echo "SYNTAX ERROR: $nix_file"
+    nix-instantiate --parse-only "$nix_file" 2>&1 | head -5
+    echo ""
+    ((errors++)) || true
+  fi
+done < <(find "$REPO" -name "*.nix" -not -path "*/.git/*" -not -path "*/result/*" -not -path "*/.direnv/*" -print0)
+
+if [[ $errors -gt 0 ]]; then
+  echo ""
+  echo "$errors file(s) with syntax errors."
+  exit 1
+else
+  echo "firn-lint-nix: all .nix files parse cleanly."
+fi

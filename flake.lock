@@ -574,14 +574,17 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1777313885,
-        "narHash": "sha256-evsq2AT3Th/eKgmlqW5Ti4dJVxiQB+GAY8BFFY7qK9w=",
-        "path": "/home/tom/code/palefox",
-        "type": "path"
+        "lastModified": 1778294319,
+        "narHash": "sha256-8ZVLTPmcnDp44+KIQyXRQkAgxFRqUt036t4Yxo9k8N4=",
+        "owner": "tompassarelli",
+        "repo": "palefox",
+        "rev": "bf1012dc0adae7574447feb0260054ce844f4f68",
+        "type": "github"
       },
       "original": {
-        "path": "/home/tom/code/palefox",
-        "type": "path"
+        "owner": "tompassarelli",
+        "repo": "palefox",
+        "type": "github"
       }
     },
     "quickshell": {

@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-REPO="$(git rev-parse --show-toplevel)"
+REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
 
 DARWIN=false

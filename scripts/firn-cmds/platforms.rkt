@@ -229,11 +229,11 @@
 (define (require-schemas!)
   (cond
     [(not (file-exists? NIXOS-SCHEMA))
-     (eprintf "firn platform: NixOS schema cache missing.\n")
+     (eprintf "fi platform: NixOS schema cache missing.\n")
      (eprintf "  run: ./scripts/firn-extract-schema\n")
      (exit 1)]
     [(not (file-exists? DARWIN-SCHEMA))
-     (eprintf "firn platform: darwin schema cache missing.\n")
+     (eprintf "fi platform: darwin schema cache missing.\n")
      (eprintf "  run: ./scripts/firn-extract-schema --darwin\n")
      (exit 1)]))
 
@@ -293,7 +293,7 @@
      (printf "environment.systemPackages will pass even if the package itself\n")
      (printf "has no darwin build. Try `darwin-rebuild build` to confirm.\n")]
     [else
-     (eprintf "firn platform list: expected one of all|darwin|linux|bundles, got '~a'\n" leaf)
+     (eprintf "fi platform list: expected one of all|darwin|linux|bundles, got '~a'\n" leaf)
      (exit 1)]))
 
 (define (handle-platform-show name)
@@ -319,7 +319,7 @@
          (printf "  ~a (~a)\n" m mv)
          (for ([p (in-list mbs)]) (printf "    ~a\n" p))))]
     [else
-     (eprintf "firn platform show: no module or bundle named '~a'\n" name)
+     (eprintf "fi platform show: no module or bundle named '~a'\n" name)
      (exit 1)]))
 
 (define (handle-platform-safelist _leaf)
