@@ -201,8 +201,12 @@
                (list "host" "rebuild" host)])))
     (cons "doctor"  (λ (_) (list "host"   "doctor")))
     (cons "gen"     (λ (_) (list "host"   "gen")))
-    (cons "diff"    (λ (args) (cond [(null? args) (list "repo" "diff" "all")]
-                                    [else         (list "repo" "diff" (car args))])))
+    (cons "diff"    (λ (args)
+                      (define semantic? (member "--semantic" args))
+                      (define rest (filter (λ (a) (not (equal? a "--semantic"))) args))
+                      (define target (if (pair? rest) (car rest) "all"))
+                      (cond [semantic? (list "repo" "sdiff" target)]
+                            [else      (list "repo" "diff" target)])))
     (cons "upgrade" (λ (args) (cond [(member "--dry-run" args) (list "repo" "upgrade" "dry-run")]
                                     [else                      (list "repo" "upgrade" "now")])))
     (cons "watch"   (λ (_) (list "repo" "watch")))

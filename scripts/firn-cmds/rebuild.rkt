@@ -109,6 +109,64 @@
          (eprintf "fix: publish to a git remote (github:owner/repo), or override locally with --override-input.\n")
          (exit 1))]))
 
+  ;; Step 2c: impact prediction (informational only — never blocks rebuild).
+  ;; Runs nix build --dry-run to summarize what will be built vs fetched.
+  (with-handlers ([exn:fail? (λ (_) (void))])
+    (define host-name (or host (current-hostname)))
+    (define flake-ref (string-append ROOT "#nixosConfigurations." host-name
+                                     ".config.system.build.toplevel"))
+    (define nix-bin (find-executable-path "nix"))
+    (when nix-bin
+      (define dry-args
+        (append (list nix-bin "build" flake-ref "--dry-run")
+                (if auto-impure? (list "--impure") '())))
+      (define out-port (open-output-string))
+      (define err-port (open-output-string))
+      (parameterize ([current-output-port out-port]
+                     [current-error-port err-port])
+        (apply system* dry-args))
+      (define dry-text (string-append (get-output-string out-port)
+                                      (get-output-string err-port)))
+      ;; Parse build/fetch counts
+      (define build-match (regexp-match #rx"these ([0-9]+) derivations will be built" dry-text))
+      (define fetch-match (regexp-match #rx"these paths will be fetched \\(([0-9.]+) MiB" dry-text))
+      (define build-count (if build-match (string->number (cadr build-match)) 0))
+      (define fetch-size (if fetch-match (cadr fetch-match) #f))
+      ;; Extract names of derivations to build (for notable detection)
+      (define build-lines
+        (let ([m (regexp-match #rx"will be built:\n([^\n]*(?:\n  /nix/store[^\n]*)*)" dry-text)])
+          (if m
+              (filter non-empty-string?
+                      (map string-trim (string-split (cadr m) "\n")))
+              '())))
+      ;; Known-expensive patterns
+      (define expensive
+        '(("firefox" . "~30 min") ("librewolf" . "~30 min")
+          ("chromium" . "~60 min") ("linux-6" . "~15 min")
+          ("ghc-" . "~30 min") ("llvm-" . "~20 min")
+          ("rustc-" . "~20 min") ("nodejs-" . "~5 min")
+          ("qt6-" . "~15 min") ("webkit" . "~30 min")))
+      (define notable
+        (for*/list ([line (in-list build-lines)]
+                    [pair (in-list expensive)]
+                    #:when (regexp-match? (regexp (car pair)) line))
+          (format "~a ~a" (car pair) (cdr pair))))
+      ;; Print concise summary
+      (when (or (> build-count 0) fetch-size)
+        (define parts
+          (append
+           (if (> build-count 0)
+               (list (format "~a to build" build-count))
+               '())
+           (if fetch-size
+               (list (format "~a MiB cached" fetch-size))
+               '())))
+        (define notable-str
+          (if (pair? notable)
+              (format " — notable: ~a" (string-join (remove-duplicates notable) ", "))
+              ""))
+        (printf ">> rebuild (~a~a)\n" (string-join parts ", ") notable-str))))
+
   ;; Step 3: actual rebuild. Dispatch by platform.
   (printf ">> rebuild\n")
   (define on-darwin?

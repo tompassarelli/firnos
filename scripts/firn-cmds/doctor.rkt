@@ -36,6 +36,19 @@
        (printf "      ~a\n" line))
      #f]))
 
+(define (check-warning name predicate-thunk)
+  ;; Like check-status but non-blocking — prints a warning, always returns #t.
+  (define-values (ok? details) (predicate-thunk))
+  (cond
+    [ok?
+     (printf "  ✓ ~a\n" name)
+     #t]
+    [else
+     (printf "  ⚠ ~a\n" name)
+     (for ([line (in-list details)])
+       (printf "      ~a\n" line))
+     #t]))
+
 ;; ---------- individual checks ----------
 
 (define (check-untracked)
@@ -118,18 +131,27 @@
            (values #f (list "darwin schema cache older than flake.lock — re-run firn-extract-schema --darwin"))]
           [else (values #t '())])])]))
 
+(define (module-referenced? m)
+  ;; A module is "referenced" if any host or bundle config mentions it via:
+  ;;   - myConfig.modules.<name>.enable / .default / .<anything>
+  ;;   - bare name inside a (sub-modules ...) form
+  (define dotted-re (pregexp (format "modules\\.~a[.\\s)]" (regexp-quote m))))
+  (define sub-mod-re (pregexp (format "sub-modules[^)]*\\b~a\\b" (regexp-quote m))))
+  (or (pair? (grep-files "hosts" dotted-re))
+      (pair? (grep-files "bundles" dotted-re))
+      (pair? (grep-files "hosts" sub-mod-re))
+      (pair? (grep-files "bundles" sub-mod-re))))
+
 (define (check-orphaned-modules)
-  (define orphans '())
-  (for ([m (in-list (modules))])
-    (define re (regexp (format "myConfig\\.modules\\.~a\\.enable" m)))
-    (when (and (null? (grep-files "hosts" re))
-               (null? (grep-files "bundles" re)))
-      (set! orphans (cons m orphans))))
+  (define orphans
+    (for/list ([m (in-list (modules))]
+               #:when (not (module-referenced? m)))
+      m))
   (cond
     [(null? orphans) (values #t '())]
-    [else (values #f (cons (format "~a unreferenced modules:" (length orphans))
-                           (map (λ (m) (string-append "  " m))
-                                (reverse orphans))))]))
+    [else (values #f (cons (format "~a unreferenced module(s) (config rot?):" (length orphans))
+                           (map (λ (m) (string-append "  modules/" m "/"))
+                                orphans)))]))
 
 (define (check-flake-input-purity)
   ;; Flake inputs declared as "path:/abs/..." resolve to an absolute filesystem
@@ -171,7 +193,7 @@
      (check-status ".nix outputs are up-to-date with .rkt sources" check-stale-nix)
      (check-status "schema cache is fresh" check-schema-cache)
      (check-status "darwin schema cache is fresh (if applicable)" check-darwin-schema-cache)
-     (check-status "no orphaned (unreferenced) modules" check-orphaned-modules)
+     (check-warning "no dead (unreferenced) modules" check-orphaned-modules)
      (check-status "flake inputs are pure-eval safe (no absolute paths)" check-flake-input-purity)
      (check-status "validator passes" check-validator)))
   (define total (length passes))
