@@ -15,6 +15,7 @@
   myConfig.modules.framework.enable = true;
   myConfig.modules.framework13-mic.enable = true;
   myConfig.modules.fwupd.enable = true;
+  myConfig.modules.thermal-management.enable = true;
   myConfig.modules.pipewire.enable = true;
   myConfig.modules.bluetooth.enable = true;
   myConfig.modules.input.enable = true;

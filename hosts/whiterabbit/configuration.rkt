@@ -21,6 +21,7 @@
   (enable myConfig.modules.framework
           myConfig.modules.framework13-mic
           myConfig.modules.fwupd
+          myConfig.modules.thermal-management
           myConfig.modules.pipewire
           myConfig.modules.bluetooth
           myConfig.modules.input)

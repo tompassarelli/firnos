@@ -9,9 +9,9 @@
       (att (experimental-features (lst "nix-command" "flakes"))
            (builders-use-substitutes #t)
 
-           ;; Parallel build settings (maximize CPU usage)
-           (max-jobs "auto")  ; Auto-detect based on CPU count
-           (cores 0)          ; Cores per job (0 = use all available)
+           ;; Parallel build settings
+           (max-jobs "auto")
+           (cores 16)         ; Leave 8 threads free to prevent thermal shutdown
 
            ;; Walker binary caches (avoids building from source)
            (auto-optimise-store #t)
