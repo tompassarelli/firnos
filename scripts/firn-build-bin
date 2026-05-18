@@ -17,11 +17,11 @@ set -euo pipefail
 cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
-SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/fi}"
+SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/firn}"
 mkdir -p "$BIN_DIR" "$SHARE_DIR"
 
-ZO="$SHARE_DIR/fi.zo"
-WRAPPER="$BIN_DIR/fi"
+ZO="$SHARE_DIR/firn.zo"
+WRAPPER="$BIN_DIR/firn"
 
 echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
 raco demod -o "$ZO" scripts/firn.rkt

@@ -74,32 +74,32 @@
      f)
    path<? #:key path->string))
 
-;; fi schema extract [<host>]  — regenerate options schema cache
-;; fi schema packages [<host>] — regenerate package name cache
+;; firn schema extract [<host>]  — regenerate options schema cache
+;; firn schema packages [<host>] — regenerate package name cache
 
 (define (handle-schema-extract leaf)
   (define host (if (equal? leaf "current") (current-hostname) leaf))
   (printf ">> firn-extract-schema ~a\n" host)
   (unless (sh (path->string (in-repo "scripts" "firn-extract-schema")) host)
-    (eprintf "fi schema extract: failed.\n") (exit 1)))
+    (eprintf "firn schema extract: failed.\n") (exit 1)))
 
 (define (handle-schema-packages leaf)
   (define host (if (equal? leaf "current") (current-hostname) leaf))
   (printf ">> firn-extract-packages ~a\n" host)
   (unless (sh (path->string (in-repo "scripts" "firn-extract-packages")) host)
-    (eprintf "fi schema packages: failed.\n") (exit 1)))
+    (eprintf "firn schema packages: failed.\n") (exit 1)))
 
 (define (handle-schema-explain leaf)
   (cond
     [(or (not leaf) (equal? leaf ""))
-     (eprintf "Usage: fi schema explain <option-path | validator-error-line>\n")
+     (eprintf "Usage: firn schema explain <option-path | validator-error-line>\n")
      (exit 2)]
     [else
      (define raw leaf)
      (define path (extract-path-from-input raw))
      (cond
        [(not path)
-        (eprintf "fi explain: couldn't extract an option path from: ~a\n" raw)
+        (eprintf "firn explain: couldn't extract an option path from: ~a\n" raw)
         (exit 1)]
        [else
         (define schema (load-schema-table))

@@ -146,7 +146,7 @@
   (cond
     [(equal? leaf "all") (print-flat-status (current-hostname) 'modules)]
     [else
-     (eprintf "fi module status: expected 'all', got '~a'\n" leaf)
+     (eprintf "firn module status: expected 'all', got '~a'\n" leaf)
      (exit 1)]))
 
 (define (handle-bundle-status leaf)

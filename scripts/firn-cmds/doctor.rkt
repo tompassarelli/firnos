@@ -185,7 +185,7 @@
 ;; ---------- main ----------
 
 (define (handle-doctor _leaf)
-  (printf "fi doctor: running checks on ~a\n\n"
+  (printf "firn doctor: running checks on ~a\n\n"
           (if (path? ROOT) (path->string ROOT) ROOT))
   (define passes
     (list

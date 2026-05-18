@@ -56,7 +56,7 @@
   (cond
     [ok? (get-output-string out)]
     [else
-     (eprintf "fi diff: failed to evaluate ~a\n" (path->string rkt-path))
+     (eprintf "firn diff: failed to evaluate ~a\n" (path->string rkt-path))
      (eprintf "~a" (get-output-string err))
      #f]))
 
@@ -109,7 +109,7 @@
        (define r (resolve-rkt-source leaf))
        (cond
          [r (list r)]
-         [else (eprintf "fi diff: cannot resolve ~a\n" leaf) (exit 1)])]))
+         [else (eprintf "firn diff: cannot resolve ~a\n" leaf) (exit 1)])]))
   (define same 0)
   (define diff 0)
   (define err 0)
@@ -279,7 +279,7 @@
        (define r (resolve-rkt-source leaf))
        (cond
          [r (list (relative-to-repo r))]
-         [else (eprintf "fi sdiff: cannot resolve ~a\n" leaf) (exit 1)])]))
+         [else (eprintf "firn sdiff: cannot resolve ~a\n" leaf) (exit 1)])]))
   (when (null? targets)
     (printf "Semantic diff: no .rkt changes vs HEAD.\n")
     (exit 0))

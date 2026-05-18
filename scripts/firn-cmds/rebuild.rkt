@@ -28,12 +28,12 @@
 ;; Modules whose own flake.nix references an absolute path outside the
 ;; flake source tree (e.g. gjoa's gitignored 5GB engine/ dir) and so
 ;; can't evaluate under pure-eval. If the host enables one of these,
-;; fi rebuild auto-adds --impure so the rebuild doesn't die with the
+;; firn rebuild auto-adds --impure so the rebuild doesn't die with the
 ;; cryptic "access to absolute path '/home' is forbidden" trace.
 ;;
 ;; NOTE: enabling a module in this list means a *full system-package
 ;; rebuild* of that project — gjoa is ~45 min cold. Daily development of
-;; gjoa happens OUTSIDE fi rebuild, in the gjoa dev shell via
+;; gjoa happens OUTSIDE firn rebuild, in the gjoa dev shell via
 ;; `mach build faster` (~30s). Only flip gjoa.enable to #t when you
 ;; actually want a release-quality binary installed system-wide.
 (define IMPURE-MODULES '("gjoa"))
@@ -64,12 +64,12 @@
     (file-stream-buffer-mode (current-output-port) 'line))
   ;; Auto-impure when the host enables a module whose flake intrinsically
   ;; reads paths outside its source tree (currently: gjoa). For these
-  ;; modules a `fi rebuild` is a full system-package rebuild — for gjoa,
+  ;; modules a `firn rebuild` is a full system-package rebuild — for gjoa,
   ;; ~45 minutes — and is intended only for release-time installs.
   (define auto-impure?
     (and host (host-needs-impure? host)))
   (when auto-impure?
-    (printf "fi rebuild: passing --impure (host enables: ~a)\n"
+    (printf "firn rebuild: passing --impure (host enables: ~a)\n"
             (string-join (host-impure-modules host) ", "))
     (printf "             this triggers a full ~~45 min Firefox compile.\n")
     (printf "             for daily gjoa dev use the gjoa dev shell + mach build faster.\n"))
@@ -77,20 +77,20 @@
     ;; Step 1: regenerate any out-of-date .nix from .rkt sources.
     (printf ">> firn-build\n")
     (unless (sh (path->string (in-repo "scripts" "firn-build")))
-      (eprintf "fi rebuild: firn-build failed; aborting.\n") (exit 1))
+      (eprintf "firn rebuild: firn-build failed; aborting.\n") (exit 1))
     ;; Step 1b: warn about untracked .rkt/.nix — Nix can't see them.
     (define untracked
       (let ([s (sh-out "git" "-C" ROOT "ls-files" "--others" "--exclude-standard")])
         (filter (λ (p) (regexp-match? #rx"\\.(rkt|nix)$" p))
                 (string-split s "\n"))))
     (unless (null? untracked)
-      (eprintf "fi rebuild: untracked files invisible to Nix — git add them first:\n")
+      (eprintf "firn rebuild: untracked files invisible to Nix — git add them first:\n")
       (for ([p (in-list untracked)]) (eprintf "  ~a\n" p))
       (exit 1))
     ;; Step 2: validate paths and value types against the schema.
     (printf ">> firn-validate\n")
     (unless (sh (path->string (in-repo "scripts" "firn-validate")))
-      (eprintf "fi rebuild: validation failed; aborting.\n") (exit 1))
+      (eprintf "firn rebuild: validation failed; aborting.\n") (exit 1))
     ;; Step 2b: flake input purity. firn-validate is schema-only and can't
     ;; see flake-level concerns, so check here before nix gets its hands
     ;; on the tree — otherwise the build fails several minutes later with
@@ -104,7 +104,7 @@
        (printf ">> flake-input-purity\n")
        (define purity-issues (flake-input-purity-violations))
        (unless (null? purity-issues)
-         (eprintf "fi rebuild: flake has absolute path: inputs that break pure eval:\n")
+         (eprintf "firn rebuild: flake has absolute path: inputs that break pure eval:\n")
          (for ([line (in-list purity-issues)]) (eprintf "  ~a\n" line))
          (eprintf "fix: publish to a git remote (github:owner/repo), or override locally with --override-input.\n")
          (exit 1))]))
@@ -241,14 +241,14 @@
          (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD")
          (printf "Tagged: gen-~a\n" gen)))]))
 
-;; fi host impact [<host>]  — dry-run rebuild impact prediction
+;; firn host impact [<host>]  — dry-run rebuild impact prediction
 
 (define (handle-host-impact leaf)
   (define host (cond [(equal? leaf "current") (current-hostname)]
                      [else leaf]))
   (printf ">> rebuild impact (~a)\n" host)
   (unless (sh (path->string (in-repo "scripts" "firn-rebuild-impact")) host)
-    (eprintf "fi host impact: failed.\n") (exit 1)))
+    (eprintf "firn host impact: failed.\n") (exit 1)))
 
 (define node-edges
   (list

@@ -320,6 +320,17 @@ window-rule {
     open-floating true
 }
 
+// Pin CRM apps to the heist workspace so they don't steal focus
+window-rule {
+    match title="Heist CRM"
+    open-on-workspace "heist"
+}
+window-rule {
+    match title="Kea"
+    open-on-workspace "heist"
+}
+
+
 // Example: block out two password managers from screen capture.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {

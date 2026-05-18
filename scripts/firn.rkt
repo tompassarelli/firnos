@@ -73,7 +73,7 @@
 ;; ---------- dispatch ----------
 
 (define (print-edge-usage e)
-  (eprintf "Usage: fi ~a ~a ~a\n"
+  (eprintf "Usage: firn ~a ~a ~a\n"
            (walk-edge-node e) (walk-edge-edge e) (walk-edge-leaf-shape e))
   (eprintf "  ~a\n" (walk-edge-desc e)))
 
@@ -100,11 +100,11 @@
        [(member node (nodes))
         (printf "Edges on '~a':\n" node)
         (for ([e (in-list (edges-of node))])
-          (printf "  fi ~a ~a ~a\n      ~a\n"
+          (printf "  firn ~a ~a ~a\n      ~a\n"
                   (walk-edge-node e) (walk-edge-edge e)
                   (walk-edge-leaf-shape e) (walk-edge-desc e)))]
        [else
-        (eprintf "fi: incomplete walk; expected <node> <edge> [<leaf>]\n")
+        (eprintf "firn: incomplete walk; expected <node> <edge> [<leaf>]\n")
         (suggest-node node)
         (exit 1)])]
     [else
@@ -112,7 +112,7 @@
        (cond
          [(null? tokens) (void)]
          [(< (length tokens) 2)
-          (eprintf "fi: dangling token after a complete walk: ~a\n" (car tokens))
+          (eprintf "firn: dangling token after a complete walk: ~a\n" (car tokens))
           (exit 1)]
          [else
           (define node (car tokens))
@@ -120,7 +120,7 @@
           (define e (lookup-edge node edge))
           (cond
             [(not e)
-             (eprintf "fi: unknown walk '~a ~a'\n" node edge)
+             (eprintf "firn: unknown walk '~a ~a'\n" node edge)
              (suggest-edge node)
              (exit 1)]
             [else
@@ -140,7 +140,7 @@
                   (cond
                     [def (values def '())]
                     [else
-                     (eprintf "fi: '~a ~a' requires a leaf node\n" node edge)
+                     (eprintf "firn: '~a ~a' requires a leaf node\n" node edge)
                      (print-edge-usage e)
                      (exit 1)])]
                  [else (values (car rest) (cdr rest))]))
@@ -311,19 +311,19 @@
 ;; ---------- help ----------
 
 (define (cmd-help _args)
-  (printf "fi — FirnOS config management\n\n")
-  (printf "Usage:\n  fi <node> <edge> [<leaf>]  [<node> <edge> [<leaf>] ...]\n\n")
+  (printf "firn — FirnOS config management\n\n")
+  (printf "Usage:\n  firn <node> <edge> [<leaf>]  [<node> <edge> [<leaf>] ...]\n\n")
   (printf "Common shortcuts (default host is auto-detected):\n")
-  (printf "  fi rebuild          build + validate + switch (current host)\n")
-  (printf "  fi build            regenerate .nix from .rkt\n")
-  (printf "  fi validate         lint + type/package/path check\n")
-  (printf "  fi impact           what will rebuild, estimated time\n")
-  (printf "  fi doctor           repo health check\n")
-  (printf "  fi status           enabled modules/bundles\n")
-  (printf "  fi enable <name>    toggle a module or bundle on\n")
-  (printf "  fi disable <name>   toggle off\n")
-  (printf "  fi diff             re-emit and diff vs committed .nix\n")
-  (printf "  fi diff --semantic  option-level changelog\n")
+  (printf "  firn rebuild          build + validate + switch (current host)\n")
+  (printf "  firn build            regenerate .nix from .rkt\n")
+  (printf "  firn validate         lint + type/package/path check\n")
+  (printf "  firn impact           what will rebuild, estimated time\n")
+  (printf "  firn doctor           repo health check\n")
+  (printf "  firn status           enabled modules/bundles\n")
+  (printf "  firn enable <name>    toggle a module or bundle on\n")
+  (printf "  firn disable <name>   toggle off\n")
+  (printf "  firn diff             re-emit and diff vs committed .nix\n")
+  (printf "  firn diff --semantic  option-level changelog\n")
   (printf "\nFull graph:\n\n")
   (for ([n (in-list (nodes))])
     (printf "~a\n" n)
