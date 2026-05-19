@@ -1,0 +1,14 @@
+#lang beagle/nix
+(ns bundles.communication)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.communication.enable
+     (lib/mkEnableOption "communication applications")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.communication.enable
+       {
+        :myConfig.modules.discord.enable (lib/mkDefault true)
+        :myConfig.modules.zoom.enable (lib/mkDefault true)
+        :myConfig.modules.slack.enable (lib/mkDefault true)
+        :myConfig.modules.mail.enable (lib/mkDefault true)})})

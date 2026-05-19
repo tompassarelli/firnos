@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.protonvpn-gui)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.protonvpn-gui.enable
+     (lib/mkEnableOption "ProtonVPN GUI client")
+
+   :config
+     (lib/mkIf config.myConfig.modules.protonvpn-gui.enable
+       {:environment.systemPackages (with-do pkgs [protonvpn-gui])})})

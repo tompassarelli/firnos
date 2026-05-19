@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.gcc)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.gcc.enable
+     (lib/mkEnableOption "GNU C compiler")
+
+   :config
+     (lib/mkIf config.myConfig.modules.gcc.enable
+       {:environment.systemPackages (with-do pkgs [gcc])})})

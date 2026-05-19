@@ -1,0 +1,18 @@
+#lang beagle/nix
+(ns bundles.rust)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.rust.enable
+     (lib/mkEnableOption "Rust development toolchain")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.rust.enable
+       {
+        :myConfig.modules.rustc.enable (lib/mkDefault true)
+        :myConfig.modules.cargo.enable (lib/mkDefault true)
+        :myConfig.modules.rust-analyzer.enable (lib/mkDefault true)
+        :myConfig.modules.clippy.enable (lib/mkDefault true)
+        :myConfig.modules.rustfmt.enable (lib/mkDefault true)
+        :myConfig.modules.pkg-config.enable (lib/mkDefault true)
+        :myConfig.modules.gcc.enable (lib/mkDefault true)
+        :myConfig.modules.bevy.enable (lib/mkDefault false)})})

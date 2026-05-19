@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.gimp)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.gimp.enable
+     (lib/mkEnableOption "GIMP image editor")
+
+   :config
+     (lib/mkIf config.myConfig.modules.gimp.enable
+       {:environment.systemPackages (with-do pkgs [gimp])})})

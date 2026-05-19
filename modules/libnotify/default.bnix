@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.libnotify)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.libnotify.enable
+     (lib/mkEnableOption "libnotify notification client")
+
+   :config
+     (lib/mkIf config.myConfig.modules.libnotify.enable
+       {:environment.systemPackages (with-do pkgs [libnotify])})})

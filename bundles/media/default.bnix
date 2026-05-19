@@ -1,0 +1,15 @@
+#lang beagle/nix
+(ns bundles.media)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.media.enable
+     (lib/mkEnableOption "media consumption and viewing")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.media.enable
+       {
+        :myConfig.modules.spotify.enable (lib/mkDefault true)
+        :myConfig.modules.youtube-music.enable (lib/mkDefault true)
+        :myConfig.modules.imv.enable (lib/mkDefault true)
+        :myConfig.modules.mpv.enable (lib/mkDefault true)
+        :myConfig.modules.zathura.enable (lib/mkDefault true)})})

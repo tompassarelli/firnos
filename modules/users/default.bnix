@@ -1,0 +1,5 @@
+#lang beagle/nix
+(ns users.default)
+
+(module [lib]
+  {:imports [(p "./users.nix")]})

@@ -1,0 +1,11 @@
+#lang beagle/nix
+(ns bundles.javascript)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.javascript.enable
+     (lib/mkEnableOption "JavaScript / Node.js development")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.javascript.enable
+       {
+        :myConfig.modules.nodejs.enable (lib/mkDefault true)})})

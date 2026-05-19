@@ -1,0 +1,15 @@
+#lang beagle/nix
+(ns modules.tealdeer)
+
+(module [config lib pkgs]
+  (let [username config.myConfig.modules.users.username]
+  {:options.myConfig.modules.tealdeer.enable
+     (lib/mkEnableOption "Enable tealdeer (tldr client)")
+
+   :config
+     (lib/mkIf config.myConfig.modules.tealdeer.enable
+       {
+        :environment.systemPackages (with-do pkgs [tealdeer])
+        :home-manager.users
+          {username
+            {            :xdg.configFile {"${\"tealdeer/config.toml\"}.source" (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory (s "/code/nixos-config/dotfiles/tealdeer/config.toml")))}}}})}))

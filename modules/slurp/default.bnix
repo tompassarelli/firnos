@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.slurp)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.slurp.enable
+     (lib/mkEnableOption "Wayland region selector")
+
+   :config
+     (lib/mkIf config.myConfig.modules.slurp.enable
+       {:environment.systemPackages (with-do pkgs [slurp])})})

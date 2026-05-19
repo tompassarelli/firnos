@@ -1,0 +1,17 @@
+#lang beagle/nix
+(ns bundles.productivity)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.productivity.enable
+     (lib/mkEnableOption "personal productivity applications")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.productivity.enable
+       {
+        :myConfig.modules.obsidian.enable (lib/mkDefault true)
+        :myConfig.modules.anytype.enable (lib/mkDefault true)
+        :myConfig.modules.todoist.enable (lib/mkDefault true)
+        :myConfig.modules.pomodoro.enable (lib/mkDefault true)
+        :myConfig.modules.hugo.enable (lib/mkDefault true)
+        :myConfig.modules.pandoc.enable (lib/mkDefault true)
+        :myConfig.modules.libreoffice.enable (lib/mkDefault true)})})

@@ -1,0 +1,14 @@
+#lang beagle/nix
+(ns bundles.csharp)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.csharp.enable
+     (lib/mkEnableOption "C# / .NET development (dotnet, sqlcmd, Windows VM)")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.csharp.enable
+       {
+        :myConfig.modules.dotnet.enable (lib/mkDefault true)
+        :myConfig.modules.sqlcmd.enable (lib/mkDefault true)
+        :myConfig.modules.unixodbc.enable (lib/mkDefault true)
+        :myConfig.modules.windows-vm.enable (lib/mkDefault true)})})

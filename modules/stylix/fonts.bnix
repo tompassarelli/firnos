@@ -1,0 +1,5 @@
+#lang beagle/nix
+(ns stylix.fonts)
+
+(module [config lib]
+  {:config (lib/mkIf config.myConfig.modules.stylix.enable {:fonts.fontconfig.enable true})})

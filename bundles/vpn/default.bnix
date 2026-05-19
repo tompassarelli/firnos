@@ -1,0 +1,13 @@
+#lang beagle/nix
+(ns bundles.vpn)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.vpn.enable
+     (lib/mkEnableOption "VPN support")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.vpn.enable
+       {
+        :myConfig.modules.wireguard.enable (lib/mkDefault true)
+        :myConfig.modules.protonvpn-gui.enable (lib/mkDefault true)
+        :myConfig.modules.protonvpn-cli.enable (lib/mkDefault true)})})

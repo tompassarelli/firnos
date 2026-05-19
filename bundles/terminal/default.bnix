@@ -1,0 +1,16 @@
+#lang beagle/nix
+(ns bundles.terminal)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.terminal.enable
+     (lib/mkEnableOption "terminal environment")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.terminal.enable
+       {
+        :myConfig.modules.kitty.enable (lib/mkDefault false)
+        :myConfig.modules.ghostty.enable (lib/mkDefault true)
+        :myConfig.modules.fish.enable (lib/mkDefault true)
+        :myConfig.modules.zoxide.enable (lib/mkDefault true)
+        :myConfig.modules.atuin.enable (lib/mkDefault true)
+        :myConfig.modules.starship.enable (lib/mkDefault true)})})

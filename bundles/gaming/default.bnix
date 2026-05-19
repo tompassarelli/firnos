@@ -1,0 +1,14 @@
+#lang beagle/nix
+(ns bundles.gaming)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.gaming.enable
+     (lib/mkEnableOption "gaming platforms and tools")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.gaming.enable
+       {
+        :myConfig.modules.steam.enable (lib/mkDefault true)
+        :myConfig.modules.lutris.enable (lib/mkDefault true)
+        :myConfig.modules.wowup.enable (lib/mkDefault true)
+        :myConfig.modules.wine.enable (lib/mkDefault true)})})

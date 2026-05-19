@@ -1,0 +1,24 @@
+#lang beagle/nix
+(ns bundles.cli-tools)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.cli-tools.enable
+     (lib/mkEnableOption "modern CLI tools")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.cli-tools.enable
+       {
+        :myConfig.modules.yazi.enable (lib/mkDefault true)
+        :myConfig.modules.tree.enable (lib/mkDefault true)
+        :myConfig.modules.dust.enable (lib/mkDefault true)
+        :myConfig.modules.eza.enable (lib/mkDefault true)
+        :myConfig.modules.procs.enable (lib/mkDefault true)
+        :myConfig.modules.tealdeer.enable (lib/mkDefault true)
+        :myConfig.modules.fastfetch.enable (lib/mkDefault true)
+        :myConfig.modules.btop.enable (lib/mkDefault true)
+        :myConfig.modules.unrar.enable (lib/mkDefault true)
+        :myConfig.modules.curl.enable (lib/mkDefault true)
+        :myConfig.modules.wget.enable (lib/mkDefault true)
+        :myConfig.modules.unzip.enable (lib/mkDefault true)
+        :myConfig.modules.imagemagick.enable (lib/mkDefault true)
+        :myConfig.modules.ghostscript.enable (lib/mkDefault true)})})

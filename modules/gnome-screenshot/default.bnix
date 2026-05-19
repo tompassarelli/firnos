@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.gnome-screenshot)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.gnome-screenshot.enable
+     (lib/mkEnableOption "GNOME Screenshot tool")
+
+   :config
+     (lib/mkIf config.myConfig.modules.gnome-screenshot.enable
+       {:environment.systemPackages (with-do pkgs [gnome-screenshot])})})

@@ -1,0 +1,24 @@
+#lang beagle/nix
+(ns bundles.doom-emacs)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.doom-emacs.enable
+     (lib/mkEnableOption "Doom Emacs (emacs + build deps + tools)")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.doom-emacs.enable
+       {
+        :myConfig.modules.doom-emacs.enable (lib/mkDefault true)
+        :myConfig.modules.emacs.enable (lib/mkDefault true)
+        :myConfig.modules.nerd-fonts.enable (lib/mkDefault true)
+        :myConfig.modules.ripgrep.enable (lib/mkDefault true)
+        :myConfig.modules.fd.enable (lib/mkDefault true)
+        :myConfig.modules.clang.enable (lib/mkDefault true)
+        :myConfig.modules.cmake.enable (lib/mkDefault true)
+        :myConfig.modules.gnumake.enable (lib/mkDefault true)
+        :myConfig.modules.gcc.enable (lib/mkDefault true)
+        :myConfig.modules.libtool.enable (lib/mkDefault true)
+        :myConfig.modules.sbcl.enable (lib/mkDefault true)
+        :myConfig.modules.gnome-screenshot.enable (lib/mkDefault true)
+        :myConfig.modules.graphviz.enable (lib/mkDefault true)
+        :myConfig.modules.shellcheck.enable (lib/mkDefault true)})})

@@ -1,0 +1,15 @@
+#lang beagle/nix
+(ns modules.claude)
+
+(module [config lib pkgs]
+  (let [username config.myConfig.modules.users.username]
+  {:options.myConfig.modules.claude.enable
+     (lib/mkEnableOption "Claude Code CLI configuration")
+
+   :config
+     (lib/mkIf config.myConfig.modules.claude.enable
+       {
+        :environment.systemPackages [pkgs.master.claude-code]
+        :home-manager.users
+          {username
+            {            :home.file {".claude/settings.json" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/settings.json"))} ".claude/commands" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/commands"))}}}}})}))

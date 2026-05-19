@@ -1,0 +1,13 @@
+#lang beagle/nix
+(ns bundles.printing)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.printing.enable
+     (lib/mkEnableOption "printing support (CUPS + drivers)")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.printing.enable
+       {
+        :myConfig.modules.printing.enable (lib/mkDefault true)
+        :myConfig.modules.gutenprint.enable (lib/mkDefault true)
+        :myConfig.modules.hplip.enable (lib/mkDefault true)})})

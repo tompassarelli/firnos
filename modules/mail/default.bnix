@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.mail)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.mail.enable
+     (lib/mkEnableOption "email applications")
+
+   :config
+     (lib/mkIf config.myConfig.modules.mail.enable
+       {:environment.systemPackages (with-do pkgs [pkgs.unstable.protonmail-desktop])})})

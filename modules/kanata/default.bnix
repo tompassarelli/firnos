@@ -1,0 +1,15 @@
+#lang beagle/nix
+(ns modules.kanata)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.kanata
+     {:enable (lib/mkEnableOption "Kanata keyboard remapping")
+      :devices (lib/mkOption {:type (lib/types.listOf lib/types.str) :default [] :description "Input device paths for kanata to capture. Find yours with: ls /dev/input/by-id/"})
+      :configFile (lib/mkOption {:type lib/types.path :description "Path to kanata .kbd config file"})
+      :port (lib/mkOption {:type (lib/types.nullOr lib/types.port) :default nil :description "TCP port for kanata server (e.g. for glide integration)"})}
+
+   :imports [(p "./kanata.nix")]
+
+   :config
+     (lib/mkIf config.myConfig.modules.kanata.enable
+       {})})

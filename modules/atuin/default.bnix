@@ -1,0 +1,12 @@
+#lang beagle/nix
+(ns modules.atuin)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.atuin.enable
+     (lib/mkEnableOption "atuin shell history sync")
+
+   :config
+     (lib/mkIf config.myConfig.modules.atuin.enable
+       {:home-manager.users
+         {config.myConfig.modules.users.username
+           {:programs.atuin {:enable true :enableFishIntegration true :settings {:auto_sync true :sync_frequency "5m" :search_mode "fuzzy"}}}}})})

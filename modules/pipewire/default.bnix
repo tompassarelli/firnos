@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.pipewire)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.pipewire.enable
+     (lib/mkEnableOption "PipeWire audio configuration")
+
+   :config
+     (lib/mkIf config.myConfig.modules.pipewire.enable
+       {})})

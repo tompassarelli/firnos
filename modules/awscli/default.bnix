@@ -1,0 +1,12 @@
+#lang beagle/nix
+(ns modules.awscli)
+
+(module [config lib pkgs]
+  (let [username config.myConfig.modules.users.username]
+  {:options.myConfig.modules.awscli.enable
+     (lib/mkEnableOption "awscli")
+
+   :config
+     (lib/mkIf config.myConfig.modules.awscli.enable
+       {
+        :environment.systemPackages (with-do pkgs [awscli2])})}))

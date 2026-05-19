@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.imv)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.imv.enable
+     (lib/mkEnableOption "imv image viewer")
+
+   :config
+     (lib/mkIf config.myConfig.modules.imv.enable
+       {:environment.systemPackages (with-do pkgs [imv])})})

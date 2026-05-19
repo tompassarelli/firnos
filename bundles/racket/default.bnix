@@ -1,0 +1,12 @@
+#lang beagle/nix
+(ns bundles.racket)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.racket.enable
+     (lib/mkEnableOption "Racket development")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.racket.enable
+       {
+        :myConfig.modules.racket.enable (lib/mkDefault true)
+        :myConfig.modules.drracket.enable (lib/mkDefault true)})})

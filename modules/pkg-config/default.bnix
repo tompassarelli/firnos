@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.pkg-config)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.pkg-config.enable
+     (lib/mkEnableOption "pkg-config build tool")
+
+   :config
+     (lib/mkIf config.myConfig.modules.pkg-config.enable
+       {:environment.systemPackages (with-do pkgs [pkg-config])})})

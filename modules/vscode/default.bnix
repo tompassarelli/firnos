@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.vscode)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.vscode.enable
+     (lib/mkEnableOption "Visual Studio Code (Microsoft build)")
+
+   :config
+     (lib/mkIf config.myConfig.modules.vscode.enable
+       {:environment.systemPackages (with-do pkgs [pkgs.unstable.vscode])})})

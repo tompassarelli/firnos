@@ -1,0 +1,11 @@
+#lang beagle/nix
+(ns modules.piper)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.piper.enable
+     (lib/mkEnableOption "gaming mouse configuration (Piper + ratbagd)")
+
+   :config
+     (lib/mkIf config.myConfig.modules.piper.enable
+       {
+        :environment.systemPackages (with-do pkgs [piper])})})

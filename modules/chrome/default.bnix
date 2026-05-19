@@ -1,0 +1,13 @@
+#lang beagle/nix
+(ns modules.chrome)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.chrome
+     {:enable (lib/mkEnableOption "Enable Google Chrome browser")
+      :default (lib/mkOption {:type lib/types.bool :description "Set Chrome as the default browser via MIME types"})}
+
+   :imports ["./chrome.nix"]
+
+   :config
+     (lib/mkIf config.myConfig.modules.chrome.enable
+       {})})

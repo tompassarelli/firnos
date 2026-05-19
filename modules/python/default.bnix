@@ -1,0 +1,11 @@
+#lang beagle/nix
+(ns modules.python)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.python.enable
+     (lib/mkEnableOption "Python runtime with uv")
+
+   :config
+     (lib/mkIf config.myConfig.modules.python.enable
+       {
+        :environment.systemPackages (with-do pkgs [python3])})})

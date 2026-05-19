@@ -1,0 +1,14 @@
+#lang beagle/nix
+(ns bundles.database)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.database.enable
+     (lib/mkEnableOption "database tools")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.database.enable
+       {
+        :myConfig.modules.dbeaver.enable (lib/mkDefault true)
+        :myConfig.modules.sqlite.enable (lib/mkDefault true)
+        :myConfig.modules.postgresql.enable (lib/mkDefault true)
+        :myConfig.modules.freetds.enable (lib/mkDefault true)})})

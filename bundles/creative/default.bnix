@@ -1,0 +1,14 @@
+#lang beagle/nix
+(ns bundles.creative)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.creative.enable
+     (lib/mkEnableOption "creative tools and content creation")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.creative.enable
+       {
+        :myConfig.modules.godot.enable (lib/mkDefault true)
+        :myConfig.modules.blender.enable (lib/mkDefault true)
+        :myConfig.modules.gimp.enable (lib/mkDefault true)
+        :myConfig.modules.obs-studio.enable (lib/mkDefault true)})})

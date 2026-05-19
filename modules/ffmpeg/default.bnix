@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.ffmpeg)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.ffmpeg.enable
+     (lib/mkEnableOption "FFmpeg video processing")
+
+   :config
+     (lib/mkIf config.myConfig.modules.ffmpeg.enable
+       {:environment.systemPackages (with-do pkgs [ffmpeg])})})

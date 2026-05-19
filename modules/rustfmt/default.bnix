@@ -1,0 +1,10 @@
+#lang beagle/nix
+(ns modules.rustfmt)
+
+(module [config lib pkgs]
+  {:options.myConfig.modules.rustfmt.enable
+     (lib/mkEnableOption "Rust formatter")
+
+   :config
+     (lib/mkIf config.myConfig.modules.rustfmt.enable
+       {:environment.systemPackages (with-do pkgs [pkgs.unstable.rustfmt])})})

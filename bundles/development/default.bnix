@@ -1,0 +1,20 @@
+#lang beagle/nix
+(ns bundles.development)
+
+(module [config lib pkgs]
+  {:options.myConfig.bundles.development.enable
+     (lib/mkEnableOption "core development workflow")
+
+   :config
+     (lib/mkIf config.myConfig.bundles.development.enable
+       {
+        :myConfig.modules.git.enable (lib/mkDefault true)
+        :myConfig.modules.gh.enable (lib/mkDefault true)
+        :myConfig.modules.forgejo-cli.enable (lib/mkDefault true)
+        :myConfig.modules.delta.enable (lib/mkDefault true)
+        :myConfig.modules.vim.enable (lib/mkDefault true)
+        :myConfig.modules.claude.enable (lib/mkDefault true)
+        :myConfig.modules.direnv.enable (lib/mkDefault true)
+        :myConfig.modules.containers.enable (lib/mkDefault true)
+        :myConfig.modules.ripgrep.enable (lib/mkDefault true)
+        :myConfig.modules.fd.enable (lib/mkDefault true)})})
