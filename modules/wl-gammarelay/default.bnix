@@ -12,5 +12,5 @@
         :environment.systemPackages (with-do pkgs [wl-gammarelay-rs])
         :home-manager.users
           {username
-            {            :xdg.configFile {"wl-gammarelay/temperature-control" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/wl-gammarelay/temperature-control"))}}
-            :systemd.user.services.wl-gammarelay {:Unit {:Description "Gamma control for Wayland" :PartOf ["graphical-session.target"] :After ["graphical-session.target"] :Requisite ["graphical-session.target"]} :Service {:ExecStart (s "${pkgs.wl-gammarelay-rs}/bin/wl-gammarelay-rs") :Restart "on-failure" :Type "dbus" :BusName "rs.wl-gammarelay"} :Install {:WantedBy ["niri.service"]}}}}})}))
+            (fn-set-rest [config] {:xdg.configFile {"wl-gammarelay/temperature-control" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/wl-gammarelay/temperature-control"))}}
+            :systemd.user.services.wl-gammarelay {:Unit {:Description "Gamma control for Wayland" :PartOf ["graphical-session.target"] :After ["graphical-session.target"] :Requisite ["graphical-session.target"]} :Service {:ExecStart (s "${pkgs.wl-gammarelay-rs}/bin/wl-gammarelay-rs") :Restart "on-failure" :Type "dbus" :BusName "rs.wl-gammarelay"} :Install {:WantedBy ["niri.service"]}}})}})}))

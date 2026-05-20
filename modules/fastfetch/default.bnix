@@ -12,4 +12,4 @@
         :environment.systemPackages (with-do pkgs [fastfetch])
         :home-manager.users
           {username
-            {            :xdg.configFile {"fastfetch/config.jsonc" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/fastfetch/config.jsonc"))}}}}})}))
+            (fn-set-rest [config] {            :xdg.configFile {"fastfetch/config.jsonc" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/fastfetch/config.jsonc"))}}})}})}))

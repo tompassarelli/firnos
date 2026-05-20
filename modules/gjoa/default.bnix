@@ -2,12 +2,7 @@
 (ns modules.gjoa)
 
 (module [config lib pkgs]
-  {:options.myConfig.modules.gjoa
-     {:enable (lib/mkEnableOption "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")
-      :default (lib/mkOption {:type lib/types.bool :description "Set Gjoa as the default browser via MIME types"})}
+  {:options.myConfig.modules.gjoa.enable (lib/mkEnableOption "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")
+   :options.myConfig.modules.gjoa.default (lib/mkOption {:type lib/types.bool :default false :description "Set Gjoa as the default browser via MIME types"})
+   :imports [(p "./gjoa.nix")]})
 
-   :imports [(p "./gjoa.nix")]
-
-   :config
-     (lib/mkIf config.myConfig.modules.gjoa.enable
-       {})})

@@ -10,37 +10,35 @@ NEVER chain `git commit && git push` in one command. Always:
 3. If secrets are detected, fix the leak before proceeding
 4. Only then advise the user to push
 
-## Configuration interface: nisp
+## Configuration interface: beagle/nix
 
-The *write interface* for this repo is **nisp** — a Racket `#lang` for writing Nix as s-expressions. Authors edit `.rkt` files; `scripts/firn-build` regenerates the matching `.nix` next to each `.rkt` via `racket file.rkt > file.nix`. **Nix is the build target, not the source-of-truth.**
+The *write interface* for this repo is **beagle/nix** — `#lang beagle/nix` files (`.bnix`) that compile to Nix. Authors edit `.bnix` files; `scripts/firn-build` regenerates the matching `.nix` next to each `.bnix` via `beagle-build`. **Nix is the build target, not the source-of-truth.**
 
 ```
-*.rkt  ──(./scripts/firn-build)──▶  *.nix  ──(nixos-rebuild)──▶  system
+*.bnix  ──(./scripts/firn-build)──▶  *.nix  ──(nixos-rebuild)──▶  system
 ```
 
-Both `.rkt` and `.nix` are committed because the flake reads from the git tree.
+Both `.bnix` and `.nix` are committed because the flake reads from the git tree.
 
-**nisp lives in a separate repo**: [tompassarelli/nisp](https://github.com/tompassarelli/nisp) — the DSL **and** the full validation toolchain (single `nisp` dispatcher: `nisp validate`, `nisp extract-schema`, `nisp import`, `nisp schema`, `nisp rename`, `nisp edit`; plus `nisp-lsp`). firn-build expects nisp cloned at `../nisp` (sibling to this repo) by default — override with `NISP_PATH`. firnos's `scripts/firn-validate` and `scripts/firn-extract-schema` are thin shims that call the nisp CLI with FirnOS-specific defaults (NixOS target + HM allowlist).
+**beagle lives in a sibling repo**: `../beagle` — the compiler, type checker, and emitters. firn-build expects beagle cloned at `../beagle` by default — override with `BEAGLE_PATH`. The nisp validation toolchain (`nisp validate`, `nisp schema`, etc.) is still used for NixOS option-path checking.
 
-**Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.rkt` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
+**Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.bnix` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
-References: `docs/BUILDING.md` (pipeline + DSL patterns), [tompassarelli/nisp](https://github.com/tompassarelli/nisp) (DSL surface ref + implementation), `docs/MACOS.md` (cross-platform via nix-darwin).
+References: `docs/BUILDING.md` (pipeline + DSL patterns), `docs/MACOS.md` (cross-platform via nix-darwin).
 
 ## Nix Flakes: New Files Must Be Git-Tracked
 
-When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them. This applies to both `.rkt` sources AND their generated `.nix` outputs.
+When adding a new file to this repo, always `git add` it before rebuilding. Nix flakes only see git-tracked files — untracked files are invisible to `builtins.readDir` and other flake evaluation, so the build will silently skip them. This applies to both `.bnix` sources AND their generated `.nix` outputs.
 
 ## Architecture (summary)
 
 Two namespaces: `myConfig.modules.*` (atoms — one package or service per module) and `myConfig.bundles.*` (molecules — pure composition, never install packages directly).
 
-Modules use `(module-file modules <name> (desc "...") (config-body ...))` to emit the standard `{ config, lib, pkgs, ... }: let cfg = ... in { options...; config = mkIf cfg.enable {...}; }` wrapper.
+Modules use `(module [config lib pkgs] {:options... :config...})` to emit the standard `{ config, lib, pkgs, ... }: { options...; config = mkIf cfg.enable {...}; }` wrapper.
 
-Bundles use `(bundle-file <name> (desc "...") (sub-modules a b c ...))` to enable a list of modules with mkDefault.
+Bundles declare per-module sub-options (`lib/mkOption`) and proxy them through to `myConfig.modules.<name>.enable` via `lib/mkDefault`. This lets the host config selectively disable individual modules within an enabled bundle.
 
-Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users) split `default.rkt` (option declarations) and `<name>.rkt` (mkIf config).
-
-Bundles that expose sub-options of their modules (firefox.palefox.enable, stylix.chosenTheme, etc.) use `option-attrs` + `config-body` to proxy.
+Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users) split `default.bnix` (option declarations) and `<name>.bnix` (mkIf config).
 
 **Full reference**: [`docs/BUILDING.md`](docs/BUILDING.md) — every form, every clause, examples per pattern.
 
@@ -48,11 +46,11 @@ Bundles that expose sub-options of their modules (firefox.palefox.enable, stylix
 
 - 1 package = 1 module. No exceptions. Inseparable pairs do not exist.
 - Bundles never install packages. They only enable modules via mkDefault.
-- **Edit `.rkt`, not `.nix`.** The `.nix` is regenerated by `firn-build`; direct edits get overwritten.
-- **Run `./scripts/firn-build` before any `nix build` / `nixos-rebuild` if `.rkt` sources changed.**
-- Auto-import: create the directory + `.rkt` + run firn-build, then `git add` both files. No flake edits — the flake's dynamic `imports` finds the generated `.nix` via `builtins.readDir`.
+- **Edit `.bnix`, not `.nix`.** The `.nix` is regenerated by `firn-build`; direct edits get overwritten.
+- **Run `./scripts/firn-build` before any `nix build` / `nixos-rebuild` if `.bnix` sources changed.**
+- Auto-import: create the directory + `.bnix` + run firn-build, then `git add` both files. No flake edits — the flake's dynamic `imports` finds the generated `.nix` via `builtins.readDir`.
 - Assume new modules only get added to whiterabbit host.
-- New files (both `.rkt` and `.nix`) must be git-added before nix can see them (flake uses git tree).
+- New files (both `.bnix` and `.nix`) must be git-added before nix can see them (flake uses git tree).
 
 ## Fish Functions
 
@@ -75,7 +73,7 @@ This is the right way to answer "does option X exist?" or "what type does X want
 
 ## Renaming option paths
 
-To rename an option path across all `.rkt` files (e.g., refactoring `myConfig.modules.foo` → `myConfig.modules.bar`):
+To rename an option path across all `.bnix` files (e.g., refactoring `myConfig.modules.foo` → `myConfig.modules.bar`):
 
 ```bash
 nisp rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
@@ -85,29 +83,9 @@ firn validate                                                        # verify cl
 
 Word-boundary matching prevents partial collisions; string literals are skipped. After applying, always re-run `firn validate`.
 
-## Programmatic edits to a single file
+## Editing .bnix source
 
-For surgical edits — replace an option's value, or remove a `(set …)` form — use `nisp edit`. It's source-text-preserving (uses AST positions to do text-level surgery), so comments and formatting outside the edited region survive intact:
-
-```bash
-# Replace existing value, or insert if not present
-nisp edit set hosts/whiterabbit/configuration.rkt myConfig.modules.foo.port 8080
-nisp edit set modules/swap/default.rkt zramSwap.memoryPercent 75
-nisp edit set hosts/laptop/configuration.rkt services.bluetooth.enable '#t'
-nisp edit set foo.rkt some.path '(lst 80 443 8080)'
-
-# Remove a (set …) form entirely
-nisp edit unset hosts/whiterabbit/configuration.rkt myConfig.modules.unused.enable
-```
-
-Inserts land inside the surrounding scope (`config-body` for module-files, top-level for host-files) at the right indentation. The value argument is raw nisp source — quote shell-special chars appropriately.
-
-Use `nisp edit` instead of manual Edit-tool text replacement when:
-- The change is "set this option to that value" (it's atomic and validates afterwards)
-- You're inserting a new option that may or may not already exist (handles both cases)
-- You're removing a form (handles the trailing-whitespace cleanup)
-
-Use Edit tool when the change is structural beyond what `set`/`unset` cover (modifying lambda formals, restructuring let-in, etc.).
+Use the Edit tool directly on `.bnix` files. The source is beagle/nix s-expressions — edits are straightforward keyword/value changes in maps.
 
 ## Diagnosing schema errors
 
@@ -115,30 +93,23 @@ When the validator reports an unknown option, type mismatch, or you're about to 
 
 ```bash
 firn schema explain services.openssh.enable                     # bare option path
-firn schema explain "modules/foo.rkt:6:7: unknown option services.opensh.enable"   # paste a validator error directly
+firn schema explain "modules/foo.bnix:6:7: unknown option services.opensh.enable"   # paste a validator error directly
 ```
 
-Output: type, declarations (links to upstream NixOS module sources), and every `.rkt` file in this repo that references the path. If the path doesn't exist, prints did-you-mean candidates.
+Output: type, declarations (links to upstream NixOS module sources), and every `.bnix` file in this repo that references the path. If the path doesn't exist, prints did-you-mean candidates.
 
 ## Repo health
 
-`firn repo doctor` runs five checks: untracked `.rkt`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.rkt` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
+`firn repo doctor` runs five checks: untracked `.bnix`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.bnix` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
 
 ## Tagging modules for discovery
 
 Bundles already capture *purpose-based* grouping (gaming, terminal, dev). Tags capture *cross-cutting facets* that don't form a coherent bundle — `gpu-required`, `gui-only`, `headless-ok`, `network`, `proprietary`, `large-closure`. Two sources, unioned per module:
 
-1. **Bundle-derived tags** — a module appearing in `bundles/gaming/default.rkt`'s `(sub-modules …)` automatically gets `bundle:gaming`. No authoring required; covers most modules.
-2. **Explicit `(tags …)` clause** in the module's `.rkt` source. nisp v0.11.0+:
+1. **Bundle-derived tags** — a module appearing in a bundle's `.bnix` automatically gets `bundle:<name>`. No authoring required; covers most modules.
+2. **Explicit tags** in the module's `.bnix` source (tooling support TBD for beagle/nix).
 
-   ```racket
-   (module-file modules steam
-     (desc "Steam gaming platform")
-     (tags gui-only proprietary gpu-required network large-closure)
-     (config-body …))
-   ```
-
-Tags live in source, never get emitted into the generated `.nix`. External tooling reads `.rkt` directly:
+Tags live in source, never get emitted into the generated `.nix`. External tooling reads `.bnix` directly:
 
 ```bash
 firn tag list           # tag universe + module counts
@@ -188,13 +159,13 @@ Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 wi
 
 ## Importing existing Nix
 
-If the user has hand-written `.nix` and wants to convert to nisp:
+If the user has hand-written `.nix` and wants to convert to beagle/nix:
 
 ```bash
-nisp import file.nix > file.rkt
+nisp import file.nix > file.bnix
 ```
 
-Built on rnix-parser (handles 100% of nixpkgs). Round-trip is byte-equivalent for plain Nix; comments are dropped (logged limitation).
+Built on rnix-parser (handles 100% of nixpkgs). Output may need manual adjustment to use beagle/nix forms.
 
 ## Verification
 
@@ -203,16 +174,16 @@ There's a tiered loop — pick the right rung for the change.
 **Rung 1 — fast (~5s, default for most edits):**
 
 ```bash
-./scripts/firn-build       # regenerate any .nix whose .rkt changed
+./scripts/firn-build       # regenerate any .nix whose .bnix changed
 ./scripts/firn-validate    # schema-driven path + type check
 ```
 
 `firn-validate` catches unknown option paths, type mismatches (bool/str/int/listOf/nullOr/enum/attrsOf-leaf), enum violations with did-you-mean — at file:line:col precision on the value. Almost every typo/wrong-type bug surfaces here in seconds. This is the right verification for module/bundle/host edits where the change is "set X to Y" or "enable Z".
 
-**Rung 2 — drift check (when refactoring nisp itself, or sanity-checking that hand-edited `.nix` matches what nisp would emit):**
+**Rung 2 — drift check (when refactoring beagle/nix itself, or sanity-checking that hand-edited `.nix` matches what beagle would emit):**
 
 ```bash
-firn repo diff             # re-emit every .rkt and unified-diff vs committed .nix
+firn repo diff             # re-emit every .bnix and unified-diff vs committed .nix
 ```
 
 **Rung 3 — full evaluation (only when Rung 1 isn't sufficient — e.g. you touched flake inputs, complex module logic, evaluation-time conditionals, or anything the static checker can't see):**

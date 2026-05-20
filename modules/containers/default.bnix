@@ -10,5 +10,5 @@
      (lib/mkIf config.myConfig.modules.containers.enable
        {
         :virtualisation.podman {:enable true :dockerCompat true :defaultNetwork.settings.dns_enabled true}
-        :environment.systemPackages (with-do pkgs [distrobox podman-compose])
-        :users.users {username {:extraGroups ["podman"]}}})}))
+        :users.users {username {:extraGroups ["podman"]}}
+        :environment.systemPackages (with-do pkgs [distrobox podman-compose])})}))

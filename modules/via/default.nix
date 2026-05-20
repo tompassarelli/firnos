@@ -15,8 +15,6 @@ in
       SUBSYSTEMS=="usb", ATTRS{idVendor}=="c2ab", ATTRS{idProduct}=="3939", TAG+="uaccess"
     '';
     users.groups.plugdev = { };
-    users.users = {
-      ${username}.extraGroups = [ "plugdev" ];
-    };
+    users.users.${username}.extraGroups = [ "plugdev" ];
   };
 }

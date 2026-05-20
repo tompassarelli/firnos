@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   myConfig.modules.system.stateVersion = "25.05";

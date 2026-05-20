@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   myConfig.modules.users.username = "ashashi";

@@ -11,7 +11,7 @@ let
     variantLine = lib.findFirst (line: lib.hasPrefix "variant:" line) "" lines;
     match = builtins.match ".*variant: \"([^\"]+)\".*" variantLine;
   in
-  if match != null then builtins.head match else "dark";
+  if (match != null) then builtins.head match else "dark";
 in
 {
   options.myConfig.modules.styling.enable = lib.mkEnableOption "system-wide theming and styling";

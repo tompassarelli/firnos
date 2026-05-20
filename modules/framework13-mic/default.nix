@@ -22,24 +22,20 @@ in
   options.myConfig.modules.framework13-mic.enable = lib.mkEnableOption "Framework 13 AMD AI 300 mic fix + firn-mic CLI (forces UCM profile that exposes the actual internal mic; see `firn-mic doctor`)";
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ firn-mic ];
-    services.pipewire.wireplumber.extraConfig = {
-      "51-framework13-mic" = {
-        "monitor.alsa.rules" = [
+    services.pipewire.wireplumber.extraConfig."51-framework13-mic"."monitor.alsa.rules" = [
+      {
+        matches = [
           {
-            matches = [
-              {
-                "device.name" = "alsa_card.pci-0000_c1_00.6";
-              }
-            ];
-            actions = {
-              update-props = {
-                "device.profile" = "HiFi (Mic1, Mic2, Speaker)";
-              };
-            };
+            "device.name" = "alsa_card.pci-0000_c1_00.6";
           }
         ];
-      };
-    };
+        actions = {
+          update-props = {
+            "device.profile" = "HiFi (Mic1, Mic2, Speaker)";
+          };
+        };
+      }
+    ];
     systemd.services.firn-mic-alsa-init = {
       description = "Disable Internal Mic Boost on Framework 13 ALC285";
       wantedBy = [ "multi-user.target" ];

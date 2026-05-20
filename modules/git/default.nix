@@ -7,7 +7,7 @@ in
 {
   options.myConfig.modules.git.enable = lib.mkEnableOption "Git configuration";
   config = lib.mkIf cfg.enable {
-    home-manager.users.${username} = {
+    home-manager.users.${username} = { config, ... }: {
       programs.git = {
         enable = true;
         settings = {

@@ -2,11 +2,12 @@
 (ns bundles.racket)
 
 (module [config lib pkgs]
-  {:options.myConfig.bundles.racket.enable
-     (lib/mkEnableOption "Racket development")
+  {:options.myConfig.bundles.racket
+     {:enable (lib/mkEnableOption "Racket development")
+      :racket.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable racket"})
+      :drracket.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable drracket"})}
 
    :config
      (lib/mkIf config.myConfig.bundles.racket.enable
-       {
-        :myConfig.modules.racket.enable (lib/mkDefault true)
-        :myConfig.modules.drracket.enable (lib/mkDefault true)})})
+       {:myConfig.modules.racket.enable (lib/mkDefault config.myConfig.bundles.racket.racket.enable)
+        :myConfig.modules.drracket.enable (lib/mkDefault config.myConfig.bundles.racket.drracket.enable)})})

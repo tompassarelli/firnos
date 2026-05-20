@@ -7,7 +7,7 @@ in
 {
   options.myConfig.modules.yazi.enable = lib.mkEnableOption "Yazi file manager";
   config = lib.mkIf cfg.enable {
-    home-manager.users.${username} = {
+    home-manager.users.${username} = { config, ... }: {
       programs.yazi = {
         enable = true;
         settings = {

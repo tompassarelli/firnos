@@ -12,7 +12,7 @@ in
       nix-direnv.enable = true;
     };
     environment.systemPackages = [ pkgs.unstable.devenv ];
-    home-manager.users.${username} = {
+    home-manager.users.${username} = { config, ... }: {
       programs.direnv = {
         enable = true;
         nix-direnv.enable = true;

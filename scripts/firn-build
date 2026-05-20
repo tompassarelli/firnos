@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
-# firn-build — regenerate every *.nix from its sibling *.rkt source.
+# firn-build — regenerate every *.nix from its sibling *.bnix source.
 #
-# Source of truth: every nisp file (a .rkt file using `#lang nisp`) anywhere
-# under the repo. The matching .nix file is generated next to it.
+# Source of truth: every beagle/nix file (a .bnix file using `#lang beagle/nix`)
+# anywhere under the repo. The matching .nix file is generated next to it.
 #
 # Files NOT covered:
 #   - hardware-configuration.nix  (NixOS-generated; left as raw .nix)
 #   - secrets/, dotfiles/, assets/  (non-Nix content, stays as-is)
 #   - tests/, scripts/, .firn-build/   (tooling, not config)
 #
-# Requires the nisp Racket package to be linked. firn-build will install
-# it on first run from $NISP_PATH (default: ../nisp, i.e. a sibling clone
-# of https://github.com/tompassarelli/nisp).
+# Requires the beagle Racket package to be linked.
+# BEAGLE_PATH defaults to ../beagle (sibling clone).
 
 set -euo pipefail
 
@@ -19,62 +18,37 @@ set -euo pipefail
 # regardless of cwd. FIRN_REPO env var takes precedence if set.
 cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
-if ! command -v racket >/dev/null 2>&1; then
-  echo "firn-build: racket not found in PATH. Enable myConfig.modules.racket and rebuild first." >&2
+BEAGLE_PATH="${BEAGLE_PATH:-$(cd .. && pwd)/beagle}"
+BEAGLE_BUILD="$BEAGLE_PATH/bin/beagle-build"
+if [ ! -x "$BEAGLE_BUILD" ]; then
+  echo "firn-build: beagle-build not found at $BEAGLE_BUILD" >&2
+  echo "  set BEAGLE_PATH=/path/to/beagle" >&2
   exit 1
-fi
-
-# Locate nisp source. Default: sibling directory ../nisp. Override with NISP_PATH.
-NISP_PATH="${NISP_PATH:-$(cd .. && pwd)/nisp}"
-if [ ! -f "$NISP_PATH/info.rkt" ]; then
-  echo "firn-build: nisp not found at $NISP_PATH" >&2
-  echo "  clone it: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
-  echo "  or set NISP_PATH=/path/to/nisp" >&2
-  exit 1
-fi
-
-# Ensure the nisp package is registered with raco. Idempotent; only re-runs
-# raco when nisp/ has changed since the last build.
-nisp_marker=".firn-build/nisp.installed"
-mkdir -p .firn-build
-if [ ! -f "$nisp_marker" ] || [ -n "$(find "$NISP_PATH" -newer "$nisp_marker" 2>/dev/null)" ]; then
-  echo "firn-build: (re)installing nisp package from $NISP_PATH..." >&2
-  raco pkg install --auto --force --link --batch "$NISP_PATH" >/dev/null 2>&1 || true
-  raco setup nisp >/dev/null 2>&1
-  touch "$nisp_marker"
 fi
 
 count=0
 errors=0
-while IFS= read -r -d '' rkt; do
-  case "$rkt" in
+while IFS= read -r -d '' src; do
+  case "$src" in
     ./scripts/*) continue ;;
     ./tests/*) continue ;;
   esac
 
-  # Only process #lang nisp files. Other Racket files (CLI tools, helpers)
-  # aren't config sources and shouldn't be rendered to .nix.
-  if ! head -n 1 "$rkt" | grep -q '^#lang nisp'; then
+  nix="${src%.bnix}.nix"
+
+  # Skip if .nix is newer than .bnix
+  if [ -f "$nix" ] && [ "$nix" -nt "$src" ]; then
     continue
   fi
 
-  nix="${rkt%.rkt}.nix"
-
-  # Skip if .nix is newer than .rkt and the DSL is older too.
-  if [ -f "$nix" ] && [ "$nix" -nt "$rkt" ] && [ "$nix" -nt "$nisp_marker" ]; then
-    continue
-  fi
-
-  if racket "$rkt" > "$nix.tmp" 2>/dev/null; then
-    mv "$nix.tmp" "$nix"
+  if "$BEAGLE_BUILD" "$src" "$nix" >/dev/null 2>&1; then
     count=$((count + 1))
   else
-    rm -f "$nix.tmp"
-    echo "firn-build: FAILED $rkt" >&2
-    racket "$rkt" 2>&1 | head -20 >&2 || true
+    echo "firn-build: FAILED $src" >&2
+    "$BEAGLE_BUILD" "$src" "$nix" 2>&1 | head -20 >&2 || true
     errors=$((errors + 1))
   fi
-done < <(find . -name '*.rkt' -not -path './.firn-build/*' -not -path './result*' -print0)
+done < <(find . -name '*.bnix' -not -path './result*' -print0)
 
 if [ "$errors" -gt 0 ]; then
   echo "firn-build: $count regenerated, $errors failed." >&2

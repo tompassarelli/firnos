@@ -3,13 +3,13 @@
 let
   cfg = config.myConfig.modules.gtk;
   username = config.myConfig.modules.users.username;
-  isDark = config.stylix.polarity == "dark";
+  isDark = (config.stylix.polarity == "dark");
 in
 {
   options.myConfig.modules.gtk.enable = lib.mkEnableOption "GTK theming configuration";
   config = lib.mkIf cfg.enable {
     home-manager.users.${username} = { config, ... }: let
-      stylixGtkFont = (config.gtk.font.name + " ") + (toString config.gtk.font.size);
+      stylixGtkFont = "${"${config.gtk.font.name} "}${toString config.gtk.font.size}";
       stylixGtkTheme = config.gtk.theme.name;
     in
     {
@@ -27,11 +27,7 @@ in
         gtk-font-name=${stylixGtkFont}
         gtk-theme-name=${stylixGtkTheme}
       '';
-      dconf.settings = {
-        "org/gnome/desktop/interface" = {
-          color-scheme = lib.mkForce (if isDark then "prefer-dark" else "prefer-light");
-        };
-      };
+      dconf.settings."org/gnome/desktop/interface".color-scheme = lib.mkForce (if isDark then "prefer-dark" else "prefer-light");
     };
   };
 }

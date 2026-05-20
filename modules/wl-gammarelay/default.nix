@@ -9,11 +9,7 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ wl-gammarelay-rs ];
     home-manager.users.${username} = { config, ... }: {
-      xdg.configFile = {
-        ${"wl-gammarelay/temperature-control"} = {
-          source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/wl-gammarelay/temperature-control";
-        };
-      };
+      xdg.configFile."wl-gammarelay/temperature-control".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/wl-gammarelay/temperature-control";
       systemd.user.services.wl-gammarelay = {
         Unit = {
           Description = "Gamma control for Wayland";

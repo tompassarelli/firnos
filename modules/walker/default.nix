@@ -7,22 +7,16 @@ in
 {
   options.myConfig.modules.walker.enable = lib.mkEnableOption "Walker modern wayland app launcher";
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [
-      (pkgs.writeShellScriptBin "walker-rename-workspace" ''
-        name=$(echo "" | walker --dmenu)
-        [ -n "$name" ] && niri msg action set-workspace-name "$name"
-      '')
-    ];
+    environment.systemPackages = [ (pkgs.writeShellScriptBin "walker-rename-workspace" ''
+      name=$(echo "" | walker --dmenu)
+      [ -n "$name" ] && niri msg action set-workspace-name "$name"
+    '') ];
     home-manager.users.${username} = { config, ... }: {
       imports = [ inputs.walker.homeManagerModules.default ];
-      home.file = {
-        ${".config/elephant/desktopapplications.toml"} = {
-          text = ''
-            # Force proper Wayland env vars when launching apps (fixes Steam on niri)
-            launch_prefix = "env WAYLAND_DISPLAY=wayland-1 DISPLAY=:0"
-          '';
-        };
-      };
+      home.file.".config/elephant/desktopapplications.toml".text = ''
+        # Force proper Wayland env vars when launching apps (fixes Steam on niri)
+        launch_prefix = "env WAYLAND_DISPLAY=wayland-1 DISPLAY=:0"
+      '';
       programs.walker = {
         enable = true;
         runAsService = true;
@@ -46,25 +40,21 @@ in
             next = [ "Down" "ctrl j" ];
             previous = [ "Up" "ctrl k" ];
           };
-          builtins.applications = {
-            actions = {
-              start = {
-                activation_mode = {
-                  type = "key";
-                  key = "Return";
-                };
+          builtins.applications.actions = {
+            start = {
+              activation_mode = {
+                type = "key";
+                key = "Return";
               };
             };
           };
-          builtins.windows = {
-            actions = [
-              {
-                action = "focus";
-                bind = "Return";
-                default = true;
-              }
-            ];
-          };
+          builtins.windows.actions = [
+            {
+              action = "focus";
+              bind = "Return";
+              default = true;
+            }
+          ];
           builtins.dmenu = {
             hidden = false;
             weight = 5;

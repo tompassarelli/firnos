@@ -2,12 +2,7 @@
 (ns modules.librewolf)
 
 (module [config lib pkgs]
-  {:options.myConfig.modules.librewolf
-     {:enable (lib/mkEnableOption "Enable LibreWolf browser")
-      :default (lib/mkOption {:type lib/types.bool :description "Set LibreWolf as the default browser via MIME types"})}
+  {:options.myConfig.modules.librewolf.enable (lib/mkEnableOption "Enable LibreWolf browser")
+   :options.myConfig.modules.librewolf.default (lib/mkOption {:type lib/types.bool :default false :description "Set LibreWolf as the default browser via MIME types"})
+   :imports [(p "./librewolf.nix")]})
 
-   :imports [(p "./librewolf.nix")]
-
-   :config
-     (lib/mkIf config.myConfig.modules.librewolf.enable
-       {})})

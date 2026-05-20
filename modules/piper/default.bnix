@@ -8,4 +8,5 @@
    :config
      (lib/mkIf config.myConfig.modules.piper.enable
        {
+        :services.ratbagd.enable true
         :environment.systemPackages (with-do pkgs [piper])})})

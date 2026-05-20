@@ -9,9 +9,7 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ tealdeer ];
     home-manager.users.${username} = { config, ... }: {
-      xdg.configFile = {
-        ${"tealdeer/config.toml"}.source = config.lib.file.mkOutOfStoreSymlink (config.home.homeDirectory + "/code/nixos-config/dotfiles/tealdeer/config.toml");
-      };
+      xdg.configFile."tealdeer/config.toml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}${"/code/nixos-config/dotfiles/tealdeer/config.toml"}";
     };
   };
 }

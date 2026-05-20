@@ -129,6 +129,7 @@ let
 in
 {
   options.myConfig.modules.niri.enable = lib.mkEnableOption "Enable niri compositor configuration";
+  imports = [ ./xwayland-satellite.nix ./swaybg.nix ./swayidle.nix ];
   config = lib.mkIf cfg.enable {
     programs.niri.enable = true;
     programs.niri.package = pkgs.unstable.niri;
@@ -139,5 +140,4 @@ in
       xdg.configFile."niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/niri/config.kdl";
     };
   };
-  imports = [ ./xwayland-satellite.nix ./swaybg.nix ./swayidle.nix ];
 }

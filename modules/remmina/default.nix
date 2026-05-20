@@ -9,12 +9,10 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ remmina ];
     home-manager.users.${username} = {
-      xdg.configFile = {
-        ${"autostart/remmina-applet.desktop"}.text = ''
-          [Desktop Entry]
-          Hidden=true
-        '';
-      };
+      xdg.configFile."autostart/remmina-applet.desktop".text = ''
+        [Desktop Entry]
+        Hidden=true
+      '';
     };
   };
 }

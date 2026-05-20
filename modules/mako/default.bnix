@@ -11,4 +11,4 @@
        {
         :home-manager.users
           {username
-            {            :services.mako {:enable true :settings {:default-timeout 0 :icons 0 "\"app-name=kitty\"" {:default-timeout 0} "\"app-name=Spotify\"" {:invisible 1}}}}}})}))
+            {            :services.mako {:enable true :settings {:default-timeout 0 :icons 0 "app-name=kitty" {:default-timeout 0} "app-name=Spotify" {:invisible 1}}}}}})}))

@@ -35,9 +35,9 @@ in
       };
       xdg.configFile = let
         functionsDir = "${config.home.homeDirectory}/code/nixos-config/dotfiles/fish/functions";
-        functionFiles = builtins.attrNames (lib.filterAttrs (n: v: (v == "regular") && (lib.hasSuffix ".fish" n)) (builtins.readDir (flakeRoot + "/dotfiles/fish/functions")));
+        functionFiles = builtins.attrNames (lib.filterAttrs (n: v: ((v == "regular") && lib.hasSuffix ".fish" n)) (builtins.readDir "${flakeRoot}/dotfiles/fish/functions"));
       in
-      lib.listToAttrs (map (f: {
+      lib.listToAttrs (builtins.map (f: {
         name = "fish/functions/${f}";
         value.source = config.lib.file.mkOutOfStoreSymlink "${functionsDir}/${f}";
       }) functionFiles);

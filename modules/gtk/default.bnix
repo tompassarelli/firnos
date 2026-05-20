@@ -4,13 +4,27 @@
 (module [config lib pkgs]
   (let [username config.myConfig.modules.users.username
         isDark (== config.stylix.polarity "dark")]
-  {:options.myConfig.modules.gtk.enable
-     (lib/mkEnableOption "GTK theming configuration")
+    {:options.myConfig.modules.gtk.enable
+       (lib/mkEnableOption "GTK theming configuration")
 
-   :config
-     (lib/mkIf config.myConfig.modules.gtk.enable
-       {
-        :home-manager.users.username (module [config]
-  (let [stylixGtkFont (s (s config.gtk.font.name " ") (toString config.gtk.font.size))
-        stylixGtkTheme config.gtk.theme.name]
-    {:gtk.enable true :home.packages (with-do pkgs [gsettings-desktop-schemas gtk3]) :xdg.configFile {"gtk-3.0/settings.ini" {:text (lib/mkForce (ms "[Settings]" "gtk-application-prefer-dark-theme=${if isDark then \"1\" else \"0\"}" "gtk-font-name=${stylixGtkFont}" "gtk-theme-name=${stylixGtkTheme}"))}} :xdg.configFile {"gtk-4.0/settings.ini" {:text (lib/mkForce (ms "[Settings]" "gtk-application-prefer-dark-theme=${if isDark then \"1\" else \"0\"}" "gtk-font-name=${stylixGtkFont}" "gtk-theme-name=${stylixGtkTheme}"))}} :dconf.settings {"org/gnome/desktop/interface" {:color-scheme (lib/mkForce (if isDark "prefer-dark" "prefer-light"))}}}))})}))
+     :config
+       (lib/mkIf config.myConfig.modules.gtk.enable
+         {:home-manager.users
+            {username
+              (module [config]
+                (let [stylixGtkFont (s (s config.gtk.font.name " ") (toString config.gtk.font.size))
+                      stylixGtkTheme config.gtk.theme.name]
+                  {:gtk.enable true
+                   :home.packages (with-do pkgs [gsettings-desktop-schemas gtk3])
+                   :xdg.configFile {"gtk-3.0/settings.ini"
+                     {:text (lib/mkForce (ms "[Settings]"
+                       "gtk-application-prefer-dark-theme=${if isDark then \"1\" else \"0\"}"
+                       "gtk-font-name=${stylixGtkFont}"
+                       "gtk-theme-name=${stylixGtkTheme}"))}}
+                   :xdg.configFile {"gtk-4.0/settings.ini"
+                     {:text (lib/mkForce (ms "[Settings]"
+                       "gtk-application-prefer-dark-theme=${if isDark then \"1\" else \"0\"}"
+                       "gtk-font-name=${stylixGtkFont}"
+                       "gtk-theme-name=${stylixGtkTheme}"))}}
+                   :dconf.settings {"org/gnome/desktop/interface"
+                     {:color-scheme (lib/mkForce (if isDark "prefer-dark" "prefer-light"))}}}))}})}))

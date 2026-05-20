@@ -12,7 +12,7 @@
    :config
      (lib/mkIf config.myConfig.bundles.lisp.enable
        {
-        :myConfig.bundles.doom-emacs.enable (lib/mkDefault cfg.doom-emacs.enable)
-        :myConfig.modules.lem.enable (lib/mkDefault cfg.lem.enable)
-        :myConfig.modules.sbcl.enable (lib/mkDefault cfg.sbcl.enable)
-        :myConfig.modules.clojure.enable (lib/mkDefault cfg.clojure.enable)})})
+        :myConfig.bundles.doom-emacs.enable (lib/mkDefault config.myConfig.bundles.lisp.doom-emacs.enable)
+        :myConfig.modules.lem.enable (lib/mkDefault config.myConfig.bundles.lisp.lem.enable)
+        :myConfig.modules.sbcl.enable (lib/mkDefault config.myConfig.bundles.lisp.sbcl.enable)
+        :myConfig.modules.clojure.enable (lib/mkDefault config.myConfig.bundles.lisp.clojure.enable)})})

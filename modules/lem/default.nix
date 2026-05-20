@@ -4,9 +4,9 @@ let
   cfg = config.myConfig.modules.lem;
   username = config.myConfig.modules.users.username;
   lem-ncurses = inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (o: {
-    postPatch = o.postPatch or "" + ''
+    postPatch = "${o.postPatch or ""}${''
       sed -i 's/#-os-windows "lem-terminal"//' lem.asd
-    '';
+    ''}";
   });
 in
 {
@@ -14,7 +14,6 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ lem-ncurses ];
     home-manager.users.${username} = { config, ... }: {
-      home.file.".lem".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/lem";
       xdg.desktopEntries.lem = {
         name = "Lem";
         comment = "Common Lisp Editor";
@@ -23,6 +22,7 @@ in
         type = "Application";
         categories = [ "Development" "TextEditor" ];
       };
+      home.file.".lem".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/lem";
     };
   };
 }

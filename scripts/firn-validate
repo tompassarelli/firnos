@@ -1,40 +1,32 @@
 #!/usr/bin/env bash
-# firn-validate — thin wrapper around `nisp validate`.
+# firn-validate — validates .bnix source files against the NixOS option schema.
 #
-# Configures the validator for this repo's NixOS-specific conventions:
-#   target:     nixosConfigurations.<hostname>.options
-#   cache-dir:  <repo-root>/.nisp-cache
-#   hm-roots:   programs,home,xdg,accounts,i18n,targets,wayland,qt,gtk,dconf,fonts,nixpkgs
+# Uses beagle-validate for source-level validation (option paths, types,
+# duplicates, cross-file conflicts). Falls back to nisp validate if
+# beagle-validate is not available.
 #
-# Pass-through args go to `nisp validate` (e.g. specific files to check).
+# Also runs firn-lint-nix to syntax-check generated .nix files.
 
 set -euo pipefail
 
 REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
-
-if [[ ! -f "$NISP_PATH/bin/nisp" ]]; then
-  echo "firn-validate: nisp dispatcher not found at $NISP_PATH/bin/nisp" >&2
-  echo "  clone nisp: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
-  echo "  or set NISP_PATH=/path/to/nisp" >&2
-  exit 2
-fi
-
-# Auto-extract package cache if missing or stale (flake.lock newer)
-PKG_CACHE="$REPO/.nisp-cache/packages.json"
-if [[ ! -f "$PKG_CACHE" ]] || [[ "$REPO/flake.lock" -nt "$PKG_CACHE" ]]; then
-  echo "firn-validate: refreshing package cache..."
-  "$REPO/scripts/firn-extract-packages" || true
-fi
+BEAGLE_PATH="${BEAGLE_PATH:-$(cd "$REPO/.." && pwd)/beagle}"
+BEAGLE_VALIDATE="$BEAGLE_PATH/bin/beagle-validate"
 
 # Syntax-check generated .nix files
+echo "firn-lint-nix: checking generated .nix files..."
 if ! "$REPO/scripts/firn-lint-nix"; then
   echo "firn-validate: generated .nix has syntax errors (firn-build codegen bug?)" >&2
   exit 1
 fi
+echo "firn-lint-nix: all .nix files parse cleanly."
 
-exec racket "$NISP_PATH/bin/nisp" validate \
-  --flake "$REPO" \
-  --cache-dir "$REPO/.nisp-cache" \
-  --hm-roots "programs,home,xdg,accounts,i18n,targets,wayland,qt,gtk,dconf,fonts,nixpkgs" \
-  "$@"
+# Validate .bnix source files
+if [[ -x "$BEAGLE_VALIDATE" ]]; then
+  cd "$REPO"
+  exec "$BEAGLE_VALIDATE" "$@"
+else
+  echo "firn-validate: beagle-validate not found at $BEAGLE_VALIDATE" >&2
+  echo "  set BEAGLE_PATH=/path/to/beagle" >&2
+  exit 2
+fi
