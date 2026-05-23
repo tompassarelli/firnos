@@ -2,15 +2,15 @@
 
 ;; validator-test — integration tests for firn-validate's output.
 ;;
-;; Each test runs firn-validate against a fixture .rkt with a known kind
+;; Each test runs firn-validate against a fixture .bnix with a known kind
 ;; of bug, then asserts the stderr contains the expected substrings:
 ;; the file:line:col anchor, the diagnostic text, and (where applicable)
 ;; the did-you-mean suggestion.
 ;;
 ;; Run:
-;;   raco test nisp/tests/validator-test.rkt
+;;   raco test tests/validator-test.rkt
 ;;
-;; Requires .firn-build/schema.json to exist (from firn-extract-schema).
+;; Requires .nisp-cache/schema.json to exist (from firn-extract-schema).
 ;; Submodule cache is auto-populated on first run via lazy expansion.
 
 (require rackunit
@@ -60,52 +60,52 @@
 ;; ---------- Phase 1: unknown path ----------
 
 (test-case "unknown path: file:line:col + did-you-mean"
-  (check-output-contains "unknown-path.rkt"
-    #rx"unknown-path\\.rkt:6:[0-9]+: unknown option services\\.pipwire\\.alsa\\.enable")
-  (check-output-contains "unknown-path.rkt"
+  (check-output-contains "unknown-path.bnix"
+    #rx"unknown-path\\.bnix:6:[0-9]+: unknown option services\\.pipwire\\.alsa\\.enable")
+  (check-output-contains "unknown-path.bnix"
     #rx"did you mean: services\\.pipewire"))
 
 ;; ---------- Phase 2: type mismatch ----------
 
 (test-case "bool option assigned a string"
-  (check-output-contains "type-mismatch-bool.rkt"
-    #rx"type-mismatch-bool\\.rkt:6:[0-9]+: type mismatch at services\\.openssh\\.enable")
-  (check-output-contains "type-mismatch-bool.rkt"
+  (check-output-contains "type-mismatch-bool.bnix"
+    #rx"type-mismatch-bool\\.bnix:6:[0-9]+: type mismatch at services\\.openssh\\.enable")
+  (check-output-contains "type-mismatch-bool.bnix"
     #rx"expected bool, got string"))
 
 (test-case "enum value not in allowed set, with did-you-mean"
-  (check-output-contains "enum-mismatch.rkt"
-    #rx"enum-mismatch\\.rkt:6:[0-9]+: type mismatch at boot\\.loader\\.systemd-boot\\.consoleMode")
-  (check-output-contains "enum-mismatch.rkt"
+  (check-output-contains "enum-mismatch.bnix"
+    #rx"enum-mismatch\\.bnix:6:[0-9]+: type mismatch at boot\\.loader\\.systemd-boot\\.consoleMode")
+  (check-output-contains "enum-mismatch.bnix"
     #rx"\"atuo\" not in enum")
-  (check-output-contains "enum-mismatch.rkt"
+  (check-output-contains "enum-mismatch.bnix"
     #rx"did you mean \"auto\""))
 
 (test-case "listOf int with string elements"
-  (check-output-contains "listof-int-wrong-element.rkt"
-    #rx"listof-int-wrong-element\\.rkt:6:[0-9]+: type mismatch at networking\\.firewall\\.allowedTCPPorts")
-  (check-output-contains "listof-int-wrong-element.rkt"
+  (check-output-contains "listof-int-wrong-element.bnix"
+    #rx"listof-int-wrong-element\\.bnix:6:[0-9]+: type mismatch at networking\\.firewall\\.allowedTCPPorts")
+  (check-output-contains "listof-int-wrong-element.bnix"
     #rx"expected unsignedInt16, got string"))
 
 (test-case "attrsOf str with nested attrset value"
-  (check-output-contains "attrsof-leaf-nested.rkt"
-    #rx"attrsof-leaf-nested\\.rkt:6:[0-9]+: type mismatch at hardware\\.alsa\\.deviceAliases")
-  (check-output-contains "attrsof-leaf-nested.rkt"
+  (check-output-contains "attrsof-leaf-nested.bnix"
+    #rx"attrsof-leaf-nested\\.bnix:6:[0-9]+: type mismatch at hardware\\.alsa\\.deviceAliases")
+  (check-output-contains "attrsof-leaf-nested.bnix"
     #rx"expected str, got attrset"))
 
 ;; ---------- Lazy submodule expansion ----------
 
 (test-case "typo inside expanded submodule"
-  (check-output-contains "submodule-typo.rkt"
-    #rx"submodule-typo\\.rkt:6:[0-9]+: unknown option services\\.openssh\\.settings\\.PermitRotLogin")
-  (check-output-contains "submodule-typo.rkt"
+  (check-output-contains "submodule-typo.bnix"
+    #rx"submodule-typo\\.bnix:6:[0-9]+: unknown option services\\.openssh\\.settings\\.PermitRotLogin")
+  (check-output-contains "submodule-typo.bnix"
     #rx"did you mean: services\\.openssh\\.settings\\.PermitRootLogin"))
 
 (test-case "typo via wildcard attrsOf submodule"
-  (check-output-contains "attrsof-submodule-typo.rkt"
-    #rx"attrsof-submodule-typo\\.rkt:6:[0-9]+: unknown option users\\.users\\.tom\\.shellz"))
+  (check-output-contains "attrsof-submodule-typo.bnix"
+    #rx"attrsof-submodule-typo\\.bnix:6:[0-9]+: unknown option users\\.users\\.tom\\.shellz"))
 
 ;; ---------- happy path ----------
 
 (test-case "clean fixture validates with rc=0"
-  (check-output-clean "clean.rkt"))
+  (check-output-clean "clean.bnix"))

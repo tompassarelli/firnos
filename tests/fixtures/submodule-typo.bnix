@@ -1,0 +1,11 @@
+#lang beagle/nix
+(ns modules.submodule-typo-test)
+
+(fn-set-rest (config lib pkgs)
+  {:options.myConfig.modules.submodule-typo-test.enable
+     (lib/mkEnableOption "typo inside services.openssh.settings (after lazy submodule expansion)")
+
+   :config
+     (lib/mkIf config.myConfig.modules.submodule-typo-test.enable
+       {
+        :services.openssh.settings.PermitRotLogin "yes"})})

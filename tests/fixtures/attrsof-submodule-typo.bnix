@@ -1,0 +1,11 @@
+#lang beagle/nix
+(ns modules.attrsof-submodule-typo-test)
+
+(fn-set-rest (config lib pkgs)
+  {:options.myConfig.modules.attrsof-submodule-typo-test.enable
+     (lib/mkEnableOption "typo inside attrsOf submodule via wildcard match (users.users.<name>.X)")
+
+   :config
+     (lib/mkIf config.myConfig.modules.attrsof-submodule-typo-test.enable
+       {
+        :users.users.tom.shellz pkgs.zsh})})

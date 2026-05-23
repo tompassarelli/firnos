@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# firn-extract-schema — thin wrapper around `nisp extract-schema`.
+# firn-extract-schema — thin wrapper around `beagle-extract-schema`.
 #
 # Configures the extractor for this repo:
 #   target: nixosConfigurations.$HOST.options  (default HOST: whiterabbit)
@@ -12,7 +12,8 @@
 set -euo pipefail
 
 REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-NISP_PATH="${NISP_PATH:-$(cd "$REPO/.." && pwd)/nisp}"
+BEAGLE_PATH="${BEAGLE_PATH:-$(cd "$REPO/.." && pwd)/beagle}"
+BEAGLE_EXTRACT="$BEAGLE_PATH/bin/beagle-extract-schema"
 
 DARWIN=false
 if [[ "${1:-}" == "--darwin" ]]; then
@@ -30,14 +31,14 @@ else
   OUT="$REPO/.nisp-cache/schema.json"
 fi
 
-if [[ ! -x "$NISP_PATH/bin/nisp" ]]; then
-  echo "firn-extract-schema: nisp dispatcher not found at $NISP_PATH/bin/nisp" >&2
-  echo "  clone nisp: git clone https://github.com/tompassarelli/nisp \"$NISP_PATH\"" >&2
-  echo "  or set NISP_PATH=/path/to/nisp" >&2
+if [[ ! -x "$BEAGLE_EXTRACT" ]]; then
+  echo "firn-extract-schema: beagle-extract-schema not found at $BEAGLE_EXTRACT" >&2
+  echo "  clone beagle: git clone https://github.com/tompassarelli/beagle \"$BEAGLE_PATH\"" >&2
+  echo "  or set BEAGLE_PATH=/path/to/beagle" >&2
   exit 2
 fi
 
-exec "$NISP_PATH/bin/nisp" extract-schema \
+exec "$BEAGLE_EXTRACT" \
   --target "$TARGET" \
   --out "$OUT" \
   --flake "$REPO"

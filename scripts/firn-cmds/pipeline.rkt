@@ -8,8 +8,8 @@
 
 (provide node-edges)
 
-;; firn repo build [all]     — regenerate .nix from .rkt
-;; firn repo validate [all]  — lint-nix + nisp validate (with auto package cache)
+;; firn repo build [all]     — regenerate .nix from .bnix
+;; firn repo validate [all]  — lint-nix + beagle-validate (with auto package cache)
 ;; firn repo lint [all]      — syntax-check generated .nix only
 
 (define (handle-repo-build _leaf)
@@ -31,7 +31,7 @@
   (list
    (walk-edge "repo" "build" "[all]" 'all
               handle-repo-build
-              "regenerate .nix from .rkt sources")
+              "regenerate .nix from .bnix sources")
    (walk-edge "repo" "validate" "[all]" 'all
               handle-repo-validate
               "lint .nix syntax + validate option paths, types, packages")

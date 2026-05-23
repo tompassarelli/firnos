@@ -2,8 +2,7 @@
 # firn-validate — validates .bnix source files against the NixOS option schema.
 #
 # Uses beagle-validate for source-level validation (option paths, types,
-# duplicates, cross-file conflicts). Falls back to nisp validate if
-# beagle-validate is not available.
+# duplicates, cross-file conflicts).
 #
 # Also runs firn-lint-nix to syntax-check generated .nix files.
 
@@ -21,12 +20,23 @@ if ! "$REPO/scripts/firn-lint-nix"; then
 fi
 echo "firn-lint-nix: all .nix files parse cleanly."
 
-# Validate .bnix source files
-if [[ -x "$BEAGLE_VALIDATE" ]]; then
-  cd "$REPO"
-  exec "$BEAGLE_VALIDATE" "$@"
-else
+if [[ ! -x "$BEAGLE_VALIDATE" ]]; then
   echo "firn-validate: beagle-validate not found at $BEAGLE_VALIDATE" >&2
   echo "  set BEAGLE_PATH=/path/to/beagle" >&2
   exit 2
+fi
+
+cd "$REPO"
+
+# If the caller passed explicit files, validate exactly those. Otherwise
+# auto-discover .bnix files excluding tests/fixtures (which contain
+# intentionally-broken fixtures invoked individually by validator-test.rkt).
+if (( $# > 0 )); then
+  exec "$BEAGLE_VALIDATE" "$@"
+else
+  mapfile -t FILES < <(find . -type f -name '*.bnix' \
+    -not -path './tests/fixtures/*' \
+    -not -path './result/*' \
+    -not -path './.direnv/*' | sort)
+  exec "$BEAGLE_VALIDATE" "${FILES[@]}"
 fi

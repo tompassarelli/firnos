@@ -6,7 +6,7 @@
 ;;
 ;; Usage:
 ;;   firn explain services.openssh.enable
-;;   firn explain "modules/foo.rkt:6:7: unknown option services.opensh.enable"
+;;   firn explain "modules/foo.bnix:6:7: unknown option services.opensh.enable"
 ;;     ^ paste a validator error directly; firn extracts the path
 
 (require racket/string
@@ -14,7 +14,7 @@
          racket/file
          racket/path
          json
-         (only-in nisp/validate find-similar-strs)
+         (only-in beagle/private/nixos-schema find-similar-strs)
          "util.rkt")
 
 (provide node-edges)
@@ -57,16 +57,15 @@
     [else "?"]))
 
 (define (find-references-in-repo path)
-  ;; Find .rkt files that reference this path (in (set …), (enable …), etc.)
+  ;; Find .bnix files that reference this path.
   (define escaped (regexp-quote path))
   (define re (regexp escaped))
   (sort
    (for/list ([f (in-directory ROOT)]
               #:when (let ([s (path->string f)])
-                       (and (regexp-match? #rx"\\.rkt$" s)
+                       (and (regexp-match? #rx"\\.bnix$" s)
                             (not (regexp-match? #rx"/scripts/" s))
                             (not (regexp-match? #rx"/tests/" s))
-                            (not (regexp-match? #rx"/\\.firn-build/" s))
                             (not (regexp-match? #rx"/\\.nisp-cache/" s))
                             (not (regexp-match? #rx"/\\.git/" s))
                             (not (regexp-match? #rx"/\\.direnv/" s))
@@ -82,12 +81,6 @@
   (printf ">> firn-extract-schema ~a\n" host)
   (unless (sh (path->string (in-repo "scripts" "firn-extract-schema")) host)
     (eprintf "firn schema extract: failed.\n") (exit 1)))
-
-(define (handle-schema-packages leaf)
-  (define host (if (equal? leaf "current") (current-hostname) leaf))
-  (printf ">> firn-extract-packages ~a\n" host)
-  (unless (sh (path->string (in-repo "scripts" "firn-extract-packages")) host)
-    (eprintf "firn schema packages: failed.\n") (exit 1)))
 
 (define (handle-schema-explain leaf)
   (cond
@@ -143,7 +136,4 @@
               "show schema entry + repo references for an option")
    (walk-edge "schema" "extract" "[<host>]" 'current-host
               handle-schema-extract
-              "regenerate options schema cache from nix eval")
-   (walk-edge "schema" "packages" "[<host>]" 'current-host
-              handle-schema-packages
-              "regenerate package name cache from nixpkgs")))
+              "regenerate options schema cache from nix eval")))

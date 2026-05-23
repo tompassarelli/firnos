@@ -20,7 +20,9 @@ The *write interface* for this repo is **beagle/nix** — `#lang beagle/nix` fil
 
 Both `.bnix` and `.nix` are committed because the flake reads from the git tree.
 
-**beagle lives in a sibling repo**: `../beagle` — the compiler, type checker, and emitters. firn-build expects beagle cloned at `../beagle` by default — override with `BEAGLE_PATH`. The nisp validation toolchain (`nisp validate`, `nisp schema`, etc.) is still used for NixOS option-path checking.
+**beagle lives in a sibling repo**: `../beagle` — the compiler, validator, schema extractor, and emitters. firn-build / firn-validate / firn-extract-schema expect beagle cloned at `../beagle` by default — override with `BEAGLE_PATH`.
+
+The sole remaining `#lang nisp` source in this repo is `flake.rkt` (the flake itself). `nisp-to-bgl` deliberately refuses `flake-file` forms, so the flake stays nisp until either nisp-to-bgl learns flake conversion or the flake gets hand-converted.
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.bnix` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
@@ -56,17 +58,24 @@ Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users)
 
 Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, symlinked via out-of-store symlinks. `modules/fish/fish.nix` auto-discovers them.
 
-`firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). Its grammar is entity-first and walkable: every invocation is one or more `<node> <edge> [<leaf>]` triples (e.g. `firn bundle status all`, `firn module enable swap`, `firn host rebuild`, `firn schema explain X`). Leaves default sensibly when omitted — `all` for aggregate views, current-hostname for host-scoped commands. Run `firn` with no args to see the full grid, or `firn <node>` for one entity's edges. Old shapes (`firn status`, `firn doctor`, `firn tags --filter t`, …) still work via legacy aliases. The CLI should only contain subcommands that operate on the nixos-config repo itself — general-purpose tools like `sandbox`, `vpn`, `gif` etc. stay as standalone fish functions.
+`firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). It has two surfaces:
+
+- **Daily shortcuts** (what to suggest to the user). Single bare commands with auto-detected defaults: `firn rebuild`, `firn validate`, `firn build`, `firn status`, `firn doctor`, `firn impact`, `firn enable <name>`, `firn disable <name>`, `firn diff`. These are first-class, not deprecated — `scripts/firn.rkt:316` lists them in the help output as "Common shortcuts (default host is auto-detected)". `maybe-legacy-rewrite` rewrites them silently to the entity-first form; no deprecation pointer is ever printed.
+- **Underlying graph**. Every command is ultimately a `<node> <edge> [<leaf>]` triple (`firn host rebuild`, `firn bundle status all`, `firn module enable swap`, `firn schema explain X`). Useful when you need to disambiguate or scope to a non-default host. Leaves default to `all` for aggregate views and current-hostname for host-scoped commands.
+
+**When telling the user what to run, prefer the bare daily shortcut.** Say `firn rebuild`, not `firn host rebuild`, unless there's a specific reason to scope (e.g. rebuilding `thinkpad-x1e` from `whiterabbit`).
+
+Run `firn` with no args for the full grid; `firn <node>` for one entity's edges. The CLI should only contain subcommands that operate on the nixos-config repo itself — general-purpose tools like `sandbox`, `vpn`, `gif` etc. stay as standalone fish functions.
 
 ## Schema introspection (use these instead of grepping schema.json)
 
 Before adding/changing options, query the schema:
 
 ```bash
-nisp schema services.openssh.enable               # exact lookup: type, default, enum
-nisp schema --children services.openssh           # list all sub-options under a prefix
-nisp schema --search ssh                          # fuzzy substring search
-nisp schema --json services.openssh.enable        # machine-readable
+beagle-schema services.openssh.enable               # exact lookup: type, default, enum
+beagle-schema --children services.openssh           # list all sub-options under a prefix
+beagle-schema --search ssh                          # fuzzy substring search
+beagle-schema --json services.openssh.enable        # machine-readable
 ```
 
 This is the right way to answer "does option X exist?" or "what type does X want?" — far better than `grep schema.json`.
@@ -76,8 +85,8 @@ This is the right way to answer "does option X exist?" or "what type does X want
 To rename an option path across all `.bnix` files (e.g., refactoring `myConfig.modules.foo` → `myConfig.modules.bar`):
 
 ```bash
-nisp rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
-nisp rename myConfig.modules.foo myConfig.modules.bar             # apply
+beagle-rename --dry-run myConfig.modules.foo myConfig.modules.bar   # preview
+beagle-rename myConfig.modules.foo myConfig.modules.bar             # apply
 firn validate                                                        # verify clean
 ```
 
@@ -152,7 +161,7 @@ The diff phase highlights any **removed** or **type-changed** option paths that 
 ## Auto-fixing typos
 
 ```bash
-nisp validate --auto-fix
+beagle-validate --auto-fix
 ```
 
 Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 with a clear gap to the runner-up). Ambiguous cases are left for human review.
@@ -162,10 +171,10 @@ Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 wi
 If the user has hand-written `.nix` and wants to convert to beagle/nix:
 
 ```bash
-nisp import file.nix > file.bnix
+nisp-to-bgl file.nix > file.bnix
 ```
 
-Built on rnix-parser (handles 100% of nixpkgs). Output may need manual adjustment to use beagle/nix forms.
+Built on rnix-parser (handles 100% of nixpkgs). Output may need manual adjustment to use beagle/nix forms. **Note:** `nisp-to-bgl` refuses `flake-file` forms — the project flake must be migrated by hand.
 
 ## Verification
 
