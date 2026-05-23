@@ -12,13 +12,11 @@ REPO="${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 BEAGLE_PATH="${BEAGLE_PATH:-$(cd "$REPO/.." && pwd)/beagle}"
 BEAGLE_VALIDATE="$BEAGLE_PATH/bin/beagle-validate"
 
-# Syntax-check generated .nix files
-echo "firn-lint-nix: checking generated .nix files..."
+# Syntax-check generated .nix files (firn-lint-nix prints its own status)
 if ! "$REPO/scripts/firn-lint-nix"; then
   echo "firn-validate: generated .nix has syntax errors (firn-build codegen bug?)" >&2
   exit 1
 fi
-echo "firn-lint-nix: all .nix files parse cleanly."
 
 if [[ ! -x "$BEAGLE_VALIDATE" ]]; then
   echo "firn-validate: beagle-validate not found at $BEAGLE_VALIDATE" >&2

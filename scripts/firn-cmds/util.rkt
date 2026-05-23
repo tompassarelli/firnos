@@ -171,15 +171,24 @@
 ;; forbidden") as soon as anything reaches into `inputs.<name>`, even
 ;; transitively via flake-lock resolution. Empty list ⇒ pure-eval safe.
 (define (flake-input-purity-violations)
-  (define flake-path (in-repo "flake.rkt"))
+  ;; Check the live flake source. Prefer flake.bnix (current source of
+  ;; truth); fall back to flake.rkt if present (legacy).
+  (define src
+    (cond
+      [(file-exists? (in-repo "flake.bnix")) (in-repo "flake.bnix")]
+      [(file-exists? (in-repo "flake.rkt")) (in-repo "flake.rkt")]
+      [else #f]))
   (cond
-    [(not (file-exists? flake-path)) '()]
+    [(not src) '()]
     [else
-     (define lines (regexp-split #rx"\n" (file->string flake-path)))
+     (define lines (regexp-split #rx"\n" (file->string src)))
+     (define src-name
+       (cond [(equal? src (in-repo "flake.bnix")) "flake.bnix"]
+             [else "flake.rkt"]))
      (for/list ([line (in-list lines)]
                 [n (in-naturals 1)]
                 #:when (regexp-match? #px"\"path:/[^\"]+\"" line))
-       (format "flake.rkt:~a: ~a" n (regexp-replace #rx"^\\s+" line "")))]))
+       (format "~a:~a: ~a" src-name n (regexp-replace #rx"^\\s+" line "")))]))
 
 ;; ---------- option-path extraction from .rkt source ----------
 ;;

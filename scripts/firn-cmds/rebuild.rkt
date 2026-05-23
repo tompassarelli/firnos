@@ -2,6 +2,7 @@
 
 (require racket/string
          racket/list
+         racket/math
          racket/path
          racket/system
          racket/file
@@ -73,47 +74,67 @@
             (string-join (host-impure-modules host) ", "))
     (printf "             this triggers a full ~~45 min Firefox compile.\n")
     (printf "             for daily gjoa dev use the gjoa dev shell + mach build faster.\n"))
+  ;; ─── Phase helpers ───────────────────────────────────────────────────
+  ;; Each phase prints a banner, runs the body, then OK/FAIL with elapsed.
+  ;; Long phases (nh switch) stream child output live.
+  (define total-start (current-inexact-milliseconds))
+  (define (fmt-elapsed ms)
+    (cond [(< ms 1000) (format "~ams" (exact-round ms))]
+          [(< ms 60000) (format "~as" (exact-round (/ ms 1000.0)))]
+          [else (format "~am~as"
+                        (exact-floor (/ ms 60000))
+                        (exact-round (/ (modulo (exact-round ms) 60000) 1000.0)))]))
+  (define (phase name body)
+    (define start (current-inexact-milliseconds))
+    (printf "┌─ ~a\n" name) (flush-output)
+    (define ok? (with-handlers ([exn:fail? (λ (_) #f)]) (body)))
+    (define elapsed (- (current-inexact-milliseconds) start))
+    (cond
+      [ok? (printf "└─ ✓ ~a (~a)\n" name (fmt-elapsed elapsed))]
+      [else
+       (printf "└─ ✗ ~a (~a)\n" name (fmt-elapsed elapsed))
+       (eprintf "firn rebuild: ~a failed; aborting.\n" name)
+       (exit 1)])
+    (flush-output))
+
   (unless skip-checks?
-    ;; Step 1: regenerate any out-of-date .nix from .rkt sources.
-    (printf ">> firn-build\n")
-    (unless (sh (path->string (in-repo "scripts" "firn-build")))
-      (eprintf "firn rebuild: firn-build failed; aborting.\n") (exit 1))
-    ;; Step 1b: warn about untracked .rkt/.nix — Nix can't see them.
+    ;; Step 1: regenerate any out-of-date .nix from .bnix sources.
+    (phase "firn-build"
+      (λ () (sh (path->string (in-repo "scripts" "firn-build")))))
+
+    ;; Step 1b: warn about untracked .bnix/.nix — Nix can't see them.
     (define untracked
       (let ([s (sh-out "git" "-C" ROOT "ls-files" "--others" "--exclude-standard")])
-        (filter (λ (p) (regexp-match? #rx"\\.(rkt|nix)$" p))
+        (filter (λ (p) (regexp-match? #rx"\\.(bnix|rkt|nix)$" p))
                 (string-split s "\n"))))
     (unless (null? untracked)
-      (eprintf "firn rebuild: untracked files invisible to Nix — git add them first:\n")
+      (eprintf "✗ untracked files invisible to Nix — git add them first:\n")
       (for ([p (in-list untracked)]) (eprintf "  ~a\n" p))
       (exit 1))
+
     ;; Step 2: validate paths and value types against the schema.
-    (printf ">> firn-validate\n")
-    (unless (sh (path->string (in-repo "scripts" "firn-validate")))
-      (eprintf "firn rebuild: validation failed; aborting.\n") (exit 1))
-    ;; Step 2b: flake input purity. firn-validate is schema-only and can't
-    ;; see flake-level concerns, so check here before nix gets its hands
-    ;; on the tree — otherwise the build fails several minutes later with
-    ;; "access to absolute path '/...' is forbidden in pure evaluation mode".
-    ;; Skip when auto-impure will be in play for a module whose own
-    ;; flake demands it.
+    (phase "firn-validate"
+      (λ () (sh (path->string (in-repo "scripts" "firn-validate")))))
+
+    ;; Step 2b: flake input purity.
     (cond
       [auto-impure?
-       (printf ">> flake-input-purity (skipped — --impure mode)\n")]
+       (printf "── flake-input-purity skipped (--impure)\n")]
       [else
-       (printf ">> flake-input-purity\n")
-       (define purity-issues (flake-input-purity-violations))
-       (unless (null? purity-issues)
-         (eprintf "firn rebuild: flake has absolute path: inputs that break pure eval:\n")
-         (for ([line (in-list purity-issues)]) (eprintf "  ~a\n" line))
-         (eprintf "fix: publish to a git remote (github:owner/repo), or override locally with --override-input.\n")
-         (exit 1))]))
+       (phase "flake-input-purity"
+         (λ ()
+           (define purity-issues (flake-input-purity-violations))
+           (cond
+             [(null? purity-issues) #t]
+             [else
+              (eprintf "  flake has absolute-path inputs that break pure eval:\n")
+              (for ([line (in-list purity-issues)]) (eprintf "  ~a\n" line))
+              (eprintf "  fix: publish to a git remote (github:owner/repo), or override locally with --override-input.\n")
+              #f])))]))
 
   ;; Step 3: actual rebuild. Dispatch by platform.
-  ;; (Step 2c — dry-run impact preview — moved to `firn host impact` and
-  ;; removed from the default rebuild path. Run it on demand when you want
-  ;; the "N to build, X MiB cached — notable: …" preview.)
-  (printf ">> rebuild\n")
+  (printf "┌─ rebuild\n") (flush-output)
+  (define rebuild-start (current-inexact-milliseconds))
   (define on-darwin?
     (equal? "Darwin" (string-trim (sh-out "uname" "-s"))))
   (define extra (if auto-impure? (list "--impure") '()))
@@ -135,11 +156,12 @@
        (define flake-target (if host (string-append ROOT "#" host) ROOT))
        (apply sh (append (list "sudo" "nixos-rebuild" "switch" "--flake" flake-target)
                          extra))]))
+  (define rebuild-elapsed (- (current-inexact-milliseconds) rebuild-start))
+  (define total-elapsed (- (current-inexact-milliseconds) total-start))
   (cond
     [(not rc)
-     (printf "\n========================================\n")
-     (printf "  Build failed\n")
-     (printf "========================================\n\n")
+     (printf "└─ ✗ rebuild (~a)\n" (fmt-elapsed rebuild-elapsed))
+     (printf "\n  total: ~a — failed\n\n" (fmt-elapsed total-elapsed))
      ;; Attempt Claude diagnosis if claude CLI is available
      (define claude-bin (find-executable-path "claude"))
      (when claude-bin
@@ -172,19 +194,24 @@
              (printf "\n~a\n" diagnosis)))))
      (exit 1)]
     [on-darwin?
-     ;; nix-darwin's generation listing is different; skip the gen tag for now.
-     (printf "rebuild complete.\n")]
+     (printf "└─ ✓ rebuild (~a)\n" (fmt-elapsed rebuild-elapsed))
+     (printf "\n  ✓ rebuild complete — total ~a\n\n" (fmt-elapsed total-elapsed))]
     [else
+     (printf "└─ ✓ rebuild (~a)\n" (fmt-elapsed rebuild-elapsed))
      (define gens (sh-out "nixos-rebuild" "list-generations"))
      (define cur-line
        (for/or ([line (in-list (string-split gens "\n"))]
                 #:when (regexp-match? #rx"current" line))
          line))
-     (when cur-line
-       (define gen (car (string-split (string-trim cur-line))))
-       (when (regexp-match? #rx"^[0-9]+$" gen)
-         (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD")
-         (printf "Tagged: gen-~a\n" gen)))]))
+     (define gen
+       (and cur-line
+            (let ([n (car (string-split (string-trim cur-line)))])
+              (and (regexp-match? #rx"^[0-9]+$" n) n))))
+     (when gen
+       (sh "git" "-C" ROOT "tag" "-f" (string-append "gen-" gen) "HEAD"))
+     (printf "\n  ✓ rebuild complete — total ~a~a\n\n"
+             (fmt-elapsed total-elapsed)
+             (if gen (format ", tagged gen-~a" gen) ""))]))
 
 ;; firn host impact [<host>]  — dry-run rebuild impact prediction
 

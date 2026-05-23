@@ -20,8 +20,7 @@
     :kanata-git       {:url "github:jtroo/kanata" :flake false}
     :glide            {:url "github:tompassarelli/glide" :flake false}
     :quickshell       {:url "git+https://git.outfoxxed.me/outfoxxed/quickshell"
-                       :inputs.nixpkgs.follows "nixpkgs"
-                       :inputs.nixpkgs-unstable.follows "nixpkgs-unstable"}
+                       :inputs.nixpkgs.follows "nixpkgs"}
     :zen-browser      {:url "github:0xc000022070/zen-browser-flake"
                        :inputs.nixpkgs.follows "nixpkgs"}
     :elephant         {:url "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73"}
