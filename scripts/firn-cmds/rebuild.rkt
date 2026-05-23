@@ -74,6 +74,31 @@
             (string-join (host-impure-modules host) ", "))
     (printf "             this triggers a full ~~45 min Firefox compile.\n")
     (printf "             for daily gjoa dev use the gjoa dev shell + mach build faster.\n"))
+  ;; Refresh sudo credentials upfront so the activation phase (which runs
+  ;; after several minutes of build) doesn't wake the user for a password.
+  ;; `sudo -v` validates and extends the cached timestamp; subsequent
+  ;; sudo invocations within ~5 min (default sudo timeout) skip the prompt.
+  (define on-linux? (not (equal? "Darwin" (string-trim (sh-out "uname" "-s")))))
+  (when on-linux?
+    (printf "── sudo: caching credentials upfront (no prompt during build)\n")
+    (flush-output)
+    (unless (sh "sudo" "-v")
+      (eprintf "firn rebuild: sudo authentication failed\n") (exit 1)))
+
+  ;; Keep sudo timestamp warm for the duration of the build by re-validating
+  ;; every 60 seconds in the background. nh's activation phase can land
+  ;; anywhere from 30s (cached) to 45min (full firefox rebuild) later.
+  (define sudo-keepalive
+    (and on-linux?
+         (thread
+           (lambda ()
+             (let loop ()
+               (sleep 60)
+               (parameterize ([current-output-port (open-output-nowhere)]
+                              [current-error-port (open-output-nowhere)])
+                 (system* (or (find-executable-path "sudo") "/usr/bin/sudo") "-n" "-v"))
+               (loop))))))
+
   ;; ─── Phase helpers ───────────────────────────────────────────────────
   ;; Each phase prints a banner, runs the body, then OK/FAIL with elapsed.
   ;; Long phases (nh switch) stream child output live.
@@ -156,6 +181,7 @@
        (define flake-target (if host (string-append ROOT "#" host) ROOT))
        (apply sh (append (list "sudo" "nixos-rebuild" "switch" "--flake" flake-target)
                          extra))]))
+  (when sudo-keepalive (kill-thread sudo-keepalive))
   (define rebuild-elapsed (- (current-inexact-milliseconds) rebuild-start))
   (define total-elapsed (- (current-inexact-milliseconds) total-start))
   (cond
