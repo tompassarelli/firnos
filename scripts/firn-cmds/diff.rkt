@@ -5,10 +5,14 @@
          racket/file
          racket/system
          racket/string
-         (only-in nisp/validate
-                  walk-syntax extract-from-form
-                  path-ref-path path-ref-val-stx)
          "util.rkt")
+
+;; Stubs replacing nisp/validate. firn diff's per-path-ref display needs
+;; reimplementing against beagle/nix AST (TODO).
+(define (walk-syntax _) '())
+(define (extract-from-form _) '())
+(define (path-ref-path _) #f)
+(define (path-ref-val-stx _) #f)
 
 (provide resolve-rkt-source node-edges)
 

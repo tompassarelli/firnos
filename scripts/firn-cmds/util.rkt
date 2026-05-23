@@ -142,7 +142,8 @@
     (if (non-empty-string? s) s "whiterabbit")))
 
 (define (host-config-rkt host)
-  (in-repo "hosts" host "configuration.rkt"))
+  ;; Name kept for callsite compatibility; now points at the beagle/nix file.
+  (in-repo "hosts" host "configuration.bnix"))
 
 (define (grep-files dir re)
   (define abs-dir (in-repo dir))

@@ -115,14 +115,14 @@
               gjoa = gjoa;
             };
           } // extraSpecialArgs);
-          home-manager.users."\${config.myConfig.modules.users.username}" = {
+          home-manager.users."${config.myConfig.modules.users.username}" = {
             home.stateVersion = config.myConfig.modules.system.stateVersion;
             nixpkgs.config.allowUnfree = true;
           };
         })
         {
           nixpkgs.overlays = ([
-            ({ final, prev }: {
+            (final: prev: {
               unstable = import nixpkgs-unstable {
                 system = system;
                 config.allowUnfree = true;
@@ -305,7 +305,7 @@
             networking.hostName = hostname;
             system.stateVersion = 6;
             nixpkgs.config.allowUnfree = true;
-            users.users."\${config.myConfig.modules.users.username}".home = "/Users/${config.myConfig.modules.users.username}";
+            users.users."${config.myConfig.modules.users.username}".home = "/Users/${config.myConfig.modules.users.username}";
             home-manager.backupFileExtension = "backup";
             home-manager.extraSpecialArgs = ({
               inputs = {
@@ -314,7 +314,7 @@
                 gjoa = gjoa;
               };
             } // extraSpecialArgs);
-            home-manager.users."\${config.myConfig.modules.users.username}" = {
+            home-manager.users."${config.myConfig.modules.users.username}" = {
               home.username = config.myConfig.modules.users.username;
               home.homeDirectory = "/Users/${config.myConfig.modules.users.username}";
               home.stateVersion = "25.11";
@@ -324,7 +324,7 @@
         })
         {
           nixpkgs.overlays = ([
-            ({ final, prev }: {
+            (final: prev: {
               unstable = import nixpkgs-unstable {
                 system = system;
                 config.allowUnfree = true;

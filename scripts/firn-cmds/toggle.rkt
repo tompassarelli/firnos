@@ -4,15 +4,66 @@
          racket/string
          "util.rkt")
 
-;; Stubs replacing the legacy nisp/edit library. firn module/bundle
-;; enable/disable needs reimplementing against .bnix files (TODO).
-(define (edit-set _t _path _val)
-  (error 'firn-toggle "edit-set not yet ported to .bnix"))
-(define (edit-enable-add _t _path)
-  (error 'firn-toggle "edit-enable-add not yet ported to .bnix"))
-(define (edit-enable-remove _t _path)
-  (error 'firn-toggle "edit-enable-remove not yet ported to .bnix"))
-(define (find-set-form-positions _t _path) #f)
+;; Text-based edits against beagle/nix .bnix host configurations.
+;;
+;; The canonical shape in a host file is a map literal:
+;;   (module [config lib pkgs]
+;;     {:myConfig.modules.X.enable true
+;;      :myConfig.bundles.Y.enable false ...})
+;;
+;; edit-set finds `:PATH ENABLE-VALUE` and flips it; edit-enable-add
+;; appends a new pair; edit-enable-remove drops the pair entirely.
+
+(define (escape-key-rx path)
+  (regexp-quote path))
+
+;; Match :PATH followed by `true` or `false` (whitespace-tolerant).
+;; Returns the regexp object.
+(define (enable-pair-rx path)
+  (pregexp (format ":~a\\s+(true|false)\\b" (escape-key-rx path))))
+
+(define (find-set-form-positions text path)
+  ;; Match enable-path with `.enable` suffix already in path.
+  (regexp-match-positions (enable-pair-rx path) text))
+
+(define (edit-set text path new-val)
+  ;; path is e.g. "myConfig.modules.foo.enable"; new-val is "true" or "false"
+  ;; (the legacy code passes "#t"/"#f" — translate).
+  (define val (cond [(member new-val '("#t" "true")) "true"]
+                    [(member new-val '("#f" "false")) "false"]
+                    [else new-val]))
+  (regexp-replace (enable-pair-rx path) text
+                  (format ":~a ~a" path val)))
+
+;; edit-enable-add takes a path WITHOUT .enable and adds `:PATH.enable true`.
+;; Strategy: find the innermost {…} map literal that follows `(module [...]`
+;; and insert before its closing `}`. This is heuristic but works for the
+;; conventional host shape.
+(define (edit-enable-add text full-path)
+  (define enable-path (string-append full-path ".enable"))
+  ;; Already there? Just set to true.
+  (cond
+    [(find-set-form-positions text enable-path)
+     (edit-set text enable-path "true")]
+    [else
+     ;; Locate the last `}` and insert `:PATH.enable true\n   ` before it.
+     ;; (Crude — assumes the host map is the last form. Works for typical
+     ;;  hosts/<name>/configuration.bnix written by the scaffold.)
+     (define m (regexp-match-positions #rx"\\}[\\s]*\\)*[\\s]*$" text))
+     (cond
+       [m
+        (define insert-pos (caar m))
+        (string-append
+          (substring text 0 insert-pos)
+          (format "\n   :~a true~a" enable-path
+                  (substring text insert-pos)))]
+       [else text])]))
+
+(define (edit-enable-remove text full-path)
+  (define enable-path (string-append full-path ".enable"))
+  ;; Remove `:PATH.enable VALUE` and any trailing newline+whitespace
+  (define rx (pregexp (format "[\\s]*:~a\\s+(true|false)\\b" (escape-key-rx enable-path))))
+  (regexp-replace rx text ""))
 
 (provide node-edges)
 
