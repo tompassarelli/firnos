@@ -88,7 +88,7 @@ tag. Modules and bundles auto-discover via the flake's dynamic
 ```
 
 > **`flake.rkt` note.** `flake.rkt` is the one remaining `#lang nisp`
-> source — `nisp-to-bgl` deliberately refuses `flake-file` forms.
+> source — `beagle-import-nix` deliberately refuses `flake-file` forms.
 > Everything else (modules, bundles, hosts, test fixtures) is `.bnix`.
 
 ## Documentation

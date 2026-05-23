@@ -10,7 +10,7 @@
 ;; Run:
 ;;   raco test tests/validator-test.rkt
 ;;
-;; Requires .nisp-cache/schema.json to exist (from firn-extract-schema).
+;; Requires .beagle-cache/schema.json to exist (from firn-extract-schema).
 ;; Submodule cache is auto-populated on first run via lazy expansion.
 
 (require rackunit

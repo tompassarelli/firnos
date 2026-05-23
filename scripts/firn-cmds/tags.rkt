@@ -23,7 +23,7 @@
 ;;   firn tags                      tag universe with module counts
 ;;   firn tags <module>             tags for one module
 ;;   firn tags --filter <tag>       modules carrying a tag
-;;   firn tags --index              write .nisp-cache/tags.jsonl
+;;   firn tags --index              write .beagle-cache/tags.jsonl
 ;;   firn tags --index --stdout     emit jsonl to stdout
 
 (require racket/file
@@ -37,7 +37,7 @@
 
 (provide node-edges)
 
-(define INDEX-PATH (build-path ROOT ".nisp-cache" "tags.jsonl"))
+(define INDEX-PATH (build-path ROOT ".beagle-cache" "tags.jsonl"))
 
 ;; ---------- explicit-tag extraction from .rkt ----------
 ;;
@@ -223,4 +223,4 @@
    (walk-edge "tag" "filter" "<tag>"      #f      handle-tag-filter
               "list modules carrying a tag")
    (walk-edge "tag" "index"  "repo|stdout" 'repo  handle-tag-index
-              "write .nisp-cache/tags.jsonl (or 'stdout' to pipe)")))
+              "write .beagle-cache/tags.jsonl (or 'stdout' to pipe)")))

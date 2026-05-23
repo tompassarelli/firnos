@@ -3,7 +3,7 @@
 #
 # Configures the extractor for this repo:
 #   target: nixosConfigurations.$HOST.options  (default HOST: whiterabbit)
-#   out:    .nisp-cache/schema.json
+#   out:    .beagle-cache/schema.json
 #
 # Usage:
 #   firn-extract-schema [host]                    # NixOS (default)
@@ -24,11 +24,11 @@ fi
 if $DARWIN; then
   HOST="${1:-ashashi}"
   TARGET="darwinConfigurations.$HOST.options"
-  OUT="$REPO/.nisp-cache/schema-darwin.json"
+  OUT="$REPO/.beagle-cache/schema-darwin.json"
 else
   HOST="${1:-whiterabbit}"
   TARGET="nixosConfigurations.$HOST.options"
-  OUT="$REPO/.nisp-cache/schema.json"
+  OUT="$REPO/.beagle-cache/schema.json"
 fi
 
 if [[ ! -x "$BEAGLE_EXTRACT" ]]; then

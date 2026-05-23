@@ -22,7 +22,7 @@ Both `.bnix` and `.nix` are committed because the flake reads from the git tree.
 
 **beagle lives in a sibling repo**: `../beagle` — the compiler, validator, schema extractor, and emitters. firn-build / firn-validate / firn-extract-schema expect beagle cloned at `../beagle` by default — override with `BEAGLE_PATH`.
 
-The sole remaining `#lang nisp` source in this repo is `flake.rkt` (the flake itself). `nisp-to-bgl` deliberately refuses `flake-file` forms, so the flake stays nisp until either nisp-to-bgl learns flake conversion or the flake gets hand-converted.
+The sole remaining `#lang nisp` source in this repo is `flake.rkt` (the flake itself). `beagle-import-nix` deliberately refuses `flake-file` forms, so the flake stays nisp until either beagle-import-nix learns flake conversion or the flake gets hand-converted.
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.bnix` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
@@ -124,7 +124,7 @@ Tags live in source, never get emitted into the generated `.nix`. External tooli
 firn tag list           # tag universe + module counts
 firn tag show steam     # tags for one module
 firn tag filter gpu-required   # all modules with that tag
-firn tag index          # write .nisp-cache/tags.jsonl (one record per module)
+firn tag index          # write .beagle-cache/tags.jsonl (one record per module)
 firn tag index stdout   # emit jsonl to stdout (for piping into jq/fzf/etc.)
 ```
 
@@ -143,7 +143,7 @@ firn platform list bundles      # bundle compat report (which sub-modules block)
 firn platform safelist          # safelist snippet for flake.rkt
 ```
 
-Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.nisp-cache/schema.json` and `.nisp-cache/schema-darwin.json`). `firn repo doctor` warns when the darwin cache is stale.
+Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.beagle-cache/schema.json` and `.beagle-cache/schema-darwin.json`). `firn repo doctor` warns when the darwin cache is stale.
 
 **Limitation**: this is a schema-compatibility check. Pure-pkg modules whose only setter is `environment.systemPackages` always pass — the option path exists on darwin even when the package has no darwin build. Use `darwin-rebuild build` to verify.
 
@@ -171,10 +171,10 @@ Rewrites unambiguous typos in place (best did-you-mean at edit distance ≤ 2 wi
 If the user has hand-written `.nix` and wants to convert to beagle/nix:
 
 ```bash
-nisp-to-bgl file.nix > file.bnix
+beagle-import-nix file.nix > file.bnix
 ```
 
-Built on rnix-parser (handles 100% of nixpkgs). Output may need manual adjustment to use beagle/nix forms. **Note:** `nisp-to-bgl` refuses `flake-file` forms — the project flake must be migrated by hand.
+Built on rnix-parser (handles 100% of nixpkgs). Output may need manual adjustment to use beagle/nix forms. **Note:** `beagle-import-nix` refuses `flake-file` forms — the project flake must be migrated by hand.
 
 ## Verification
 

@@ -135,7 +135,7 @@ The validator needs a schema extracted from the *darwin* options tree:
 ./scripts/firn-extract-schema --darwin $(hostname)
 ```
 
-This populates `.nisp-cache/schema.json` against `darwinConfigurations.<host>.options`. Re-run after `firn repo upgrade now` (i.e. after `nix flake update`).
+This populates `.beagle-cache/schema.json` against `darwinConfigurations.<host>.options`. Re-run after `firn repo upgrade now` (i.e. after `nix flake update`).
 
 ## Adding a module to the darwin safelist
 

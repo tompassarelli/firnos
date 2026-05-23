@@ -68,15 +68,13 @@
   (define missing '())
   (for ([f (in-directory ROOT)])
     (define s (path->string f))
-    (when (and (regexp-match? #rx"\\.rkt$" s)
+    (when (and (regexp-match? #rx"\\.bnix$" s)
                (or (regexp-match? #rx"/modules/" s)
                    (regexp-match? #rx"/bundles/" s)
                    (regexp-match? #rx"/hosts/" s)
-                   (regexp-match? #rx"/flake\\.rkt$" s)))
-      (when (with-handlers ([exn:fail? (λ (_) #f)])
-              (regexp-match? #rx"^#lang nisp"
-                             (call-with-input-file f (λ (p) (read-line p)))))
-        (define nix-path (regexp-replace #rx"\\.rkt$" s ".nix"))
+                   (regexp-match? #rx"/flake\\.bnix$" s)))
+      (let ()
+        (define nix-path (regexp-replace #rx"\\.bnix$" s ".nix"))
         (cond
           [(not (file-exists? nix-path))
            (set! missing (cons (relative-to-repo f) missing))]
@@ -88,14 +86,14 @@
     (set! issues (cons (format "missing .nix output for: ~a" (length missing)) issues))
     (for ([f (in-list (reverse missing))]) (set! issues (cons (string-append "  " f) issues))))
   (when (pair? stale)
-    (set! issues (cons (format "stale .nix (older than .rkt): ~a" (length stale)) issues))
+    (set! issues (cons (format "stale .nix (older than .bnix): ~a" (length stale)) issues))
     (for ([f (in-list (reverse stale))]) (set! issues (cons (string-append "  " f) issues))))
   (cond
     [(null? issues) (values #t '())]
     [else (values #f (reverse issues))]))
 
 (define (check-schema-cache)
-  (define schema-path (build-path ROOT ".nisp-cache" "schema.json"))
+  (define schema-path (build-path ROOT ".beagle-cache" "schema.json"))
   (cond
     [(not (file-exists? schema-path))
      (values #f (list "schema cache missing — run firn-extract-schema"))]
@@ -118,7 +116,7 @@
   (cond
     [(not has-darwin?) (values #t '())]
     [else
-     (define dar-schema (build-path ROOT ".nisp-cache" "schema-darwin.json"))
+     (define dar-schema (build-path ROOT ".beagle-cache" "schema-darwin.json"))
      (cond
        [(not (file-exists? dar-schema))
         (values #f (list "darwin schema cache missing — run firn-extract-schema --darwin"))]

@@ -1,41 +1,76 @@
 {
   description = "FirnOS - A modular, shareable NixOS configuration framework";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-master.url = "github:nixos/nixpkgs/master";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.11";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    stylix.url = "github:danth/stylix/release-25.11";
-    sops-nix.url = "github:Mic92/sops-nix";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    nur.url = "github:nix-community/NUR";
-    lem.url = "github:lem-project/lem";
-    kanata-git.url = "github:jtroo/kanata";
-    kanata-git.flake = false;
-    glide.url = "github:tompassarelli/glide";
-    glide.flake = false;
-    quickshell.url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
-    quickshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    zen-browser.inputs.nixpkgs.follows = "nixpkgs";
-    elephant.url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";
-    walker.url = "github:abenz1267/walker";
-    walker.inputs.elephant.follows = "elephant";
-    palefox.url = "github:tompassarelli/palefox";
-    gjoa.url = "github:tompassarelli/gjoa";
+    nixpkgs = {
+      url = "github:nixos/nixpkgs/nixos-25.11";
+    };
+    nixpkgs-unstable = {
+      url = "github:nixos/nixpkgs/nixos-unstable";
+    };
+    nixpkgs-master = {
+      url = "github:nixos/nixpkgs/master";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin/nix-darwin-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    stylix = {
+      url = "github:danth/stylix/release-25.11";
+    };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nur = {
+      url = "github:nix-community/NUR";
+    };
+    lem = {
+      url = "github:lem-project/lem";
+    };
+    kanata-git = {
+      url = "github:jtroo/kanata";
+      flake = false;
+    };
+    glide = {
+      url = "github:tompassarelli/glide";
+      flake = false;
+    };
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-unstable.follows = "nixpkgs-unstable";
+    };
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    elephant = {
+      url = "github:abenz1267/elephant/0348d14ed9238309d2ae984f5010877470b06a73";
+    };
+    walker = {
+      url = "github:abenz1267/walker";
+      inputs.elephant.follows = "elephant";
+    };
+    palefox = {
+      url = "github:tompassarelli/palefox";
+    };
+    gjoa = {
+      url = "github:tompassarelli/gjoa";
+    };
   };
-  outputs = { self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, gjoa, ... }: let
+  outputs = ({ self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, gjoa, ... }: let
     firnModules = ./modules;
     firnBundles = ./bundles;
     firnBundlesDarwin = ./bundles-darwin;
   in
   {
-    lib.mkSystem = { hostname, hostConfig, hardwareConfig, system ? "x86_64-linux", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nixpkgs.lib.nixosSystem {
+    lib.mkSystem = ({ hostname, hostConfig, hardwareConfig, system ? "x86_64-linux", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nixpkgs.lib.nixosSystem {
       system = system;
-      specialArgs = {
+      specialArgs = ({
         inputs = {
           nur = nur;
           walker = walker;
@@ -47,8 +82,8 @@
           gjoa = gjoa;
         };
         flakeRoot = self;
-      } // extraSpecialArgs;
-      modules = [
+      } // extraSpecialArgs);
+      modules = ([
         hardwareConfig
         stylix.nixosModules.stylix
         home-manager.nixosModules.home-manager
@@ -63,12 +98,12 @@
           ];
           environment.systemPackages = with pkgs; [ sops age ];
           imports = let
-            moduleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: v == "directory") (builtins.readDir ./modules));
-            bundleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: v == "directory") (builtins.readDir ./bundles));
+            moduleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./modules));
+            bundleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles));
           in
-          (map (m: "${firnModules}/${m}") moduleDirs) ++ (map (b: "${firnBundles}/${b}") bundleDirs);
+          (builtins.map (m: "${firnModules}/${m}") moduleDirs ++ builtins.map (b: "${firnBundles}/${b}") bundleDirs);
           home-manager.backupFileExtension = "backup";
-          home-manager.extraSpecialArgs = {
+          home-manager.extraSpecialArgs = ({
             inputs = {
               nur = nur;
               walker = walker;
@@ -79,15 +114,15 @@
               palefox = palefox;
               gjoa = gjoa;
             };
-          } // extraSpecialArgs;
-          home-manager.users.${config.myConfig.modules.users.username} = {
+          } // extraSpecialArgs);
+          home-manager.users."\${config.myConfig.modules.users.username}" = {
             home.stateVersion = config.myConfig.modules.system.stateVersion;
             nixpkgs.config.allowUnfree = true;
           };
         })
         {
-          nixpkgs.overlays = [
-            (final: prev: {
+          nixpkgs.overlays = ([
+            ({ final, prev }: {
               unstable = import nixpkgs-unstable {
                 system = system;
                 config.allowUnfree = true;
@@ -200,9 +235,7 @@
                   libglvnd
                   egl-wayland
                 ];
-                extraBwrapArgs = [
-                  "--bind ${nyxt-unwrapped}/app /app"
-                ];
+                extraBwrapArgs = [ "--bind ${nyxt-unwrapped}/app /app" ];
                 runScript = final.writeShellScript "nyxt-wrapper" ''
                   export APPDIR=/app/Nyxt
                   export PATH="/app/Nyxt/_build/cl-electron:$PATH"
@@ -216,25 +249,25 @@
                 '';
               };
             })
-          ] ++ extraOverlays;
+          ] ++ extraOverlays);
         }
-      ] ++ extraModules;
-    };
-    lib.mkDarwinSystem = { hostname, hostConfig, system ? "aarch64-darwin", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nix-darwin.lib.darwinSystem {
+      ] ++ extraModules);
+    });
+    lib.mkDarwinSystem = ({ hostname, hostConfig, system ? "aarch64-darwin", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nix-darwin.lib.darwinSystem {
       system = system;
-      specialArgs = {
+      specialArgs = ({
         inputs = {
           nur = nur;
           palefox = palefox;
           gjoa = gjoa;
         };
         flakeRoot = self;
-      } // extraSpecialArgs;
-      modules = [
+      } // extraSpecialArgs);
+      modules = ([
         home-manager.darwinModules.home-manager
         hostConfig
         ({ config, lib, pkgs, ... }: {
-          imports = (map (m: "${firnModules}/${m}") [
+          imports = (builtins.map (m: "${firnModules}/${m}") [
             "kitty"
             "fish"
             "zoxide"
@@ -262,7 +295,7 @@
             "direnv"
             "ripgrep"
             "fd"
-          ]) ++ (map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: v == "directory") (builtins.readDir ./bundles-darwin))));
+          ] ++ builtins.map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles-darwin))));
           options.myConfig.modules.users.username = lib.mkOption {
             type = lib.types.str;
             default = "you";
@@ -272,20 +305,16 @@
             networking.hostName = hostname;
             system.stateVersion = 6;
             nixpkgs.config.allowUnfree = true;
-            users.users = {
-              ${config.myConfig.modules.users.username} = {
-                home = "/Users/${config.myConfig.modules.users.username}";
-              };
-            };
+            users.users."\${config.myConfig.modules.users.username}".home = "/Users/${config.myConfig.modules.users.username}";
             home-manager.backupFileExtension = "backup";
-            home-manager.extraSpecialArgs = {
+            home-manager.extraSpecialArgs = ({
               inputs = {
                 nur = nur;
                 palefox = palefox;
                 gjoa = gjoa;
               };
-            } // extraSpecialArgs;
-            home-manager.users.${config.myConfig.modules.users.username} = {
+            } // extraSpecialArgs);
+            home-manager.users."\${config.myConfig.modules.users.username}" = {
               home.username = config.myConfig.modules.users.username;
               home.homeDirectory = "/Users/${config.myConfig.modules.users.username}";
               home.stateVersion = "25.11";
@@ -294,8 +323,8 @@
           };
         })
         {
-          nixpkgs.overlays = [
-            (final: prev: {
+          nixpkgs.overlays = ([
+            ({ final, prev }: {
               unstable = import nixpkgs-unstable {
                 system = system;
                 config.allowUnfree = true;
@@ -305,10 +334,10 @@
                 config.allowUnfree = true;
               };
             })
-          ] ++ extraOverlays;
+          ] ++ extraOverlays);
         }
-      ] ++ extraModules;
-    };
+      ] ++ extraModules);
+    });
     modules = firnModules;
     packages.x86_64-linux.claude-sandbox = import ./modules/containers/claude-sandbox.nix {
       pkgs = import nixpkgs-master {
@@ -347,5 +376,5 @@
         pre-commit install --allow-missing-config 2>/dev/null
       '';
     };
-  };
+  });
 }

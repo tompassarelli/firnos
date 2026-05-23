@@ -9,8 +9,8 @@ errors=0
 while IFS= read -r -d '' nix_file; do
   # Skip hardware-configuration.nix (NixOS-generated, no .rkt source)
   [[ "$nix_file" == *hardware-configuration* ]] && continue
-  # Skip .nisp-cache
-  [[ "$nix_file" == *.nisp-cache* ]] && continue
+  # Skip .beagle-cache
+  [[ "$nix_file" == *.beagle-cache* ]] && continue
 
   if ! nix-instantiate --parse-only "$nix_file" >/dev/null 2>&1; then
     echo "SYNTAX ERROR: $nix_file"

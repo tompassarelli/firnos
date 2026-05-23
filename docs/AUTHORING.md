@@ -87,11 +87,11 @@ beagle would emit, useful when migrating in either direction.
 
 ## Migrating existing Nix to `.bnix`
 
-`nisp-to-bgl` (shipped in beagle) mechanically converts hand-written
+`beagle-import-nix` (shipped in beagle) mechanically converts hand-written
 Nix or legacy `#lang nisp` sources to `.bnix`:
 
 ```bash
-nisp-to-bgl path/to/configuration.rkt
+beagle-import-nix path/to/configuration.rkt
 ```
 
 It handles `pkg`/`svc`/`hm-module`/`module-file`/`bundle-file`/`host-file`

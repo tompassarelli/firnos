@@ -5,9 +5,9 @@
 ;; that this repo references, and offer to apply auto-fixes.
 ;;
 ;; Pipeline:
-;;   1. snapshot current schema → .nisp-cache/schema.json.prev
+;;   1. snapshot current schema → .beagle-cache/schema.json.prev
 ;;   2. nix flake update
-;;   3. firn-extract-schema (regenerates .nisp-cache/schema.json)
+;;   3. firn-extract-schema (regenerates .beagle-cache/schema.json)
 ;;   4. diff: list paths removed, paths added, type changes
 ;;   5. for each removed path that the repo references → flag (or
 ;;      auto-rename if the new schema has a clear replacement)
@@ -23,7 +23,7 @@
 
 (provide node-edges)
 
-(define CACHE-DIR (build-path ROOT ".nisp-cache"))
+(define CACHE-DIR (build-path ROOT ".beagle-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
 (define PREV-SCHEMA-PATH (build-path CACHE-DIR "schema.json.prev"))
 
@@ -44,7 +44,7 @@
                             (not (regexp-match? #rx"/scripts/" s))
                             (not (regexp-match? #rx"/tests/" s))
                             (not (regexp-match? #rx"/\\.firn-build/" s))
-                            (not (regexp-match? #rx"/\\.nisp-cache/" s))
+                            (not (regexp-match? #rx"/\\.beagle-cache/" s))
                             (not (regexp-match? #rx"/\\.git/" s))
                             (not (regexp-match? #rx"/\\.direnv/" s))
                             (regexp-match? re (file->string f)))))

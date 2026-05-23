@@ -36,11 +36,11 @@ options (home-manager, stylix, sops, …).
 
 The schema is host-specific (it's the merged options tree of one host's
 nixosConfiguration) and ages relative to your `flake.lock`. The
-extractor dumps top-level options once into `.nisp-cache/schema.json`;
-the home-manager schema lives in `.nisp-cache/schema-hm.json`.
+extractor dumps top-level options once into `.beagle-cache/schema.json`;
+the home-manager schema lives in `.beagle-cache/schema-hm.json`.
 Submodule contents are *not* eagerly extracted — the validator
 demand-expands only the submodules your config actually references and
-caches them in `.nisp-cache/schema-submodules.json`, keyed by
+caches them in `.beagle-cache/schema-submodules.json`, keyed by
 `flake.lock` hash + extractor version + system. First-time references
 trigger a one-shot `nix eval`; subsequent runs are pure cache hits.
 
@@ -53,7 +53,7 @@ Regenerate the base schema after:
 The submodule cache invalidates automatically when the lock hash
 changes — no manual step required.
 
-> The cache directory is named `.nisp-cache/` for historical reasons —
+> The cache directory is named `.beagle-cache/` for historical reasons —
 > the nisp toolchain originally managed it; beagle reuses the same path
 > for compatibility.
 

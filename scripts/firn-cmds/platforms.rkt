@@ -12,8 +12,8 @@
 ;; darwin schema.
 ;;
 ;; Pre-req: both schemas extracted.
-;;   ./scripts/firn-extract-schema           → .nisp-cache/schema.json
-;;   ./scripts/firn-extract-schema --darwin  → .nisp-cache/schema-darwin.json
+;;   ./scripts/firn-extract-schema           → .beagle-cache/schema.json
+;;   ./scripts/firn-extract-schema --darwin  → .beagle-cache/schema-darwin.json
 ;;
 ;; Usage:
 ;;   firn platforms                  full matrix (modules + bundles)
@@ -33,7 +33,7 @@
 
 (provide node-edges)
 
-(define CACHE-DIR (build-path ROOT ".nisp-cache"))
+(define CACHE-DIR (build-path ROOT ".beagle-cache"))
 (define NIXOS-SCHEMA (build-path CACHE-DIR "schema.json"))
 (define DARWIN-SCHEMA (build-path CACHE-DIR "schema-darwin.json"))
 

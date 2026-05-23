@@ -16,22 +16,17 @@
            (regexp-match? #rx"/tests$"         s)
            (regexp-match? #rx"/result"         s))))
 
-(define (gather-nisp-rkts)
+(define (gather-bnix-files)
   (sort
    (for/list ([f (in-directory ROOT descend?)]
-              #:when (and (regexp-match? #rx"\\.rkt$" (path->string f))
-                          (with-handlers ([exn:fail? (λ (_) #f)])
-                            (regexp-match?
-                             #rx"^#lang nisp"
-                             (call-with-input-file f
-                               (λ (p) (read-line p)))))))
+              #:when (regexp-match? #rx"\\.bnix$" (path->string f)))
      f)
    path<?))
 
 (define (handle-repo-watch _leaf)
   (file-stream-buffer-mode (current-output-port) 'line)
-  (define files (gather-nisp-rkts))
-  (printf "firn watch: monitoring ~a .rkt file(s)... (Ctrl-C to exit)\n"
+  (define files (gather-bnix-files))
+  (printf "firn watch: monitoring ~a .bnix file(s)... (Ctrl-C to exit)\n"
           (length files))
   (let loop ([files files])
     (define evts (map filesystem-change-evt files))
@@ -48,9 +43,9 @@
        (system* (find-exe "racket")
                 (path->string (in-repo "scripts" "firn-validate"))
                 (path->string changed))
-       (loop (gather-nisp-rkts))]
+       (loop (gather-bnix-files))]
       [else
-       (loop (gather-nisp-rkts))])))
+       (loop (gather-bnix-files))])))
 
 (define node-edges
   (list

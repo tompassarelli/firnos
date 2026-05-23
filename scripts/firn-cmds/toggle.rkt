@@ -2,11 +2,17 @@
 
 (require racket/file
          racket/string
-         (only-in nisp/edit
-                  edit-set
-                  edit-enable-add edit-enable-remove
-                  find-set-form-positions)
          "util.rkt")
+
+;; Stubs replacing the legacy nisp/edit library. firn module/bundle
+;; enable/disable needs reimplementing against .bnix files (TODO).
+(define (edit-set _t _path _val)
+  (error 'firn-toggle "edit-set not yet ported to .bnix"))
+(define (edit-enable-add _t _path)
+  (error 'firn-toggle "edit-enable-add not yet ported to .bnix"))
+(define (edit-enable-remove _t _path)
+  (error 'firn-toggle "edit-enable-remove not yet ported to .bnix"))
+(define (find-set-form-positions _t _path) #f)
 
 (provide node-edges)
 

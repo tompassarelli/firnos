@@ -23,15 +23,20 @@
   (when (directory-exists? dir)
     (eprintf "Module ~a already exists\n" name) (exit 1))
   (make-directory* dir)
-  (define f (build-path dir "default.rkt"))
+  (define f (build-path dir "default.bnix"))
   (with-output-to-file f
     (λ ()
-      (printf "#lang nisp~n~n(pkg ~a ~s)~n" name name)))
+      (printf "#lang beagle/nix~n(ns modules.~a)~n~n" name)
+      (printf "(module [config lib pkgs]~n")
+      (printf "  {:options.myConfig.modules.~a.enable~n" name)
+      (printf "     (lib/mkEnableOption ~s)~n~n" (format "Enable ~a" name))
+      (printf "   :config~n")
+      (printf "     (lib/mkIf config.myConfig.modules.~a.enable~n" name)
+      (printf "       {:environment.systemPackages (with pkgs [~a])})})~n" name)))
   (sh "git" "-C" ROOT "add" (path->string dir))
-  (printf "Created modules/~a/default.rkt (git added)\n" name))
+  (printf "Created modules/~a/default.bnix (git added)\n" name))
 
 (define (handle-bundle-add leaf)
-  ;; leaf is either "<name>" or "<name>+<m1>,<m2>,..."
   (define-values (name mods)
     (cond
       [(regexp-match #rx"^([^+]+)\\+(.+)$" leaf)
@@ -41,18 +46,26 @@
   (when (directory-exists? dir)
     (eprintf "Bundle ~a already exists\n" name) (exit 1))
   (make-directory* dir)
-  (define f (build-path dir "default.rkt"))
+  (define f (build-path dir "default.bnix"))
   (with-output-to-file f
     (λ ()
-      (printf "#lang nisp~n~n(bundle-file ~a~n  (desc ~s)~n  (sub-modules ~a))~n"
-              name name (string-join mods " "))))
+      (printf "#lang beagle/nix~n(ns bundles.~a)~n~n" name)
+      (printf "(module [config lib pkgs]~n")
+      (printf "  {:options.myConfig.bundles.~a.enable (lib/mkEnableOption ~s)~n" name (format "Enable ~a bundle" name))
+      (printf "   :config~n")
+      (printf "     (lib/mkIf config.myConfig.bundles.~a.enable~n" name)
+      (printf "       {~a})})~n"
+              (string-join
+                (for/list ([m (in-list mods)])
+                  (format ":myConfig.modules.~a.enable (lib/mkDefault true)" m))
+                "~n        "))))
   (sh "git" "-C" ROOT "add" (path->string dir))
-  (printf "Created bundles/~a/default.rkt with ~a modules (git added)\n"
+  (printf "Created bundles/~a/default.bnix with ~a modules (git added)\n"
           name (length mods)))
 
 ;; ---------- template scaffolds ----------
 
-(define SCHEMA-PATH (build-path ROOT ".nisp-cache" "schema.json"))
+(define SCHEMA-PATH (build-path ROOT ".beagle-cache" "schema.json"))
 
 (define (load-schema)
   (cond
@@ -78,7 +91,7 @@
 
 (define (handle-template-service name)
   (define dir (in-repo "modules" name))
-  (define f (build-path dir "default.rkt"))
+  (define f (build-path dir "default.bnix"))
   (define service-prefix (string-append "services." name))
   (define children (schema-children-of service-prefix))
   (define interesting
@@ -92,26 +105,28 @@
   (define top (take interesting (min 8 (length interesting))))
   (define stub-lines
     (cond
-      [(null? top) '()]
+      [(null? top) ""]
       [else
-       (cons "    ;; common options — uncomment to override:"
-             (map (λ (e)
-                    (define p (hash-ref e 'p))
-                    (define short (regexp-replace (regexp (string-append "^" (regexp-quote service-prefix) "\\."))
-                                                  p ""))
-                    (define t (describe-type (hash-ref e 't "?")))
-                    (format "    ;; (set ~a <value>)   ; ~a" p t))
-                  top))]))
+       (string-append
+        "        ;; common options — uncomment to override:\n"
+        (string-join
+          (map (λ (e)
+                 (define p (hash-ref e 'p))
+                 (define t (describe-type (hash-ref e 't "?")))
+                 (format "        ;; :~a <value>   ; ~a" p t))
+               top)
+          "\n"))]))
   (define body
     (string-append
-     "#lang nisp\n\n"
-     (format "(module-file modules ~a~n" name)
-     (format "  (desc ~s)~n" (format "~a service" name))
-     "  (config-body\n"
-     (format "    (set services.~a.enable #t)" name)
-     (cond [(null? stub-lines) ""]
-           [else (string-append "\n" (string-join stub-lines "\n") "\n")])
-     "))\n"))
+     "#lang beagle/nix\n"
+     (format "(ns modules.~a)\n\n" name)
+     "(module [config lib pkgs]\n"
+     (format "  {:options.myConfig.modules.~a.enable (lib/mkEnableOption ~s)\n" name (format "~a service" name))
+     "   :config\n"
+     (format "     (lib/mkIf config.myConfig.modules.~a.enable\n" name)
+     (format "       {:services.~a.enable true~a})})\n"
+             name
+             (if (string=? stub-lines "") "" (string-append "\n" stub-lines)))))
   (write-and-add f body)
   (cond
     [(null? top)
@@ -121,55 +136,63 @@
 
 (define (handle-template-submodule name)
   (define dir (in-repo "modules" name))
-  (define f (build-path dir "default.rkt"))
+  (define f (build-path dir "default.bnix"))
   (define body
     (string-append
-     "#lang nisp\n\n"
-     (format "(module-file modules ~a~n" name)
-     (format "  (desc ~s)~n" (format "~a configuration" name))
-     "  (option-attrs\n"
-     "    (extraConfig (mkopt #:type lib.types.lines\n"
-     "                        #:default \"\"\n"
-     "                        #:desc \"Extra config text.\")))\n"
-     "  (config-body\n"
-     (format "    (set environment.systemPackages (with-pkgs ~a))))~n" name)))
+     "#lang beagle/nix\n"
+     (format "(ns modules.~a)\n\n" name)
+     "(module [config lib pkgs]\n"
+     (format "  {:options.myConfig.modules.~a~n" name)
+     "   {:enable (lib/mkEnableOption \"~a configuration\")\n"
+     "    :extraConfig (lib/mkOption {:type lib/types.lines\n"
+     "                                :default \"\"\n"
+     "                                :description \"Extra config text.\"})}\n"
+     "   :config\n"
+     (format "     (lib/mkIf config.myConfig.modules.~a.enable\n" name)
+     (format "       {:environment.systemPackages (with pkgs [~a])})})~n" name)))
   (write-and-add f body))
 
 (define (handle-template-home name)
   (define dir (in-repo "modules" name))
-  (define f (build-path dir "default.rkt"))
+  (define f (build-path dir "default.bnix"))
   (define body
     (string-append
-     "#lang nisp\n\n"
-     (format "(hm-module ~a ~s~n" name (format "~a (home-manager)" name))
-     (format "  (set programs.~a~n" name)
-     "    (att (enable #t))))\n"))
+     "#lang beagle/nix\n"
+     (format "(ns modules.~a)\n\n" name)
+     "(module [config lib pkgs]\n"
+     (format "  {:options.myConfig.modules.~a.enable (lib/mkEnableOption ~s)\n" name (format "~a (home-manager)" name))
+     "   :config\n"
+     (format "     (lib/mkIf config.myConfig.modules.~a.enable\n" name)
+     "       {:home-manager.users\n"
+     "        {\"${config.myConfig.modules.users.username}\"\n"
+     (format "         {:programs.~a.enable true}}})})~n" name)))
   (write-and-add f body))
 
 (define (handle-template-host name)
   (define dir (in-repo "hosts" name))
-  (define f (build-path dir "configuration.rkt"))
+  (define f (build-path dir "configuration.bnix"))
   (define body
     (string-append
-     "#lang nisp\n\n"
-     "(host-file\n"
-     "  (set myConfig.modules.system.stateVersion \"25.11\")\n"
-     "  (set myConfig.modules.users.username \"you\")\n"
-     "  (enable myConfig.modules.users\n"
-     "          myConfig.modules.boot\n"
-     "          myConfig.modules.networking)\n\n"
-     "  ;; REQUIRED for the firn-build pipeline\n"
-     "  (enable myConfig.bundles.racket\n"
-     "          myConfig.bundles.terminal\n"
-     "          myConfig.bundles.development))\n"))
+     "#lang beagle/nix\n"
+     (format "(ns hosts.~a)\n\n" name)
+     "(module [config lib pkgs]\n"
+     "  {:myConfig.modules.system.stateVersion \"25.11\"\n"
+     "   :myConfig.modules.users.username \"you\"\n"
+     "   :myConfig.modules.users.enable true\n"
+     "   :myConfig.modules.boot.enable true\n"
+     "   :myConfig.modules.networking.enable true\n"
+     "   ;; REQUIRED for the firn-build pipeline\n"
+     "   :myConfig.bundles.racket.enable true\n"
+     "   :myConfig.bundles.terminal.enable true\n"
+     "   :myConfig.bundles.development.enable true})\n"))
   (write-and-add f body)
-  (printf "Don't forget to add ~a to flake.rkt's nixosConfigurations.\n" name))
+  (printf "Don't forget to add ~a to flake.bnix's nixosConfigurations.\n" name))
 
 (define node-edges
   (list
    (walk-edge "module" "add" "<name>" #f
               handle-module-add
-              "scaffold a minimal module (.rkt + .nix)")
+              "scaffold a minimal module (.bnix + .nix)")
    (walk-edge "bundle" "add" "<name>[+<mod1>,<mod2>,...]" #f
               handle-bundle-add
               "scaffold a new bundle; optional +sub-module list")
@@ -180,4 +203,4 @@
    (walk-edge "template" "home"      "<name>" #f handle-template-home
               "scaffold a home-manager-only module")
    (walk-edge "template" "host"      "<name>" #f handle-template-host
-              "scaffold a new host's configuration.rkt")))
+              "scaffold a new host's configuration.bnix")))

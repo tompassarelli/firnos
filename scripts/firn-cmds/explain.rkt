@@ -19,7 +19,7 @@
 
 (provide node-edges)
 
-(define CACHE-DIR (build-path ROOT ".nisp-cache"))
+(define CACHE-DIR (build-path ROOT ".beagle-cache"))
 (define SCHEMA-PATH (build-path CACHE-DIR "schema.json"))
 (define SUB-CACHE-PATH (build-path CACHE-DIR "schema-submodules.json"))
 
@@ -66,7 +66,7 @@
                        (and (regexp-match? #rx"\\.bnix$" s)
                             (not (regexp-match? #rx"/scripts/" s))
                             (not (regexp-match? #rx"/tests/" s))
-                            (not (regexp-match? #rx"/\\.nisp-cache/" s))
+                            (not (regexp-match? #rx"/\\.beagle-cache/" s))
                             (not (regexp-match? #rx"/\\.git/" s))
                             (not (regexp-match? #rx"/\\.direnv/" s))
                             (regexp-match? re (file->string f)))))
