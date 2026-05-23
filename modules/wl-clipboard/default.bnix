@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.wl-clipboard.enable
-       {:environment.systemPackages (with-do pkgs [wl-clipboard])})})
+       {:environment.systemPackages (with pkgs [wl-clipboard])})})

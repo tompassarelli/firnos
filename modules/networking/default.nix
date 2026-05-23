@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.networking;
-in
 {
   options.myConfig.modules.networking.enable = lib.mkEnableOption "network configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.networking.enable {
     networking.networkmanager.enable = true;
     networking.networkmanager.unmanaged = [ "interface-name:wg*" ];
     networking.networkmanager.wifi.powersave = false;

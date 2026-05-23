@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.clang.enable
-       {:environment.systemPackages (with-do pkgs [clang])})})
+       {:environment.systemPackages (with pkgs [clang])})})

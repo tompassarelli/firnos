@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.timezone;
-in
 {
   options.myConfig.modules.timezone.enable = lib.mkEnableOption "timezone configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.timezone.enable {
     time.timeZone = "Asia/Bangkok";
   };
 }

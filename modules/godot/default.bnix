@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.godot.enable
-       {:environment.systemPackages (with-do pkgs [pkgs.unstable.godot_4])})})
+       {:environment.systemPackages (with pkgs [pkgs.unstable.godot_4])})})

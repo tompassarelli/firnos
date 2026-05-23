@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.forgejo-cli.enable
-       {:environment.systemPackages (with-do pkgs [forgejo-cli])})})
+       {:environment.systemPackages (with pkgs [forgejo-cli])})})

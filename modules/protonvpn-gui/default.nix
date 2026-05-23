@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.protonvpn-gui;
-in
 {
   options.myConfig.modules.protonvpn-gui.enable = lib.mkEnableOption "ProtonVPN GUI client";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.protonvpn-gui.enable {
     environment.systemPackages = with pkgs; [ protonvpn-gui ];
   };
 }

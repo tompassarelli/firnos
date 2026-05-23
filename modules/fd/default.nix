@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.fd;
-in
 {
   options.myConfig.modules.fd.enable = lib.mkEnableOption "fd file finder";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.fd.enable {
     environment.systemPackages = with pkgs; [ fd ];
   };
 }

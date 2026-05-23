@@ -12,4 +12,4 @@
         :environment.systemPackages [pkgs.master.claude-code]
         :home-manager.users
           {username
-            (fn-set-rest [config] {            :home.file {".claude/settings.json" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/settings.json"))} ".claude/commands" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/commands"))}}})}})}))
+            (module [config] {            :home.file {".claude/settings.json" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/settings.json"))} ".claude/commands" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/claude/commands"))}}})}})}))

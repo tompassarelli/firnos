@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.discord.enable
-       {:environment.systemPackages (with-do pkgs [discord])})})
+       {:environment.systemPackages (with pkgs [discord])})})

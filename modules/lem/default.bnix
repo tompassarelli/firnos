@@ -13,5 +13,5 @@
         :environment.systemPackages [lem-ncurses]
         :home-manager.users
           {username
-            (fn-set-rest [config] {:xdg.desktopEntries.lem {:name "Lem" :comment "Common Lisp Editor" :exec (s pkgs.unstable.ghostty "/bin/ghostty -e " lem-ncurses "/bin/lem") :terminal false :type "Application" :categories ["Development" "TextEditor"]}
+            (module [config] {:xdg.desktopEntries.lem {:name "Lem" :comment "Common Lisp Editor" :exec (s pkgs.unstable.ghostty "/bin/ghostty -e " lem-ncurses "/bin/lem") :terminal false :type "Application" :categories ["Development" "TextEditor"]}
             :home.file {".lem" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/lem"))}}})}})}))

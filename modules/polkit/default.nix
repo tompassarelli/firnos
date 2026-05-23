@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.polkit;
-in
 {
   options.myConfig.modules.polkit.enable = lib.mkEnableOption "Polkit security configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.polkit.enable {
     security.polkit.enable = true;
   };
 }

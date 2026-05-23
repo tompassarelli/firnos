@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.curl.enable
-       {:environment.systemPackages (with-do pkgs [curl])})})
+       {:environment.systemPackages (with pkgs [curl])})})

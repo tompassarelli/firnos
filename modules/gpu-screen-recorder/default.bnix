@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.gpu-screen-recorder.enable
-       {:environment.systemPackages (with-do pkgs [gpu-screen-recorder])})})
+       {:environment.systemPackages (with pkgs [gpu-screen-recorder])})})

@@ -8,5 +8,5 @@
    :config
      (lib/mkIf config.myConfig.modules.g203-led.enable
        {
-        :environment.systemPackages (with-do pkgs [g203-led])
+        :environment.systemPackages (with pkgs [g203-led])
         :services.udev.extraRules (ms "ACTION==\"add\", SUBSYSTEM==\"usb\", ATTR{idVendor}==\"046d\", ATTR{idProduct}==\"c092\", RUN+=\"${pkgs.g203-led}/bin/g203-led lightsync solid 000000\"")})})

@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.wine.enable
        {
-        :environment.systemPackages (with-do pkgs [wineWowPackages.unstable unstable.winetricks])})})
+        :environment.systemPackages (with pkgs [wineWowPackages.unstable unstable.winetricks])})})

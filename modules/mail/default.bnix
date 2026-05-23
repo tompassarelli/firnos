@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.mail.enable
-       {:environment.systemPackages (with-do pkgs [pkgs.unstable.protonmail-desktop])})})
+       {:environment.systemPackages (with pkgs [pkgs.unstable.protonmail-desktop])})})

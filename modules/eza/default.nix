@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.eza;
-in
 {
   options.myConfig.modules.eza.enable = lib.mkEnableOption "Enable eza (modern ls replacement)";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.eza.enable {
     environment.systemPackages = with pkgs; [ eza ];
   };
 }

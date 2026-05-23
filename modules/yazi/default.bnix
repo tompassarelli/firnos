@@ -11,4 +11,4 @@
        {
         :home-manager.users
           {username
-            (fn-set-rest [config] {:programs.yazi {:enable true :settings {:opener {:edit [{:run "nvim \"$@\"" :block true :for "unix"}]}}}})}})}))
+            (module [config] {:programs.yazi {:enable true :settings {:opener {:edit [{:run "nvim \"$@\"" :block true :for "unix"}]}}}})}})}))

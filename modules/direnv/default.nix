@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.direnv;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.direnv.enable = lib.mkEnableOption "direnv for automatic dev shell activation";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.direnv.enable {
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true;

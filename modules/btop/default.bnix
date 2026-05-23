@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.btop.enable
-       {:environment.systemPackages (with-do pkgs [btop])})})
+       {:environment.systemPackages (with pkgs [btop])})})

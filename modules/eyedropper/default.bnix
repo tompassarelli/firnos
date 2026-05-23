@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.eyedropper.enable
-       {:environment.systemPackages (with-do pkgs [eyedropper])})})
+       {:environment.systemPackages (with pkgs [eyedropper])})})

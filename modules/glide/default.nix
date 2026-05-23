@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.glide;
-in
 {
   options.myConfig.modules.glide.enable = lib.mkEnableOption "Glide touchpad motion detection daemon";
   options.myConfig.modules.glide.device = lib.mkOption {

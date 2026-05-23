@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.ripgrep;
-in
 {
   options.myConfig.modules.ripgrep.enable = lib.mkEnableOption "ripgrep search tool";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.ripgrep.enable {
     environment.systemPackages = with pkgs; [ ripgrep ];
   };
 }

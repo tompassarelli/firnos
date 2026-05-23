@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.wl-gammarelay;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.wl-gammarelay.enable = lib.mkEnableOption "Wayland gamma/temperature control";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.wl-gammarelay.enable {
     environment.systemPackages = with pkgs; [ wl-gammarelay-rs ];
     home-manager.users.${username} = { config, ... }: {
       xdg.configFile."wl-gammarelay/temperature-control".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/wl-gammarelay/temperature-control";

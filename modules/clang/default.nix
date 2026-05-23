@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.clang;
-in
 {
   options.myConfig.modules.clang.enable = lib.mkEnableOption "Clang C/C++ compiler";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.clang.enable {
     environment.systemPackages = with pkgs; [ clang ];
   };
 }

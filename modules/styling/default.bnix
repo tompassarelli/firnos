@@ -19,5 +19,5 @@
         :stylix {:enable true :base16Scheme schemeFile :polarity variant :fonts {:monospace {:package pkgs.commit-mono :name "CommitMono"} :sansSerif {:package pkgs.dejavu_fonts :name "DejaVu Sans"} :serif {:package pkgs.ia-writer-quattro :name "iA Writer Quattro S"} :sizes {:terminal 14}}}
         :home-manager.users
           {username
-            (fn-set-rest [config] {:stylix.targets.firefox {:profileNames [username] :colorTheme.enable true}
+            (module [config] {:stylix.targets.firefox {:profileNames [username] :colorTheme.enable true}
             :xdg.configFile {"themes" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/themes"))}}})}})}))

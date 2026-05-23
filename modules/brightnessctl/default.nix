@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.brightnessctl;
-in
 {
   options.myConfig.modules.brightnessctl.enable = lib.mkEnableOption "screen brightness control";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.brightnessctl.enable {
     environment.systemPackages = with pkgs; [ brightnessctl ];
   };
 }

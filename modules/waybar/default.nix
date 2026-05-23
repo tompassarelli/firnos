@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.waybar;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.waybar.enable = lib.mkEnableOption "Waybar status bar for Wayland";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.waybar.enable {
     environment.systemPackages = with pkgs; [ waybar ];
     home-manager.users.${username} = { config, ... }: {
       xdg.configFile = {

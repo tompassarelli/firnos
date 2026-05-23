@@ -11,5 +11,5 @@
        {
         :home-manager.users
           {username
-            (fn-set-rest [config] {:programs.git {:enable true :settings {:user.name "tompassarelli" :user.email "tom.passarelli@protonmail.com" :init.defaultBranch "main" :core.editor "nvim" :merge.conflictstyle "diff3" :diff.colorMoved "default"}}
+            (module [config] {:programs.git {:enable true :settings {:user.name "tompassarelli" :user.email "tom.passarelli@protonmail.com" :init.defaultBranch "main" :core.editor "nvim" :merge.conflictstyle "diff3" :diff.colorMoved "default"}}
             :programs.delta {:enable true :enableGitIntegration true :options {:navigate true}}})}})}))

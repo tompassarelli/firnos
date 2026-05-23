@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.graphviz.enable
-       {:environment.systemPackages (with-do pkgs [graphviz])})})
+       {:environment.systemPackages (with pkgs [graphviz])})})

@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.procs.enable
-       {:environment.systemPackages (with-do pkgs [procs])})})
+       {:environment.systemPackages (with pkgs [procs])})})

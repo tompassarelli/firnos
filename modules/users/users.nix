@@ -1,8 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.users;
-  username = cfg.username;
+  username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.users.enable = lib.mkEnableOption "Enable user configuration";
@@ -11,7 +10,7 @@ in
     default = "tom";
     description = "Primary system username";
   };
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.users.enable {
     users.users.${username} = {
       shell = pkgs.fish;
       isNormalUser = true;
@@ -22,6 +21,11 @@ in
       Defaults timestamp_timeout=30
       Defaults timestamp_type=global
     '';
-    systemd.tmpfiles.rules = [ "d /home/${username}/Documents 0755 ${username} users -" "d /home/${username}/Pictures/Screenshots 0755 ${username} users -" "d /home/${username}/code 0755 ${username} users -" "d /home/${username}/src 0755 ${username} users -" ];
+    systemd.tmpfiles.rules = [
+      "d /home/${username}/Documents 0755 ${username} users -"
+      "d /home/${username}/Pictures/Screenshots 0755 ${username} users -"
+      "d /home/${username}/code 0755 ${username} users -"
+      "d /home/${username}/src 0755 ${username} users -"
+    ];
   };
 }

@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.containers;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.containers.enable = lib.mkEnableOption "Podman containers with Distrobox";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.containers.enable {
     virtualisation.podman = {
       enable = true;
       dockerCompat = true;

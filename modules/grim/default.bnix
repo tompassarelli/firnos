@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.grim.enable
-       {:environment.systemPackages (with-do pkgs [grim])})})
+       {:environment.systemPackages (with pkgs [grim])})})

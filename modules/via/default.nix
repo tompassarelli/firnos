@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.via;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.via.enable = lib.mkEnableOption "VIA keyboard configurator support";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.via.enable {
     services.udev.extraRules = ''
       # VIA keyboard access rules
       KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0660", GROUP="plugdev", TAG+="uaccess"

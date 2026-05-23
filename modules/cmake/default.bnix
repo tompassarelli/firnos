@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.cmake.enable
-       {:environment.systemPackages (with-do pkgs [cmake])})})
+       {:environment.systemPackages (with pkgs [cmake])})})

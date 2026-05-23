@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.claude;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.claude.enable = lib.mkEnableOption "Claude Code CLI configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.claude.enable {
     environment.systemPackages = [ pkgs.master.claude-code ];
     home-manager.users.${username} = { config, ... }: {
       home.file = {

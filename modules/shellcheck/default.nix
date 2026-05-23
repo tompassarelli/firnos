@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.shellcheck;
-in
 {
   options.myConfig.modules.shellcheck.enable = lib.mkEnableOption "ShellCheck shell script linter";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.shellcheck.enable {
     environment.systemPackages = with pkgs; [ shellcheck ];
   };
 }

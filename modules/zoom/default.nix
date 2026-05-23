@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.zoom;
-in
 {
   options.myConfig.modules.zoom.enable = lib.mkEnableOption "Zoom video conferencing";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.zoom.enable {
     environment.systemPackages = [ pkgs.zoom-us ];
   };
 }

@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.thermal-management;
-in
 {
   options.myConfig.modules.thermal-management.enable = lib.mkEnableOption "CPU thermal management for sustained builds";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.thermal-management.enable {
     boot.kernelParams = [ "amd_pstate=active" ];
     services.auto-cpufreq.enable = true;
     services.auto-cpufreq.settings = {

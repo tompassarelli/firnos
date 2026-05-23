@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.bevy;
   bevyLibs = with pkgs; [
     alsa-lib
     vulkan-loader
@@ -17,7 +16,7 @@ let
 in
 {
   options.myConfig.modules.bevy.enable = lib.mkEnableOption "Bevy game engine development libraries";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.bevy.enable {
     environment.systemPackages = bevyLibs;
     programs.nix-ld.libraries = bevyLibs;
   };

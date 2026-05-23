@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.vim.enable
-       {:environment.systemPackages (with-do pkgs [vim])})})
+       {:environment.systemPackages (with pkgs [vim])})})

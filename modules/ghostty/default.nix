@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.ghostty;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.ghostty.enable = lib.mkEnableOption "Ghostty terminal";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.ghostty.enable {
     home-manager.users.${username} = {
       programs.ghostty = {
         enable = true;

@@ -15,7 +15,7 @@
                 (let [stylixGtkFont (s (s config.gtk.font.name " ") (toString config.gtk.font.size))
                       stylixGtkTheme config.gtk.theme.name]
                   {:gtk.enable true
-                   :home.packages (with-do pkgs [gsettings-desktop-schemas gtk3])
+                   :home.packages (with pkgs [gsettings-desktop-schemas gtk3])
                    :xdg.configFile {"gtk-3.0/settings.ini"
                      {:text (lib/mkForce (ms "[Settings]"
                        "gtk-application-prefer-dark-theme=${if isDark then \"1\" else \"0\"}"

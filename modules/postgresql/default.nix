@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.postgresql;
   postgresPackage = pkgs.unstable.postgresql_18;
 in
 {
   options.myConfig.modules.postgresql.enable = lib.mkEnableOption "PostgreSQL database server for local development";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.postgresql.enable {
     services.postgresql = {
       enable = true;
       package = postgresPackage;

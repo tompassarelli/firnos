@@ -19,4 +19,4 @@
         :security.chromiumSuidSandbox.enable true
         :home-manager.users
           {username
-            (fn-set-rest [config] {:xdg.configFile {"niri/config.kdl" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/niri/config.kdl"))}}})}})}))
+            (module [config] {:xdg.configFile {"niri/config.kdl" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/niri/config.kdl"))}}})}})}))

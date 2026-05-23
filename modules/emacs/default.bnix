@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.emacs.enable
        {
-        :environment.systemPackages (with-do pkgs [emacs-pgtk])})})
+        :environment.systemPackages (with pkgs [emacs-pgtk])})})

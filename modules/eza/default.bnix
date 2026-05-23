@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.eza.enable
-       {:environment.systemPackages (with-do pkgs [eza])})})
+       {:environment.systemPackages (with pkgs [eza])})})

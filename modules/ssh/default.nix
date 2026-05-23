@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.ssh;
-in
 {
   options.myConfig.modules.ssh.enable = lib.mkEnableOption "SSH server";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.ssh.enable {
     services.openssh.enable = true;
   };
 }

@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.neovim;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.neovim.enable = lib.mkEnableOption "Neovim text editor";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.neovim.enable {
     programs.neovim = {
       enable = true;
       defaultEditor = true;

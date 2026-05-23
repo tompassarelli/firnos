@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.gimp;
-in
 {
   options.myConfig.modules.gimp.enable = lib.mkEnableOption "GIMP image editor";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.gimp.enable {
     environment.systemPackages = with pkgs; [ gimp ];
   };
 }

@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.rustdesk.enable
        {
-        :environment.systemPackages (with-do pkgs [rustdesk-flutter])})})
+        :environment.systemPackages (with pkgs [rustdesk-flutter])})})

@@ -280,17 +280,25 @@ The DSL lives in the [tompassarelli/nisp](https://github.com/tompassarelli/nisp)
 | `(lst a b c)`                   | `[ a b c ]` |
 | `(let-in ([k v]...) body)`      | `let k = v; ... in body` |
 | `(fn (a b) body)`               | `a: b: body` |
-| `(fn-set-rest (a (b "x")) body)`| `{ a, b ? "x", ... }: body` |
-| `(fn-set@ self (a b) body)`     | `{ a, b } @ self: body` |
+| `(module [a b] body)`           | `{ a, b, ... }: body` (NixOS module / open-attrs lambda) |
+| `(fn-set [a (b "x")] body)`     | `{ a, b ? "x" }: body` (closed attrs) |
+| `(overlay [final prev] body)`   | `final: prev: body` (Nix overlay, exactly 2 formals) |
+| `(derivation {:pname ... :src ...})` | `pkgs.stdenv.mkDerivation { pname = ...; src = ...; }` |
+| `(flake {:description ... :inputs ... :outputs ...})` | flake.nix shape |
+| `(with-cfg config.X body)`      | `let cfg = config.X; in body` (also rewrites config.X.foo → cfg.foo) |
 | `(call f x y)`                  | `f x y` |
 | `(not x)` / `(neg x)`           | `!x` / `-x` |
-| `(and a b c)` / `(or a b)` / `(impl a b)` | `a && b && c` / `a \|\| b` / `a -> b` |
+| `(and a b c)` / `(or a b)` / `(implies a b)` | `a && b && c` / `a \|\| b` / `a -> b` |
 | `(== a b)` / `(!= a b)` / `(< a b)` / `(<= a b)` etc. | `a == b` / `a != b` / `a < b` / `a <= b` |
 | `(+ a b c)` / `(- a b)` / `(* a b)` / `(/ a b)` | `a + b + c` / `a - b` / `a * b` / `a / b` |
 | `(get base 'a.b.c)` / `(get-or base 'a.b.c d)` | `base.a.b.c` / `base.a.b.c or d` |
 | `(has base 'a.b.c)`             | `base ? a.b.c` |
-| `(assert-do cond body)`         | `assert cond; body` |
-| `(spath "nixpkgs")`             | `<nixpkgs>` |
+| `(assert cond body)`            | `assert cond; body` |
+| `(search-path nixpkgs)`         | `<nixpkgs>` |
+| `(inherit a b c)` / `(inherit-from ns a b)` | `inherit a b c;` / `inherit (ns) a b;` |
+| `(rec-attrs k v ...)`           | `rec { k = v; ... }` |
+| `(with ns body)`                | `with ns; body` (Nix scope; shape-disambiguated from record update) |
+| `~"hi ${name}!"`                | `"hi ${name}!"` (reader macro; lowers to `(s "hi " name "!")`) |
 | `(pipe-to x f)` / `(pipe-from f x)` | `x \|> f` / `f <\| x` (Nix 2.15+) |
 | `(mkif cond body)`              | `lib.mkIf cond body` |
 | `(mkdefault v)` / `(mkforce v)` | `lib.mkDefault v` / `lib.mkForce v` |

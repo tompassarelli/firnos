@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.zen-browser;
-in
 {
   options.myConfig.modules.zen-browser.enable = lib.mkEnableOption "Enable Zen Browser";
   options.myConfig.modules.zen-browser.default = lib.mkOption {

@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.clojure.enable
        {
-        :environment.systemPackages (with-do pkgs.unstable [jdk21 clojure clj-kondo clojure-lsp neil jet cljfmt])})})
+        :environment.systemPackages (with pkgs.unstable [jdk21 clojure clj-kondo clojure-lsp neil jet cljfmt])})})

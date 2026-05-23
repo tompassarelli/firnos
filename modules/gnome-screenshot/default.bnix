@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.gnome-screenshot.enable
-       {:environment.systemPackages (with-do pkgs [gnome-screenshot])})})
+       {:environment.systemPackages (with pkgs [gnome-screenshot])})})

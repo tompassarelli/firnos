@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.librewolf;
-in
 {
   options.myConfig.modules.librewolf.enable = lib.mkEnableOption "Enable LibreWolf browser";
   options.myConfig.modules.librewolf.default = lib.mkOption {

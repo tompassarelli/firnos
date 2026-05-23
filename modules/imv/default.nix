@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.imv;
-in
 {
   options.myConfig.modules.imv.enable = lib.mkEnableOption "imv image viewer";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.imv.enable {
     environment.systemPackages = with pkgs; [ imv ];
   };
 }

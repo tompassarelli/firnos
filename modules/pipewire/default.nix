@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.pipewire;
-in
 {
   options.myConfig.modules.pipewire.enable = lib.mkEnableOption "PipeWire audio configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.pipewire.enable {
     services.pipewire = {
       enable = true;
       pulse.enable = true;

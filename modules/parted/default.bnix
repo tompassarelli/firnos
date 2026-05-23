@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.parted.enable
-       {:environment.systemPackages (with-do pkgs [parted])})})
+       {:environment.systemPackages (with pkgs [parted])})})

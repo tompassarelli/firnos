@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.gh.enable
-       {:environment.systemPackages (with-do pkgs [gh])})})
+       {:environment.systemPackages (with pkgs [gh])})})

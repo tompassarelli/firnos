@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.mail;
-in
 {
   options.myConfig.modules.mail.enable = lib.mkEnableOption "email applications";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.mail.enable {
     environment.systemPackages = [ pkgs.unstable.protonmail-desktop ];
   };
 }

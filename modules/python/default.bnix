@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.python.enable
        {
-        :environment.systemPackages (with-do pkgs [python3])})})
+        :environment.systemPackages (with pkgs [python3])})})

@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.blender.enable
-       {:environment.systemPackages (with-do pkgs [blender])})})
+       {:environment.systemPackages (with pkgs [blender])})})

@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.ffmpeg.enable
-       {:environment.systemPackages (with-do pkgs [ffmpeg])})})
+       {:environment.systemPackages (with pkgs [ffmpeg])})})

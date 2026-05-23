@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.obs-studio.enable
-       {:environment.systemPackages (with-do pkgs [obs-studio])})})
+       {:environment.systemPackages (with pkgs [obs-studio])})})

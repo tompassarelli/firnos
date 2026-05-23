@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.babashka.enable
-       {:environment.systemPackages (with-do pkgs [babashka])})})
+       {:environment.systemPackages (with pkgs [babashka])})})

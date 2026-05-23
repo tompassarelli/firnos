@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.codex;
-in
 {
   options.myConfig.modules.codex.enable = lib.mkEnableOption "OpenAI Codex CLI (master/bleeding-edge)";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.codex.enable {
     environment.systemPackages = [ pkgs.master.codex ];
   };
 }

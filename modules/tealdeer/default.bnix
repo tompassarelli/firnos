@@ -9,7 +9,7 @@
    :config
      (lib/mkIf config.myConfig.modules.tealdeer.enable
        {
-        :environment.systemPackages (with-do pkgs [tealdeer])
+        :environment.systemPackages (with pkgs [tealdeer])
         :home-manager.users
           {username
-            (fn-set-rest [config] {:xdg.configFile {"tealdeer/config.toml" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory (s "/code/nixos-config/dotfiles/tealdeer/config.toml")))}}})}})}))
+            (module [config] {:xdg.configFile {"tealdeer/config.toml" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory (s "/code/nixos-config/dotfiles/tealdeer/config.toml")))}}})}})}))

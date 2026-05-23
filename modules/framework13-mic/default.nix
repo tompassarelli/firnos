@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.framework13-mic;
   username = config.myConfig.modules.users.username;
   firn-mic = pkgs.writeShellApplication {
     name = "firn-mic";
@@ -20,7 +19,7 @@ let
 in
 {
   options.myConfig.modules.framework13-mic.enable = lib.mkEnableOption "Framework 13 AMD AI 300 mic fix + firn-mic CLI (forces UCM profile that exposes the actual internal mic; see `firn-mic doctor`)";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.framework13-mic.enable {
     environment.systemPackages = [ firn-mic ];
     services.pipewire.wireplumber.extraConfig."51-framework13-mic"."monitor.alsa.rules" = [
       {

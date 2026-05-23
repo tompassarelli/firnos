@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.libnotify;
-in
 {
   options.myConfig.modules.libnotify.enable = lib.mkEnableOption "libnotify notification client";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.libnotify.enable {
     environment.systemPackages = with pkgs; [ libnotify ];
   };
 }

@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.rustfmt.enable
-       {:environment.systemPackages (with-do pkgs [pkgs.unstable.rustfmt])})})
+       {:environment.systemPackages (with pkgs [pkgs.unstable.rustfmt])})})

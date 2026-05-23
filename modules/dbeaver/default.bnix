@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.dbeaver.enable
        {
-        :environment.systemPackages (with-do pkgs [dbeaver-bin])})})
+        :environment.systemPackages (with pkgs [dbeaver-bin])})})

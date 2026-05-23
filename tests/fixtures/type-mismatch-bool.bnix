@@ -1,7 +1,7 @@
 #lang beagle/nix
 (ns modules.type-mismatch-bool-test)
 
-(fn-set-rest (config lib pkgs)
+(module (config lib pkgs)
   {:options.myConfig.modules.type-mismatch-bool-test.enable
      (lib/mkEnableOption "bool option with string value")
 

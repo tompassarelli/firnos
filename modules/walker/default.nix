@@ -1,16 +1,17 @@
 { config, lib, pkgs, inputs, ... }:
 
 let
-  cfg = config.myConfig.modules.walker;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.walker.enable = lib.mkEnableOption "Walker modern wayland app launcher";
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ (pkgs.writeShellScriptBin "walker-rename-workspace" ''
-      name=$(echo "" | walker --dmenu)
-      [ -n "$name" ] && niri msg action set-workspace-name "$name"
-    '') ];
+  config = lib.mkIf config.myConfig.modules.walker.enable {
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "walker-rename-workspace" ''
+        name=$(echo "" | walker --dmenu)
+        [ -n "$name" ] && niri msg action set-workspace-name "$name"
+      '')
+    ];
     home-manager.users.${username} = { config, ... }: {
       imports = [ inputs.walker.homeManagerModules.default ];
       home.file.".config/elephant/desktopapplications.toml".text = ''

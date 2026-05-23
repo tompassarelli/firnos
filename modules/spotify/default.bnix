@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.spotify.enable
-       {:environment.systemPackages (with-do pkgs [spotify])})})
+       {:environment.systemPackages (with pkgs [spotify])})})

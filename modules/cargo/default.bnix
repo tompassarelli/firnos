@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.cargo.enable
-       {:environment.systemPackages (with-do pkgs [pkgs.unstable.cargo])})})
+       {:environment.systemPackages (with pkgs [pkgs.unstable.cargo])})})

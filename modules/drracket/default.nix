@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.drracket;
   racoPackages = [ "drracket-vim-tool" "db" ];
   racoEnsure = pkgs.writeShellScript "raco-ensure-packages" ''
     for pkg in ${lib.concatStringsSep " " racoPackages}; do
@@ -13,7 +12,7 @@ let
 in
 {
   options.myConfig.modules.drracket.enable = lib.mkEnableOption "DrRacket IDE";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.drracket.enable {
     environment.systemPackages = with pkgs; [ racket ];
     system.activationScripts.racoPackages.text = ''
       sudo -u ${config.myConfig.modules.users.username} ${racoEnsure} || true

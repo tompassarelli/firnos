@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.unixodbc;
   msodbcsql18 = pkgs.unstable.unixodbcDrivers.msodbcsql18;
 in
 {
   options.myConfig.modules.unixodbc.enable = lib.mkEnableOption "unixODBC with MSSQL driver";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.unixodbc.enable {
     environment.systemPackages = [ pkgs.unixODBC msodbcsql18 ];
     environment.variables = {
       ODBCSYSINI = "/etc";

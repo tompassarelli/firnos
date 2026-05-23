@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.delta;
-in
 {
   options.myConfig.modules.delta.enable = lib.mkEnableOption "delta git diff viewer";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.delta.enable {
     environment.systemPackages = with pkgs; [ delta ];
   };
 }

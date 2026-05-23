@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.nix-ld;
-in
 {
   options.myConfig.modules.nix-ld.enable = lib.mkEnableOption "nix-ld dynamic library shim";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.nix-ld.enable {
     programs.nix-ld.enable = true;
   };
 }

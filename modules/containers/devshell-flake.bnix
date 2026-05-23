@@ -13,4 +13,4 @@
           {system
             {:default
               (pkgs.mkShell
-                {:packages (with-do pkgs [])})}}}))}
+                {:packages (with pkgs [])})}}}))}

@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.libreoffice.enable
        {
-        :environment.systemPackages (with-do pkgs [libreoffice-fresh])})})
+        :environment.systemPackages (with pkgs [libreoffice-fresh])})})

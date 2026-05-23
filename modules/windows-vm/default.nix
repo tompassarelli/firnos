@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.windows-vm;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.windows-vm.enable = lib.mkEnableOption "Windows VM via QEMU/KVM with virt-manager";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.windows-vm.enable {
     virtualisation.libvirtd = {
       enable = true;
       qemu = {

@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.chrome;
-in
 {
   options.myConfig.modules.chrome.enable = lib.mkEnableOption "Enable Google Chrome browser";
   options.myConfig.modules.chrome.default = lib.mkOption {

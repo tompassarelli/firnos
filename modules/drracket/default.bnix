@@ -10,5 +10,5 @@
    :config
      (lib/mkIf config.myConfig.modules.drracket.enable
        {
-        :environment.systemPackages (with-do pkgs [racket])
+        :environment.systemPackages (with pkgs [racket])
         :system.activationScripts.racoPackages.text (ms "sudo -u ${config.myConfig.modules.users.username} ${racoEnsure} || true")})}))

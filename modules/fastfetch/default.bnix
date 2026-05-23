@@ -9,7 +9,7 @@
    :config
      (lib/mkIf config.myConfig.modules.fastfetch.enable
        {
-        :environment.systemPackages (with-do pkgs [fastfetch])
+        :environment.systemPackages (with pkgs [fastfetch])
         :home-manager.users
           {username
-            (fn-set-rest [config] {            :xdg.configFile {"fastfetch/config.jsonc" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/fastfetch/config.jsonc"))}}})}})}))
+            (module [config] {            :xdg.configFile {"fastfetch/config.jsonc" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/fastfetch/config.jsonc"))}}})}})}))

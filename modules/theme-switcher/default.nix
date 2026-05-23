@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.theme-switcher;
   switch-theme = pkgs.writeShellScriptBin "switch-theme" ''
     #!/usr/bin/env bash
     
@@ -90,7 +89,7 @@ let
 in
 {
   options.myConfig.modules.theme-switcher.enable = lib.mkEnableOption "theme switcher script";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.theme-switcher.enable {
     environment.systemPackages = [ switch-theme ];
   };
 }

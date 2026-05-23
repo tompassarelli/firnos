@@ -1,12 +1,11 @@
 { config, lib, pkgs, flakeRoot, ... }:
 
 let
-  cfg = config.myConfig.modules.fish;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.fish.enable = lib.mkEnableOption "Fish shell configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.fish.enable {
     programs.fish.enable = true;
     home-manager.users.${username} = { config, ... }: {
       programs.fish = {

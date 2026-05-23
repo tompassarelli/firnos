@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.sbcl.enable
-       {:environment.systemPackages (with-do pkgs [sbcl])})})
+       {:environment.systemPackages (with pkgs [sbcl])})})

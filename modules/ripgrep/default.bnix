@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.ripgrep.enable
-       {:environment.systemPackages (with-do pkgs [ripgrep])})})
+       {:environment.systemPackages (with pkgs [ripgrep])})})

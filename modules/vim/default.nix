@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.vim;
-in
 {
   options.myConfig.modules.vim.enable = lib.mkEnableOption "Vim text editor";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.vim.enable {
     environment.systemPackages = with pkgs; [ vim ];
   };
 }

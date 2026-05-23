@@ -1,13 +1,12 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.doom-emacs;
   username = config.myConfig.modules.users.username;
   chosenTheme = config.myConfig.modules.stylix.chosenTheme;
 in
 {
   options.myConfig.modules.doom-emacs.enable = lib.mkEnableOption "Doom Emacs configuration (dotfiles, daemon, secrets)";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.doom-emacs.enable {
     home-manager.users.${username} = { config, ... }: {
       home.sessionVariables = {
         DOOMDIR = "${config.home.homeDirectory}/.config/doom";

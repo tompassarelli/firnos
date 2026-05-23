@@ -9,4 +9,4 @@
    :config
      (lib/mkIf config.myConfig.modules.awscli.enable
        {
-        :environment.systemPackages (with-do pkgs [awscli2])})}))
+        :environment.systemPackages (with pkgs [awscli2])})}))

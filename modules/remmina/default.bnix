@@ -9,7 +9,7 @@
    :config
      (lib/mkIf config.myConfig.modules.remmina.enable
        {
-        :environment.systemPackages (with-do pkgs [remmina])
+        :environment.systemPackages (with pkgs [remmina])
         :home-manager.users
           {username
             {:xdg.configFile {"autostart/remmina-applet.desktop" {:text (ms "[Desktop Entry]" "Hidden=true")}}}}})}))

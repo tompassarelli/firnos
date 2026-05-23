@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.ironbar;
   username = config.myConfig.modules.users.username;
 in
 {
   options.myConfig.modules.ironbar.enable = lib.mkEnableOption "Ironbar status bar for Wayland";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.ironbar.enable {
     environment.systemPackages = [ pkgs.unstable.ironbar ];
     home-manager.users.${username} = { config, ... }: {
       systemd.user.services.ironbar = {

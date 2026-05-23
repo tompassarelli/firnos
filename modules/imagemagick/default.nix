@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.imagemagick;
-in
 {
   options.myConfig.modules.imagemagick.enable = lib.mkEnableOption "ImageMagick image processing";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.imagemagick.enable {
     environment.systemPackages = with pkgs; [ imagemagick ];
   };
 }

@@ -1,13 +1,12 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.gtk;
   username = config.myConfig.modules.users.username;
   isDark = (config.stylix.polarity == "dark");
 in
 {
   options.myConfig.modules.gtk.enable = lib.mkEnableOption "GTK theming configuration";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.gtk.enable {
     home-manager.users.${username} = { config, ... }: let
       stylixGtkFont = "${"${config.gtk.font.name} "}${toString config.gtk.font.size}";
       stylixGtkTheme = config.gtk.theme.name;

@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.niri;
   username = config.myConfig.modules.users.username;
   niri-viewport-nav = pkgs.writers.writePython3Bin "niri-viewport-nav" {
     libraries = [ ];
@@ -130,7 +129,7 @@ in
 {
   options.myConfig.modules.niri.enable = lib.mkEnableOption "Enable niri compositor configuration";
   imports = [ ./xwayland-satellite.nix ./swaybg.nix ./swayidle.nix ];
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.niri.enable {
     programs.niri.enable = true;
     programs.niri.package = pkgs.unstable.niri;
     environment.systemPackages = [ niri-viewport-nav ];

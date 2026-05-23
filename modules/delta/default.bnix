@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.delta.enable
-       {:environment.systemPackages (with-do pkgs [delta])})})
+       {:environment.systemPackages (with pkgs [delta])})})

@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.emacs;
-in
 {
   options.myConfig.modules.emacs.enable = lib.mkEnableOption "GNU Emacs editor";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.emacs.enable {
     environment.systemPackages = with pkgs; [ emacs-pgtk ];
   };
 }

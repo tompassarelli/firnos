@@ -11,4 +11,4 @@
        {
         :virtualisation.podman {:enable true :dockerCompat true :defaultNetwork.settings.dns_enabled true}
         :users.users {username {:extraGroups ["podman"]}}
-        :environment.systemPackages (with-do pkgs [distrobox podman-compose])})}))
+        :environment.systemPackages (with pkgs [distrobox podman-compose])})}))

@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.gnumake.enable
-       {:environment.systemPackages (with-do pkgs [gnumake])})})
+       {:environment.systemPackages (with pkgs [gnumake])})})

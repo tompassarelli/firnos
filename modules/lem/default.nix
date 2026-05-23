@@ -1,7 +1,6 @@
 { config, lib, pkgs, inputs, ... }:
 
 let
-  cfg = config.myConfig.modules.lem;
   username = config.myConfig.modules.users.username;
   lem-ncurses = inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (o: {
     postPatch = "${o.postPatch or ""}${''
@@ -11,7 +10,7 @@ let
 in
 {
   options.myConfig.modules.lem.enable = lib.mkEnableOption "Lem Common Lisp editor";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.lem.enable {
     environment.systemPackages = [ lem-ncurses ];
     home-manager.users.${username} = { config, ... }: {
       xdg.desktopEntries.lem = {

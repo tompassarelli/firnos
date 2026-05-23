@@ -1,7 +1,7 @@
 #lang beagle/nix
 (ns modules.listof-mismatch-test)
 
-(fn-set-rest (config lib pkgs)
+(module (config lib pkgs)
   {:options.myConfig.modules.listof-mismatch-test.enable
      (lib/mkEnableOption "listOf int containing strings")
 

@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.password;
-in
 {
   options.myConfig.modules.password.enable = lib.mkEnableOption "password management tools";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.password.enable {
     environment.systemPackages = with pkgs; [ bitwarden-desktop ];
   };
 }

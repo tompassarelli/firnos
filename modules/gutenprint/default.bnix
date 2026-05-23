@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.gutenprint.enable
        {
-        :services.printing.drivers (with-do pkgs [gutenprint])})})
+        :services.printing.drivers (with pkgs [gutenprint])})})

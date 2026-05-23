@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.fd.enable
-       {:environment.systemPackages (with-do pkgs [fd])})})
+       {:environment.systemPackages (with pkgs [fd])})})

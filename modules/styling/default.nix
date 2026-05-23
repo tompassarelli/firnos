@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.myConfig.modules.styling;
   username = config.myConfig.modules.users.username;
   chosenTheme = config.myConfig.modules.stylix.chosenTheme;
   schemeFile = "${pkgs.base16-schemes}/share/themes/${chosenTheme}.yaml";
@@ -15,7 +14,7 @@ let
 in
 {
   options.myConfig.modules.styling.enable = lib.mkEnableOption "system-wide theming and styling";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.styling.enable {
     stylix = {
       enable = true;
       base16Scheme = schemeFile;

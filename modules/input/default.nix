@@ -1,11 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.input;
-in
 {
   options.myConfig.modules.input.enable = lib.mkEnableOption "touchpad support (libinput)";
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.myConfig.modules.input.enable {
     services.libinput.enable = true;
   };
 }

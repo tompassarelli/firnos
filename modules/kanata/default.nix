@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.kanata;
-in
 {
   options.myConfig.modules.kanata.enable = lib.mkEnableOption "Kanata keyboard remapping";
   options.myConfig.modules.kanata.devices = lib.mkOption {

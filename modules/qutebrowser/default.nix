@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  cfg = config.myConfig.modules.qutebrowser;
-in
 {
   options.myConfig.modules.qutebrowser.enable = lib.mkEnableOption "Enable Qutebrowser";
   options.myConfig.modules.qutebrowser.default = lib.mkOption {

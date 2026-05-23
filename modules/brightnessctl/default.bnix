@@ -7,4 +7,4 @@
 
    :config
      (lib/mkIf config.myConfig.modules.brightnessctl.enable
-       {:environment.systemPackages (with-do pkgs [brightnessctl])})})
+       {:environment.systemPackages (with pkgs [brightnessctl])})})
