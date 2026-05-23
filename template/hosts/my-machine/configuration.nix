@@ -12,10 +12,7 @@
   myConfig.modules.pipewire.enable = true;
   myConfig.modules.bluetooth.enable = true;
   myConfig.modules.input.enable = true;
-  myConfig.modules.kanata = {
-    enable = true;
-    capsLockEscCtrl = true;
-  };
+  myConfig.modules.kanata.enable = true;
   myConfig.bundles.terminal.enable = true;
   myConfig.bundles.cli-tools.enable = true;
   myConfig.bundles.desktop.enable = true;

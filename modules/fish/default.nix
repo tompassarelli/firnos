@@ -27,6 +27,10 @@ in
         interactiveShellInit = ''
           set -g fish_greeting
           fish_vi_key_bindings
+          bind -M default ! __history_previous_command
+          bind -M default '$' __history_previous_command_arguments
+          bind -M insert ! __history_previous_command
+          bind -M insert '$' __history_previous_command_arguments
           # Change to default directory (skip in Emacs vterm)
           if not set -q INSIDE_EMACS
             cd ~
