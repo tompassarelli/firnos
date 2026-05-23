@@ -13,12 +13,11 @@ jobs:
         with:
           path: firnos
 
-      - name: Checkout nisp (sibling clone — firn-build expects ../nisp)
+      - name: Checkout beagle (sibling clone — firn-build expects ../beagle)
         uses: actions/checkout@v4
         with:
-          repository: tompassarelli/nisp
-          ref: v0.3.0
-          path: nisp
+          repository: tompassarelli/beagle
+          path: beagle
 
       - uses: cachix/install-nix-action@v27
         with:
@@ -27,19 +26,21 @@ jobs:
       - name: Install Racket
         run: nix profile install nixpkgs#racket
 
-      - name: Link nisp package
+      - name: Link beagle package
         run: |
-          raco pkg install --auto --batch --link --force "$GITHUB_WORKSPACE/nisp"
-          raco setup nisp
+          raco pkg install --auto --batch --link --force "$GITHUB_WORKSPACE/beagle/beagle-lib"
+          raco setup beagle
 
-      - name: Drift check (.rkt and .nix in sync)
-        # Regenerates every .nix from its sibling .rkt and fails if any
-        # generated file differs from what's committed. Forces .rkt to
+      - name: Drift check (.bnix and .nix in sync)
+        # Regenerates every .nix from its sibling .bnix and fails if any
+        # generated file differs from what's committed. Forces .bnix to
         # remain the source of truth.
         working-directory: firnos
+        env:
+          BEAGLE_PATH: ${{ github.workspace }}/beagle
         run: |
           ./scripts/firn-build
           if ! git diff --exit-code; then
-            echo "::error::Generated .nix files don't match .rkt sources. Run firn-build locally and commit."
+            echo "::error::Generated .nix files don't match .bnix sources. Run firn-build locally and commit."
             exit 1
           fi
