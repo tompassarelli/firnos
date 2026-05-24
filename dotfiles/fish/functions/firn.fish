@@ -1,7 +1,6 @@
 function firn --description "FirnOS config management CLI"
-  # The wrapper at ~/.local/bin/firn handles everything: version mismatch
-  # detection, background rebuild, lock-file management, stale-lock prompts.
-  # See scripts/firn-build-bin (cat $WRAPPER section) for the logic.
+  # All logic (racket-version detection, recompile-on-mismatch) lives in
+  # the wrapper at ~/.local/bin/firn — see scripts/firn-build-bin.
   if test -x ~/.local/bin/firn
     ~/.local/bin/firn $argv
   else

@@ -15,6 +15,7 @@
 set -euo pipefail
 
 cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+BEAGLE_PATH="${BEAGLE_PATH:-$(cd .. && pwd)/beagle}"
 
 BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
 SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/firn}"
@@ -23,6 +24,25 @@ mkdir -p "$BIN_DIR" "$SHARE_DIR"
 ZO="$SHARE_DIR/firn.zo"
 WRAPPER="$BIN_DIR/firn"
 
+# firn.rkt requires beagle libraries. If beagle has stale .zo files
+# (typical after a nixpkgs racket bump), `raco demod` below will fail
+# loading them. Detect-and-refresh up front: compare current racket
+# version against a marker; if changed, nuke beagle's compiled/ dirs
+# and run raco setup so demod can read fresh bytecode.
+RACKET_VERSION="$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+')"
+MARKER="$SHARE_DIR/racket-version"
+STORED_VERSION="$(cat "$MARKER" 2>/dev/null || echo "")"
+
+if [ "$RACKET_VERSION" != "$STORED_VERSION" ] && [ -d "$BEAGLE_PATH" ]; then
+  echo "firn-build-bin: racket version changed (was: ${STORED_VERSION:-unknown}, now: $RACKET_VERSION) → recompiling beagle libs"
+  find "$BEAGLE_PATH" -name compiled -type d -exec rm -rf {} + 2>/dev/null || true
+  raco setup --pkgs beagle-lib beagle-test beagle-doc beagle 2>&1 \
+    | grep -E "error|warning|done|--- summary" \
+    | head -10 \
+    || true
+  echo "$RACKET_VERSION" > "$MARKER"
+fi
+
 echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
 raco demod -o "$ZO" scripts/firn.rkt
 
@@ -30,70 +50,35 @@ cat > "$WRAPPER" <<EOF
 #!/usr/bin/env bash
 # firn — wrapper for the compiled bytecode at $ZO.
 #
-# Handles Racket version mismatches (typically after a nixpkgs bump
-# rebuilds racket): on mismatch, kick off a background rebuild and serve
-# this invocation from source. A lock file prevents two failure modes
-# during the rebuild window — running a half-written .zo and spawning
-# multiple racing rebuilds.
+# Strategy: detect Racket version change at startup (cheap file read,
+# sub-millisecond), do a one-time foreground recompile when it changes,
+# then run normally. No lock files, no background processes, no source
+# fallback. The recompile takes ~20s but only fires on the first firn
+# invocation after a racket-version bump (rare event).
 
-set -uo pipefail
+set -euo pipefail
 
 ZO="$ZO"
-LOCK="$SHARE_DIR/.rebuild-in-progress"
+MARKER="$SHARE_DIR/racket-version"
 REPO="\${FIRN_REPO:-\$HOME/code/nixos-config}"
 BUILD_SCRIPT="\$REPO/scripts/firn-build-bin"
 
-# ---- lock handling ----
-if [ -e "\$LOCK" ]; then
-  AGE=\$(( \$(date +%s) - \$(stat -c %Y "\$LOCK" 2>/dev/null || echo 0) ))
-  if [ "\$AGE" -gt 60 ] && [ -t 0 ]; then
-    # Stale lock + interactive — prompt with numbered choices.
-    AGE_STR=\$( [ "\$AGE" -lt 60 ] && echo "\${AGE}s" || echo "\$((AGE / 60))m\$((AGE % 60))s" )
-    echo "firn: rebuild lock at \$LOCK is \$AGE_STR old." >&2
-    echo "      Purpose: prevents racing rebuilds + reading a half-written binary." >&2
-    echo "      Expected rebuild: ~20s. This lock is stale — last rebuild probably crashed." >&2
-    echo "      Last rebuild log: /tmp/firn-rebuild.log" >&2
-    echo "" >&2
-    echo "      1) Run from source (safe, slower — recommended)" >&2
-    echo "      2) Remove lock and try binary (only if rebuild definitely finished)" >&2
-    echo "" >&2
-    printf "      Choose [1/2, default 1]: " >&2
-    read -r CHOICE
-    if [ "\$CHOICE" = "2" ]; then
-      rm -f "\$LOCK"
-      # Fall through to binary attempt below.
-    else
-      exec racket "\$REPO/scripts/firn.rkt" "\$@"
-    fi
-  else
-    # Fresh lock OR non-interactive — silent fallback to source.
-    exec racket "\$REPO/scripts/firn.rkt" "\$@"
+# ---- racket version check ----
+RACKET_VERSION="\$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+')"
+STORED_VERSION="\$(cat "\$MARKER" 2>/dev/null || echo "")"
+
+if [ "\$RACKET_VERSION" != "\$STORED_VERSION" ]; then
+  echo "firn: racket version changed (\${STORED_VERSION:-unknown} → \$RACKET_VERSION); recompiling firn + beagle libs (~20s, one-time)..." >&2
+  if [ ! -x "\$BUILD_SCRIPT" ]; then
+    echo "firn: build script missing at \$BUILD_SCRIPT — cannot self-heal." >&2
+    exit 1
   fi
+  "\$BUILD_SCRIPT" >&2
+  # firn-build-bin updates the marker itself; no need to write here.
 fi
 
-# ---- binary attempt ----
-ERR=\$(mktemp)
-trap 'rm -f "\$ERR"' EXIT
-if racket "\$ZO" "\$@" 2>"\$ERR"; then
-  exit 0
-fi
-RC=\$?
-
-# Version mismatch → background rebuild + source fallback.
-if grep -q "version mismatch" "\$ERR"; then
-  if [ -x "\$BUILD_SCRIPT" ]; then
-    echo "firn: compiled binary stale (Racket version mismatch); rebuilding in background, running from source for this call." >&2
-    mkdir -p "\$(dirname "\$LOCK")"
-    touch "\$LOCK"
-    # Detached background rebuild; removes lock on exit (success or failure).
-    nohup sh -c "\"\$BUILD_SCRIPT\" >/tmp/firn-rebuild.log 2>&1; rm -f \"\$LOCK\"" >/dev/null 2>&1 &
-    exec racket "\$REPO/scripts/firn.rkt" "\$@"
-  fi
-fi
-
-# Some other error → surface it and exit with the binary's code.
-cat "\$ERR" >&2
-exit "\$RC"
+# ---- run ----
+exec racket "\$ZO" "\$@"
 EOF
 chmod +x "$WRAPPER"
 
