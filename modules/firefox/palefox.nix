@@ -20,7 +20,7 @@ in
       enable = true;
       package = palefoxFirefox;
     };
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       programs.firefox = {
         enable = true;
         package = palefoxFirefox;
@@ -42,7 +42,7 @@ in
           };
         };
       };
-      home.file.".mozilla/firefox/\${username}/chrome".source = config.lib.file.mkOutOfStoreSymlink "/home/${username}/code/palefox/chrome";
-    };
+      home.file.".mozilla/firefox/${username}/chrome".source = config.lib.file.mkOutOfStoreSymlink "/home/${username}/code/palefox/chrome";
+    });
   };
 }
