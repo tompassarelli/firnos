@@ -11,5 +11,5 @@
        {
         :home-manager.users
           {username
-            {            :programs.fish.shellAliases.cd "z"
-            :programs.zoxide {:enable true :enableFishIntegration true}}}})}))
+            {            :programs.bash.shellAliases.cd "z"
+            :programs.zoxide {:enable true :enableBashIntegration true}}}})}))

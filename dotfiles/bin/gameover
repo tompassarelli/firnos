@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Kill all Wine/Proton/gaming processes.
+pkill -9 -f "\.exe" 2>/dev/null
+wineserver -k 2>/dev/null
+pkill -9 -f "steam_app_" 2>/dev/null
+echo "GAME OVER"

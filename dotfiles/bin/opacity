@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Get or set niri window opacity (edits niri config.kdl in place).
+# Usage: opacity           # print current
+#        opacity 0.85      # set to 0.85
+set -u
+cfg="$HOME/code/nixos-config/dotfiles/niri/config.kdl"
+current=$(grep -P '^\s+opacity' "$cfg" | grep -oP '[\d.]+' | head -1)
+
+if [ $# -eq 0 ]; then
+  echo "Opacity: $current"
+  exit 0
+fi
+
+sed -i "/^[^\/]/s/opacity $current/opacity $1/" "$cfg"
+echo "Opacity: $1"

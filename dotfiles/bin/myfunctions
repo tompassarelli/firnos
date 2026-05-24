@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# List custom commands (in dotfiles/bin/) and shell aliases.
+set -u
+
+bindir="$HOME/code/nixos-config/dotfiles/bin"
+
+echo "Commands (~/.local/bin → $bindir):"
+for f in "$bindir"/*; do
+  [ -f "$f" ] && [ -x "$f" ] || continue
+  name=$(basename "$f")
+  case "$name" in __*|myfunctions) continue ;; esac
+  # Extract first non-shebang comment line as description.
+  desc=$(awk 'NR>1 && /^#/ && !/^#!/ { sub(/^# */, ""); print; exit }' "$f")
+  printf "  %-16s %s\n" "$name" "${desc:-}"
+done
+
+echo ""
+echo "Aliases (from modules/bash/default.bnix):"
+cat <<'EOF'
+  du            dust
+  ls            eza
+  ps            procs
+  v             nvim
+  e             emacsclient (GUI)
+  etui          emacsclient (terminal)
+  gits          git status
+  gitd          git diff
+  gitdc         git diff --cached
+  gita          git add -v . && git status
+  gitp          git push
+EOF

@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Bootstrap a Clojure project with devenv + Doom Emacs tooling.
+# Usage: init-clj <project-name> [--java VERSION]
+set -u
+
+java_version=25
+
+# Help
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  cat <<'EOF'
+init-clj — neil new app + devenv scaffolding
+
+  init-clj <project-name>              create project with JDK 25
+  init-clj <project-name> --java 21    specify JDK version
+EOF
+  exit 0
+fi
+
+# Parse args
+project_name=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --java) shift; java_version="$1" ;;
+    -*) echo "Unknown flag: $1" >&2; exit 1 ;;
+    *) project_name="$1" ;;
+  esac
+  shift
+done
+
+if [ -z "$project_name" ]; then
+  echo "Usage: init-clj <project-name> [--java VERSION]" >&2
+  exit 1
+fi
+
+if [ -d "$project_name" ]; then
+  echo "error: $project_name already exists" >&2
+  exit 1
+fi
+
+# -- neil scaffolds the Clojure project --
+neil new app "$project_name" || exit 1
+
+# -- devenv.yaml --
+cat > "$project_name/devenv.yaml" <<'EOF'
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+EOF
+
+# -- devenv.nix --
+cat > "$project_name/devenv.nix" <<EOF
+{ pkgs, ... }:
+
+{
+  packages = [
+    pkgs.jdk${java_version}
+    pkgs.clojure
+
+    # -- doom emacs :lang clojure -- do not remove --
+    # These are expected by Doom Emacs modules: :lang clojure, :checkers syntax,
+    # +lsp, and :editor format. Removing them will break editor integration.
+    pkgs.clj-kondo    # :checkers syntax (flycheck-clj-kondo)
+    pkgs.clojure-lsp  # +lsp
+    pkgs.neil         # neil.el package management from Emacs
+    pkgs.jet          # jet.el data format conversion
+    pkgs.cljfmt       # :editor format
+    # -- end doom emacs --
+  ];
+
+  enterShell = ''
+    echo "${project_name} dev shell ready — \$(java -version 2>&1 | head -1)"
+  '';
+}
+EOF
+
+# -- dev/user.clj (REPL startup) --
+mkdir -p "$project_name/dev"
+echo "(ns user)" > "$project_name/dev/user.clj"
+
+# -- add :dev alias to deps.edn --
+sed -i 's/{:run-m/{:dev {:extra-paths ["dev"]}\n  :run-m/' "$project_name/deps.edn"
+
+# -- .envrc --
+echo "use devenv" > "$project_name/.envrc"
+
+# -- append devenv entries to .gitignore --
+cat >> "$project_name/.gitignore" <<'EOF'
+
+# devenv / direnv
+.devenv
+.direnv
+.env
+EOF
+
+# -- pre-allow direnv --
+direnv allow "$project_name"
+
+echo ""
+echo "Done! cd $project_name"

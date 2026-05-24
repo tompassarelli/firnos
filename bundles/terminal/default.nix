@@ -15,8 +15,13 @@
     };
     fish.enable = lib.mkOption {
       type = lib.types.bool;
+      default = false;
+      description = "Enable fish (disabled — replaced by bash)";
+    };
+    bash.enable = lib.mkOption {
+      type = lib.types.bool;
       default = true;
-      description = "Enable fish";
+      description = "Enable bash (blesh autosuggestions, fzf, completion)";
     };
     zoxide.enable = lib.mkOption {
       type = lib.types.bool;
@@ -38,6 +43,7 @@
     myConfig.modules.kitty.enable = lib.mkDefault config.myConfig.bundles.terminal.kitty.enable;
     myConfig.modules.ghostty.enable = lib.mkDefault config.myConfig.bundles.terminal.ghostty.enable;
     myConfig.modules.fish.enable = lib.mkDefault config.myConfig.bundles.terminal.fish.enable;
+    myConfig.modules.bash.enable = lib.mkDefault config.myConfig.bundles.terminal.bash.enable;
     myConfig.modules.zoxide.enable = lib.mkDefault config.myConfig.bundles.terminal.zoxide.enable;
     myConfig.modules.atuin.enable = lib.mkDefault config.myConfig.bundles.terminal.atuin.enable;
     myConfig.modules.starship.enable = lib.mkDefault config.myConfig.bundles.terminal.starship.enable;

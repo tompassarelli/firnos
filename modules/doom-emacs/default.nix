@@ -14,9 +14,7 @@ in
         NIXOS_SANS_FONT = config.stylix.fonts.sansSerif.name;
         NIXOS_SERIF_FONT = config.stylix.fonts.serif.name;
       };
-      programs.fish.interactiveShellInit = ''
-        fish_add_path ~/.config/emacs/bin
-      '';
+      home.sessionPath = [ "${config.home.homeDirectory}/.config/emacs/bin" ];
       home.activation.cloneDoomEmacs = config.lib.dag.entryAfter [ "writeBoundary" ] ''
         DOOM_DIR="${config.home.homeDirectory}/.config/emacs"
         

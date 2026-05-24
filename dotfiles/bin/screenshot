@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Print path to the most recent screenshot. Exits non-zero if none exist.
+# Usage: SCREENSHOT=$(screenshot)
+shopt -s nullglob
+files=(~/Pictures/Screenshots/*.png)
+if [ ${#files[@]} -eq 0 ]; then
+  echo "no screenshots in ~/Pictures/Screenshots" >&2
+  exit 1
+fi
+ls -t "${files[@]}" 2>/dev/null | head -1

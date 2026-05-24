@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# WireGuard VPN with kill switch.
+# Usage: vpn on | vpn off                 (default: tokyo)
+#        vpn <iface> on | vpn <iface> off
+set -u
+
+# Helper: clear all kill-switch iptables rules (delete in reverse so
+# line numbers stay valid).
+killswitch_clear() {
+  for linenum in $(sudo iptables -L OUTPUT --line-numbers -n \
+                    | grep "wgon-killswitch" \
+                    | awk '{print $1}' \
+                    | sort -rn); do
+    sudo iptables -D OUTPUT "$linenum"
+  done
+}
+
+# Parse args: either `vpn on/off` or `vpn <iface> on/off`.
+if [ "${1:-}" = "on" ] || [ "${1:-}" = "off" ]; then
+  action="$1"
+  conf="wg-tokyo"
+else
+  action="${2:-}"
+  iface_arg="${1:-}"
+  # Strip leading 'wg-' if present, then add it back.
+  iface=${iface_arg#wg-}
+  iface=${iface#wg}
+  conf="wg-${iface}"
+fi
+
+case "$action" in
+  on)
+    endpoint=$(grep -oP 'Endpoint\s*=\s*\K[\d.]+' "/etc/wireguard/${conf}.conf")
+    killswitch_clear
+    sudo iptables -I OUTPUT -m comment --comment "wgon-killswitch" -d "$endpoint" -j ACCEPT
+    sudo iptables -I OUTPUT -m comment --comment "wgon-killswitch" -d 192.168.0.0/24 -j ACCEPT
+    sudo iptables -A OUTPUT -m comment --comment "wgon-killswitch" -j REJECT
+    echo "Kill switch enabled"
+    sudo wg-quick up "$conf"
+    ;;
+  off)
+    sudo wg-quick down "$conf"
+    killswitch_clear
+    echo "Kill switch disabled"
+    ;;
+  *)
+    echo "vpn [iface] <on|off>  (default iface: tokyo)" >&2
+    exit 1
+    ;;
+esac

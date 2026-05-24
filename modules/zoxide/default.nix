@@ -7,10 +7,10 @@ in
   options.myConfig.modules.zoxide.enable = lib.mkEnableOption "zoxide smart directory jumper";
   config = lib.mkIf config.myConfig.modules.zoxide.enable {
     home-manager.users.${username} = {
-      programs.fish.shellAliases.cd = "z";
+      programs.bash.shellAliases.cd = "z";
       programs.zoxide = {
         enable = true;
-        enableFishIntegration = true;
+        enableBashIntegration = true;
       };
     };
   };

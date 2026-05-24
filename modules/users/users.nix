@@ -12,7 +12,7 @@ in
   };
   config = lib.mkIf config.myConfig.modules.users.enable {
     users.users.${username} = {
-      shell = pkgs.fish;
+      shell = pkgs.bashInteractive;
       isNormalUser = true;
       home = "/home/${username}";
       extraGroups = [ "wheel" "networkmanager" "plugdev" ];
