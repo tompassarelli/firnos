@@ -135,8 +135,8 @@ in
     environment.systemPackages = [ niri-viewport-nav ];
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
     security.chromiumSuidSandbox.enable = true;
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.configFile."niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/niri/config.kdl";
-    };
+    });
   };
 }

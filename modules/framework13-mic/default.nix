@@ -57,7 +57,7 @@ in
         echo "firn-mic-alsa-init: card$card 'Internal Mic Boost' = 0 dB"
       '';
     };
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.firn-mic-ensure = {
         Unit = {
           Description = "Pin Framework 13 mic profile and default source";
@@ -74,6 +74,6 @@ in
           WantedBy = [ "pipewire.service" ];
         };
       };
-    };
+    });
   };
 }
