@@ -28,7 +28,72 @@ raco demod -o "$ZO" scripts/firn.rkt
 
 cat > "$WRAPPER" <<EOF
 #!/usr/bin/env bash
-exec racket "$ZO" "\$@"
+# firn — wrapper for the compiled bytecode at $ZO.
+#
+# Handles Racket version mismatches (typically after a nixpkgs bump
+# rebuilds racket): on mismatch, kick off a background rebuild and serve
+# this invocation from source. A lock file prevents two failure modes
+# during the rebuild window — running a half-written .zo and spawning
+# multiple racing rebuilds.
+
+set -uo pipefail
+
+ZO="$ZO"
+LOCK="$SHARE_DIR/.rebuild-in-progress"
+REPO="\${FIRN_REPO:-\$HOME/code/nixos-config}"
+BUILD_SCRIPT="\$REPO/scripts/firn-build-bin"
+
+# ---- lock handling ----
+if [ -e "\$LOCK" ]; then
+  AGE=\$(( \$(date +%s) - \$(stat -c %Y "\$LOCK" 2>/dev/null || echo 0) ))
+  if [ "\$AGE" -gt 60 ] && [ -t 0 ]; then
+    # Stale lock + interactive — prompt with numbered choices.
+    AGE_STR=\$( [ "\$AGE" -lt 60 ] && echo "\${AGE}s" || echo "\$((AGE / 60))m\$((AGE % 60))s" )
+    echo "firn: rebuild lock at \$LOCK is \$AGE_STR old." >&2
+    echo "      Purpose: prevents racing rebuilds + reading a half-written binary." >&2
+    echo "      Expected rebuild: ~20s. This lock is stale — last rebuild probably crashed." >&2
+    echo "      Last rebuild log: /tmp/firn-rebuild.log" >&2
+    echo "" >&2
+    echo "      1) Run from source (safe, slower — recommended)" >&2
+    echo "      2) Remove lock and try binary (only if rebuild definitely finished)" >&2
+    echo "" >&2
+    printf "      Choose [1/2, default 1]: " >&2
+    read -r CHOICE
+    if [ "\$CHOICE" = "2" ]; then
+      rm -f "\$LOCK"
+      # Fall through to binary attempt below.
+    else
+      exec racket "\$REPO/scripts/firn.rkt" "\$@"
+    fi
+  else
+    # Fresh lock OR non-interactive — silent fallback to source.
+    exec racket "\$REPO/scripts/firn.rkt" "\$@"
+  fi
+fi
+
+# ---- binary attempt ----
+ERR=\$(mktemp)
+trap 'rm -f "\$ERR"' EXIT
+if racket "\$ZO" "\$@" 2>"\$ERR"; then
+  exit 0
+fi
+RC=\$?
+
+# Version mismatch → background rebuild + source fallback.
+if grep -q "version mismatch" "\$ERR"; then
+  if [ -x "\$BUILD_SCRIPT" ]; then
+    echo "firn: compiled binary stale (Racket version mismatch); rebuilding in background, running from source for this call." >&2
+    mkdir -p "\$(dirname "\$LOCK")"
+    touch "\$LOCK"
+    # Detached background rebuild; removes lock on exit (success or failure).
+    nohup sh -c "\"\$BUILD_SCRIPT\" >/tmp/firn-rebuild.log 2>&1; rm -f \"\$LOCK\"" >/dev/null 2>&1 &
+    exec racket "\$REPO/scripts/firn.rkt" "\$@"
+  fi
+fi
+
+# Some other error → surface it and exit with the binary's code.
+cat "\$ERR" >&2
+exit "\$RC"
 EOF
 chmod +x "$WRAPPER"
 
