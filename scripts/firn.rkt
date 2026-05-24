@@ -42,7 +42,8 @@
          (prefix-in u:  "firn-cmds/upgrade.rkt")
          (prefix-in p:  "firn-cmds/platforms.rkt")
          (prefix-in tg: "firn-cmds/tags.rkt")
-         (prefix-in pl: "firn-cmds/pipeline.rkt"))
+         (prefix-in pl: "firn-cmds/pipeline.rkt")
+         (prefix-in fl: "firn-cmds/flake.rkt"))
 
 (define ALL-EDGES
   (append r:node-edges
@@ -57,7 +58,8 @@
           u:node-edges
           p:node-edges
           tg:node-edges
-          pl:node-edges))
+          pl:node-edges
+          fl:node-edges))
 
 (define (lookup-edge node edge)
   (findf (λ (e) (and (equal? (walk-edge-node e) node)
