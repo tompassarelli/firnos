@@ -9,10 +9,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-25.05
+          # Mirror the substituters from modules/nix-settings/default.bnix.
+          # Without these, CI builds every derivation from source; local
+          # builds finish in ~2 min because they fetch pre-built paths.
+          extra_nix_config: |
+            extra-substituters = https://nix-community.cachix.org https://walker.cachix.org https://walker-git.cachix.org https://devenv.cachix.org https://quickshell.cachix.org
+            extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= walker.cachix.org-1:fG8q+uAaMqhsMxWjwvk0IMb4mFPFLqHjuvfwQxE4oJM= walker-git.cachix.org-1:vmC0ocfPWh0S/vRAQGtChuiZBTAe4wiKDeyyXM0/7pM= devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= quickshell.cachix.org-1:vBm3s5tZThc5KDLj6zhHVCMp8wX/AZJwle9wqdi81ts=
       - name: Build whiterabbit
         # palefox is pinned in flake.lock to a github rev — no override
         # needed. (Earlier versions of this workflow overrode it because
