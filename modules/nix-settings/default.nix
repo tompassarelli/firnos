@@ -10,6 +10,7 @@
       max-jobs = "auto";
       cores = 16;
       auto-optimise-store = true;
+      trusted-users = [ "root" "@wheel" ];
       extra-substituters = [
         "https://nix-community.cachix.org"
         "https://walker.cachix.org"
