@@ -7,7 +7,7 @@ in
 {
   options.myConfig.modules.gtk.enable = lib.mkEnableOption "GTK theming configuration";
   config = lib.mkIf config.myConfig.modules.gtk.enable {
-    home-manager.users.${username} = { config, ... }: let
+    home-manager.users.${username} = ({ config, ... }: let
       stylixGtkFont = "${"${config.gtk.font.name} "}${toString config.gtk.font.size}";
       stylixGtkTheme = config.gtk.theme.name;
     in
@@ -27,6 +27,6 @@ in
         gtk-theme-name=${stylixGtkTheme}
       '';
       dconf.settings."org/gnome/desktop/interface".color-scheme = lib.mkForce (if isDark then "prefer-dark" else "prefer-light");
-    };
+    });
   };
 }

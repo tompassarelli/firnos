@@ -7,7 +7,7 @@ in
   options.myConfig.modules.ironbar.enable = lib.mkEnableOption "Ironbar status bar for Wayland";
   config = lib.mkIf config.myConfig.modules.ironbar.enable {
     environment.systemPackages = [ pkgs.unstable.ironbar ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.ironbar = {
         Unit = {
           Description = "Customizable GTK4 status bar for Wayland";
@@ -78,6 +78,6 @@ in
         "ironbar/overview-ironbar.py".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/ironbar/overview-ironbar.py";
         "ironbar/battery.sh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/ironbar/battery.sh";
       };
-    };
+    });
   };
 }

@@ -25,8 +25,8 @@ in
         }
       '')
     ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.configFile."rofi/config.rasi".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/rofi/config.rasi";
-    };
+    });
   };
 }

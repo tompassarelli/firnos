@@ -12,7 +12,7 @@ in
   options.myConfig.modules.lem.enable = lib.mkEnableOption "Lem Common Lisp editor";
   config = lib.mkIf config.myConfig.modules.lem.enable {
     environment.systemPackages = [ lem-ncurses ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.desktopEntries.lem = {
         name = "Lem";
         comment = "Common Lisp Editor";
@@ -22,6 +22,6 @@ in
         categories = [ "Development" "TextEditor" ];
       };
       home.file.".lem".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/lem";
-    };
+    });
   };
 }

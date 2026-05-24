@@ -6,7 +6,7 @@ in
 {
   options.myConfig.modules.atuin.enable = lib.mkEnableOption "atuin shell history sync";
   config = lib.mkIf config.myConfig.modules.atuin.enable {
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       programs.atuin = {
         enable = true;
         enableFishIntegration = true;
@@ -16,6 +16,6 @@ in
           search_mode = "fuzzy";
         };
       };
-    };
+    });
   };
 }

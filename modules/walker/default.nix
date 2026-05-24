@@ -12,7 +12,7 @@ in
         [ -n "$name" ] && niri msg action set-workspace-name "$name"
       '')
     ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       imports = [ inputs.walker.homeManagerModules.default ];
       home.file.".config/elephant/desktopapplications.toml".text = ''
         # Force proper Wayland env vars when launching apps (fixes Steam on niri)
@@ -66,6 +66,6 @@ in
           };
         };
       };
-    };
+    });
   };
 }

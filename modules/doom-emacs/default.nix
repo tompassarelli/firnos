@@ -7,7 +7,7 @@ in
 {
   options.myConfig.modules.doom-emacs.enable = lib.mkEnableOption "Doom Emacs configuration (dotfiles, daemon, secrets)";
   config = lib.mkIf config.myConfig.modules.doom-emacs.enable {
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       home.sessionVariables = {
         DOOMDIR = "${config.home.homeDirectory}/.config/doom";
         NIXOS_MONO_FONT = config.stylix.fonts.monospace.name;
@@ -57,6 +57,6 @@ in
         (base16-theme-define 'stylix-theme base16-stylix-theme-colors)
         (provide-theme 'stylix-theme)
       '';
-    };
+    });
   };
 }

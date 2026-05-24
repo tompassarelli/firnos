@@ -37,12 +37,12 @@ in
         };
       };
     };
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       stylix.targets.firefox = {
         profileNames = [ username ];
         colorTheme.enable = true;
       };
       xdg.configFile."themes".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/themes";
-    };
+    });
   };
 }

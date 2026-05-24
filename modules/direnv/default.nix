@@ -11,7 +11,7 @@ in
       nix-direnv.enable = true;
     };
     environment.systemPackages = [ pkgs.unstable.devenv ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       programs.direnv = {
         enable = true;
         nix-direnv.enable = true;
@@ -25,6 +25,6 @@ in
           eval "$(devenv print-dev-env)"
         }
       '';
-    };
+    });
   };
 }

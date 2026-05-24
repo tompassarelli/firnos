@@ -10,7 +10,7 @@ in
       enable = true;
       defaultEditor = true;
     };
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.configFile = {
         "nvim/init.lua".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/neovim/init.lua";
         "nvim/lua/stylix-colors.lua".text = with config.lib.stylix.colors; ''
@@ -60,6 +60,6 @@ in
           return M
         '';
       };
-    };
+    });
   };
 }

@@ -9,7 +9,7 @@ in
   config = lib.mkIf config.myConfig.modules.quickshell.enable {
     environment.systemPackages = [ inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default ];
     users.users.${username}.extraGroups = [ "input" ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.quickshell = {
         Unit = {
           Description = "Quickshell widget framework";
@@ -59,6 +59,6 @@ in
           }
         '';
       };
-    };
+    });
   };
 }

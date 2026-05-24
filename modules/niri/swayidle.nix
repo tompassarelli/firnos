@@ -5,7 +5,7 @@ let
 in
 {
   config = lib.mkIf config.myConfig.modules.niri.enable {
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.swayidle = {
         Unit = {
           Description = "Idle manager for Wayland";
@@ -21,6 +21,6 @@ in
           WantedBy = [ "niri.service" ];
         };
       };
-    };
+    });
   };
 }

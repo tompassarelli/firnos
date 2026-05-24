@@ -7,7 +7,7 @@ in
   options.myConfig.modules.waybar.enable = lib.mkEnableOption "Waybar status bar for Wayland";
   config = lib.mkIf config.myConfig.modules.waybar.enable {
     environment.systemPackages = with pkgs; [ waybar ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.configFile = {
         "waybar/config" = {
           source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/waybar/config";
@@ -101,6 +101,6 @@ in
           WantedBy = [ "niri.service" ];
         };
       };
-    };
+    });
   };
 }

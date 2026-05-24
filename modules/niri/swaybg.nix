@@ -6,7 +6,7 @@ let
 in
 {
   config = lib.mkIf config.myConfig.modules.niri.enable {
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.swaybg = {
         Unit = {
           Description = "Wayland wallpaper tool";
@@ -22,6 +22,6 @@ in
           WantedBy = [ "niri.service" ];
         };
       };
-    };
+    });
   };
 }

@@ -7,7 +7,7 @@ in
   options.myConfig.modules.wl-gammarelay.enable = lib.mkEnableOption "Wayland gamma/temperature control";
   config = lib.mkIf config.myConfig.modules.wl-gammarelay.enable {
     environment.systemPackages = with pkgs; [ wl-gammarelay-rs ];
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       xdg.configFile."wl-gammarelay/temperature-control".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/wl-gammarelay/temperature-control";
       systemd.user.services.wl-gammarelay = {
         Unit = {
@@ -26,6 +26,6 @@ in
           WantedBy = [ "niri.service" ];
         };
       };
-    };
+    });
   };
 }

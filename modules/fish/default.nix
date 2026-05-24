@@ -7,7 +7,7 @@ in
   options.myConfig.modules.fish.enable = lib.mkEnableOption "Fish shell configuration";
   config = lib.mkIf config.myConfig.modules.fish.enable {
     programs.fish.enable = true;
-    home-manager.users.${username} = { config, ... }: {
+    home-manager.users.${username} = ({ config, ... }: {
       programs.fish = {
         enable = true;
         shellAliases = {
@@ -44,6 +44,6 @@ in
         name = "fish/functions/${f}";
         value.source = config.lib.file.mkOutOfStoreSymlink "${functionsDir}/${f}";
       }) functionFiles);
-    };
+    });
   };
 }
