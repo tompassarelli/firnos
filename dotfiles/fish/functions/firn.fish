@@ -1,7 +1,9 @@
 function firn --description "FirnOS config management CLI"
-  # Try the compiled binary first; if it fails with a Racket version
-  # mismatch (typically after a nixpkgs bump rebuilt racket), auto-rebuild
-  # and retry. Otherwise pass through whatever error the binary printed.
+  # Fast path: run the compiled binary (~140ms). If it fails with a Racket
+  # version mismatch (typically after a nixpkgs bump rebuilt racket), kick
+  # the rebuild off in the BACKGROUND and serve THIS invocation from source
+  # (~1.3s). User waits seconds instead of 20s; next invocation is fast
+  # again because the background rebuild has finished by then.
   #
   # Repo location: $FIRN_REPO env var wins (consistent with firn-build,
   # firn-validate, etc.), else default to ~/code/nixos-config.
@@ -11,10 +13,14 @@ function firn --description "FirnOS config management CLI"
       return 0
     end
     if grep -q "version mismatch" /tmp/firn-bin.err
-      echo "firn: compiled binary is stale (Racket version mismatch). Rebuilding..." >&2
       if test -x $repo/scripts/firn-build-bin
-        $repo/scripts/firn-build-bin >&2
-        ~/.local/bin/firn $argv
+        echo "firn: compiled binary stale (Racket version mismatch); rebuilding in background, running from source for this call." >&2
+        # Background rebuild — detached, logs to /tmp/firn-rebuild.log so the
+        # user can check on it if it ever fails silently.
+        nohup $repo/scripts/firn-build-bin >/tmp/firn-rebuild.log 2>&1 &
+        disown
+        # Foreground: serve this invocation from source.
+        racket $repo/scripts/firn.rkt $argv
         return
       end
     end
