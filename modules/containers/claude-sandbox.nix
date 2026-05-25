@@ -1,10 +1,9 @@
 { pkgs }:
+
 pkgs.dockerTools.buildLayeredImage {
   name = "claude-sandbox";
   tag = "latest";
-
   contents = with pkgs; [
-    # Shell essentials
     bashInteractive
     coreutils
     gnused
@@ -16,19 +15,11 @@ pkgs.dockerTools.buildLayeredImage {
     gnutar
     gzip
     xz
-
-    # Git
     git
     gh
     openssh
-
-    # Nix package manager (so Claude can install packages)
     nix
-
-    # Claude Code
     claude-code
-
-    # Dev tools
     nodejs
     python3
     ripgrep
@@ -36,7 +27,6 @@ pkgs.dockerTools.buildLayeredImage {
     curl
     jq
   ];
-
   extraCommands = ''
     mkdir -p home/dev/.claude
     mkdir -p home/dev/.config/nix
@@ -56,7 +46,6 @@ pkgs.dockerTools.buildLayeredImage {
     cp ${./CLAUDE.md} work/CLAUDE.md
     chmod 644 work/CLAUDE.md
   '';
-
   config = {
     Cmd = [ "/bin/bash" ];
     WorkingDir = "/work";
