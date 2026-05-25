@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # firn-build-bin — compile scripts/firn.rkt to a small fast binary.
 #
-# Uses `raco demod` (whole-program optimizer + dead-code elimination) to
-# produce a ~1.3 MB bytecode file that loads in ~80 ms. Installs:
-#   ~/.local/bin/firn         — wrapper shell script (calls racket on the .zo)
-#   ~/.local/share/firn/firn.zo — compiled bytecode
+# Per-racket cache: the .zo gets stored at
+#   ~/.local/share/firn/<racket-store-hash>/firn.zo
+# keyed by a hash of the racket binary's resolved store path. Two
+# rackets coexisting (e.g. system racket-8.18 + beagle dev-shell
+# racket-9.1) each get their own .zo and never thrash each other.
+# Switching contexts never triggers a rebuild after the first build
+# per racket.
 #
-# Why not `raco exe`? It works (single 6 MB binary, ~110 ms cold) but produces
-# a noticeably larger artifact and is slower than demod.
-#
-# Why not `raco distribute`? It's for shipping to machines *without* Racket;
-# bundles the whole runtime as a 50 MB directory. We have Racket installed.
+# Uses `raco demod` (whole-program optimizer + dead-code elimination)
+# to produce a ~1.3 MB bytecode file that loads in ~80 ms.
 
 set -euo pipefail
 
@@ -21,66 +21,86 @@ BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
 SHARE_DIR="${SHARE_DIR:-$HOME/.local/share/firn}"
 mkdir -p "$BIN_DIR" "$SHARE_DIR"
 
-ZO="$SHARE_DIR/firn.zo"
+# ---- per-racket cache key ----
+# Resolve the racket binary all the way through the nix store, so two
+# rackets at different store paths are distinguishable even if they
+# share a version string. Use first 12 chars of sha1 as the dir name.
+if ! command -v racket >/dev/null 2>&1; then
+  echo "firn-build-bin: racket not found on PATH" >&2
+  exit 1
+fi
+RACKET_BIN="$(readlink -f "$(command -v racket)")"
+RACKET_HASH="$(printf '%s' "$RACKET_BIN" | sha1sum | cut -c1-12)"
+RACKET_VERSION="$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+' || echo unknown)"
+
+ZO_DIR="$SHARE_DIR/$RACKET_HASH"
+ZO="$ZO_DIR/firn.zo"
 WRAPPER="$BIN_DIR/firn"
+mkdir -p "$ZO_DIR"
 
-# firn.rkt requires beagle libraries. If beagle has stale .zo files
-# (typical after a nixpkgs racket bump), `raco demod` below will fail
-# loading them. Detect-and-refresh up front: compare current racket
-# version against a marker; if changed, nuke beagle's compiled/ dirs
-# and run raco setup so demod can read fresh bytecode.
-RACKET_VERSION="$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+')"
-MARKER="$SHARE_DIR/racket-version"
-STORED_VERSION="$(cat "$MARKER" 2>/dev/null || echo "")"
+echo "firn-build-bin: racket $RACKET_VERSION at $RACKET_BIN"
+echo "firn-build-bin: cache key $RACKET_HASH"
 
-if [ "$RACKET_VERSION" != "$STORED_VERSION" ] && [ -d "$BEAGLE_PATH" ]; then
-  echo "firn-build-bin: racket version changed (was: ${STORED_VERSION:-unknown}, now: $RACKET_VERSION) → recompiling beagle libs"
-  find "$BEAGLE_PATH" -name compiled -type d -exec rm -rf {} + 2>/dev/null || true
+# ---- ensure beagle libs compiled for THIS racket ----
+# `raco demod` reads source first but follows .zo references in the
+# beagle source tree. Stale .zos from another racket version cause it
+# to error. raco setup recompiles into compiled/<version>/, which is
+# racket-version-keyed natively, so multiple rackets coexist there.
+if [ -d "$BEAGLE_PATH" ]; then
+  echo "firn-build-bin: ensuring beagle libs compiled for racket $RACKET_VERSION"
   raco setup --pkgs beagle-lib beagle-test beagle-doc beagle 2>&1 \
-    | grep -E "error|warning|done|--- summary" \
+    | grep -E "error|warning|--- summary" \
     | head -10 \
     || true
-  echo "$RACKET_VERSION" > "$MARKER"
 fi
 
 echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
 raco demod -o "$ZO" scripts/firn.rkt
 
+# ---- wrapper ----
+# Embeds the cache key + path so the wrapper finds its own .zo. If
+# the racket on PATH at runtime resolves to a different store hash,
+# the wrapper rebuilds (one-time, in the new cache dir).
 cat > "$WRAPPER" <<EOF
 #!/usr/bin/env bash
-# firn — wrapper for the compiled bytecode at $ZO.
+# firn — wrapper for compiled bytecode.
 #
-# Strategy: detect Racket version change at startup (cheap file read,
-# sub-millisecond), do a one-time foreground recompile when it changes,
-# then run normally. No lock files, no background processes, no source
-# fallback. The recompile takes ~20s but only fires on the first firn
-# invocation after a racket-version bump (rare event).
+# Per-racket cache key: the .zo lives at SHARE_DIR/<racket-store-hash>/firn.zo.
+# If the current racket's store hash matches what this wrapper was built
+# against, exec the cached .zo. Otherwise rebuild (one-time per racket).
 
 set -euo pipefail
 
-ZO="$ZO"
-MARKER="$SHARE_DIR/racket-version"
+SHARE_DIR="$SHARE_DIR"
+BUILT_RACKET_HASH="$RACKET_HASH"
+BUILT_RACKET_VERSION="$RACKET_VERSION"
 REPO="\${FIRN_REPO:-\$HOME/code/nixos-config}"
 BUILD_SCRIPT="\$REPO/scripts/firn-build-bin"
 
-# ---- racket version check ----
-RACKET_VERSION="\$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+')"
-STORED_VERSION="\$(cat "\$MARKER" 2>/dev/null || echo "")"
+if ! command -v racket >/dev/null 2>&1; then
+  echo "firn: racket not on PATH" >&2
+  exit 1
+fi
+CURRENT_RACKET_BIN="\$(readlink -f "\$(command -v racket)")"
+CURRENT_RACKET_HASH="\$(printf '%s' "\$CURRENT_RACKET_BIN" | sha1sum | cut -c1-12)"
+ZO="\$SHARE_DIR/\$CURRENT_RACKET_HASH/firn.zo"
 
-if [ "\$RACKET_VERSION" != "\$STORED_VERSION" ]; then
-  echo "firn: racket version changed (\${STORED_VERSION:-unknown} → \$RACKET_VERSION); recompiling firn + beagle libs (~20s, one-time)..." >&2
+if [ ! -f "\$ZO" ]; then
+  CURRENT_RACKET_VERSION="\$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+' || echo unknown)"
+  echo "firn: first run under racket \$CURRENT_RACKET_VERSION (\$CURRENT_RACKET_BIN); building cache (~20s, one-time per racket)..." >&2
   if [ ! -x "\$BUILD_SCRIPT" ]; then
-    echo "firn: build script missing at \$BUILD_SCRIPT — cannot self-heal." >&2
+    echo "firn: build script missing at \$BUILD_SCRIPT — cannot self-build." >&2
     exit 1
   fi
   "\$BUILD_SCRIPT" >&2
-  # firn-build-bin updates the marker itself; no need to write here.
 fi
 
-# ---- run ----
 exec racket "\$ZO" "\$@"
 EOF
 chmod +x "$WRAPPER"
+
+# ---- one-time cleanup: drop the legacy single-marker file if present ----
+rm -f "$SHARE_DIR/racket-version"
 
 ls -lh "$ZO" "$WRAPPER" | awk '{print "  ", $5, $9}'
 echo "firn-build-bin: done. Make sure $BIN_DIR is on PATH."
