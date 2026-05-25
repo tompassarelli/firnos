@@ -39,26 +39,33 @@ in
         ];
         bashrcExtra = ''
           
-          # vi-mode (use 'set -o emacs' to switch back temporarily)
-          set -o vi
+          # Readline-dependent setup. Skip cleanly on bash builds without
+          # readline (pkgs.bash in nix dev shells) — `set -o vi`, `bind`,
+          # `complete`, and the fzf bindings all need readline. The cd-to-home
+          # block below is intentionally outside this gate.
+          if [[ $- == *i* ]] && type bind >/dev/null 2>&1; then
+            # vi-mode (use 'set -o emacs' to switch back temporarily)
+            set -o vi
           
-          # Bind ! and !$ to insert last command / last arg (vi-mode + emacs-mode)
-          bind -m vi-insert '"!":"\e_"'
-          bind -m vi-insert '"$":"\e."'
+            # Bind ! and !$ to insert last command / last arg
+            bind -m vi-insert '"!":"\e_"'
+            bind -m vi-insert '"$":"\e."'
           
-          # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)
-          if command -v fzf-share >/dev/null 2>&1; then
-            source "$(fzf-share)/key-bindings.bash"
-            source "$(fzf-share)/completion.bash"
+            # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)
+            if command -v fzf-share >/dev/null 2>&1; then
+              source "$(fzf-share)/key-bindings.bash"
+              source "$(fzf-share)/completion.bash"
+            fi
+          
+            # blesh: fish-style autosuggestions + syntax highlighting
+            if [ -f /run/current-system/sw/share/blesh/ble.sh ]; then
+              source /run/current-system/sw/share/blesh/ble.sh --noattach
+              ble-attach
+            fi
           fi
           
-          # blesh: fish-style autosuggestions + syntax highlighting
-          if [ -f /run/current-system/sw/share/blesh/ble.sh ]; then
-            source /run/current-system/sw/share/blesh/ble.sh --noattach
-            ble-attach
-          fi
-          
-          # Change to home dir on interactive start (skip in Emacs vterm)
+          # Change to home dir on interactive start (skip in Emacs vterm).
+          # No readline dep, runs even in stripped bash.
           if [ -z "$INSIDE_EMACS" ] && [ -t 0 ]; then
             case "$PWD" in
               "$HOME"*) ;;
