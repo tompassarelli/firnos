@@ -14,6 +14,7 @@ in
           window-padding-x = 6;
           window-padding-y = 4;
           app-notifications = "no-clipboard-copy";
+          command = "/run/current-system/sw/bin/bash";
         };
       };
     };
