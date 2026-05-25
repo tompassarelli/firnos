@@ -8,4 +8,4 @@
    :config
      (lib/mkIf config.myConfig.modules.racket.enable
        {
-        :environment.systemPackages [pkgs.unstable.racket-minimal]})})
+        :environment.systemPackages [pkgs.unstable.racket]})})

@@ -46,12 +46,32 @@ echo "firn-build-bin: cache key $RACKET_HASH"
 # beagle source tree. Stale .zos from another racket version cause it
 # to error. raco setup recompiles into compiled/<version>/, which is
 # racket-version-keyed natively, so multiple rackets coexist there.
+#
+# Only the packages firn actually needs: beagle-lib (the runtime
+# library scripts/firn.rkt imports) and beagle (the CLI scripts).
+# beagle-test and beagle-doc are intentionally excluded — they pull
+# in collections firn doesn't use and have failed unrelated to
+# anything firn cares about.
 if [ -d "$BEAGLE_PATH" ]; then
   echo "firn-build-bin: ensuring beagle libs compiled for racket $RACKET_VERSION"
-  raco setup --pkgs beagle-lib beagle-test beagle-doc beagle 2>&1 \
+  raco setup --pkgs beagle-lib beagle 2>&1 \
     | grep -E "error|warning|--- summary" \
     | head -10 \
     || true
+fi
+
+# Sanity-check that this racket actually has `raco demod`. racket-minimal
+# doesn't ship it. If missing, fail loudly with the recovery path.
+if ! raco help demod >/dev/null 2>&1; then
+  echo "" >&2
+  echo "firn-build-bin: ERROR — \`raco demod\` not available in this racket." >&2
+  echo "  This racket is missing the compiler-lib package (likely racket-minimal)." >&2
+  echo "  firn needs full racket: install pkgs.racket (not pkgs.racket-minimal)" >&2
+  echo "  in modules/racket/default.bnix and rebuild." >&2
+  echo "" >&2
+  echo "  Bypass for now (skip firn entirely):" >&2
+  echo "    cd ~/code/nixos-config && sudo nixos-rebuild switch --flake .#whiterabbit" >&2
+  exit 1
 fi
 
 echo "firn-build-bin: compiling scripts/firn.rkt → $ZO"
