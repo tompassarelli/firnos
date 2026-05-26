@@ -43,24 +43,12 @@ PanelWindow {
             font.family: colors.fontFamily
             font.pointSize: 10
 
-            property bool hovered: false
-            property string fmt: hovered ? "h:mm AP - ddd yyyy/MM/dd" : "h:mm AP"
-
             Timer {
                 interval: 1000
                 running: true
                 repeat: true
                 triggeredOnStart: true
-                onTriggered: clock.text = Qt.formatDateTime(new Date(), clock.fmt)
-            }
-
-            onFmtChanged: text = Qt.formatDateTime(new Date(), fmt)
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: clock.hovered = true
-                onExited: clock.hovered = false
+                onTriggered: clock.text = Qt.formatDateTime(new Date(), "h:mm AP - ddd yyyy/MM/dd")
             }
         }
 

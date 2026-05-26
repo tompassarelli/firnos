@@ -13,11 +13,6 @@
       default = true;
       description = "Enable ghostty";
     };
-    fish.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Enable fish (disabled — replaced by bash)";
-    };
     bash.enable = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -42,7 +37,6 @@
   config = lib.mkIf config.myConfig.bundles.terminal.enable {
     myConfig.modules.kitty.enable = lib.mkDefault config.myConfig.bundles.terminal.kitty.enable;
     myConfig.modules.ghostty.enable = lib.mkDefault config.myConfig.bundles.terminal.ghostty.enable;
-    myConfig.modules.fish.enable = lib.mkDefault config.myConfig.bundles.terminal.fish.enable;
     myConfig.modules.bash.enable = lib.mkDefault config.myConfig.bundles.terminal.bash.enable;
     myConfig.modules.zoxide.enable = lib.mkDefault config.myConfig.bundles.terminal.zoxide.enable;
     myConfig.modules.atuin.enable = lib.mkDefault config.myConfig.bundles.terminal.atuin.enable;

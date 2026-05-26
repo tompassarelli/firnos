@@ -56,6 +56,9 @@ Launch:
   gjoa dev                 mach build, detached
   gjoa dev -f              mach build, foreground
 
+Status:
+  gjoa status              operational dashboard (versions, CVEs, budget)
+
 Dev loop:
   gjoa import              sync src/gjoa/ → engine/ (run before mach build)
   gjoa build [faster|…]    mach build in engine/
@@ -64,13 +67,20 @@ Dev loop:
 
 Tests:
   gjoa test [path|…]       bun unit tests
-  gjoa test:integration    Marionette tests against the binary
+  gjoa test:integration    Marionette tests against mach binary
+  gjoa test:integration:nix   same suite against result/bin/gjoa (nix)
 
 Misc:
   gjoa icons               regenerate icons from assets/gjoa.svg
   gjoa clean               mach clobber (wipe objdir)
 EOF
     ;;
+
+  # ── operational dashboard ───────────────────────────────────────────────
+  # Fresh pulls every call: version delta vs Mozilla/nixpkgs/Zen/LibreWolf,
+  # CVE count against your pin, build state, weekly rebuild budget, what
+  # command to run next. ~1-2 sec. No caching.
+  status) shift; direnv exec "$root" env -C "$root" bun tools/scripts/status.ts "$@" ;;
 
   # ── dev-loop verbs ──────────────────────────────────────────────────────
   build) shift; direnv exec "$root" env -C "$root/engine" ./mach build "$@" ;;
@@ -81,6 +91,7 @@ EOF
   # ── tests + misc ────────────────────────────────────────────────────────
   test) shift; direnv exec "$root" env -C "$root" bun test "$@" ;;
   test:integration) direnv exec "$root" env -C "$root" bun run test:integration ;;
+  test:integration:nix) direnv exec "$root" env -C "$root" bun run test:integration:nix ;;
   icons) direnv exec "$root" env -C "$root" bun run icons ;;
   clean) direnv exec "$root" env -C "$root/engine" ./mach clobber ;;
 

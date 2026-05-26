@@ -54,9 +54,9 @@ Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users)
 - Assume new modules only get added to whiterabbit host.
 - New files (both `.bnix` and `.nix`) must be git-added before nix can see them (flake uses git tree).
 
-## Fish Functions
+## Shell scripts
 
-Fish functions live in `dotfiles/fish/functions/` as individual `.fish` files, symlinked via out-of-store symlinks. `modules/fish/fish.nix` auto-discovers them.
+Custom command scripts live in `dotfiles/bin/` as plain executable shell scripts (one file per command). The `modules/bash/` module puts that directory on `PATH`. Previously these were fish functions under `dotfiles/fish/functions/`; the migration to bash + bin scripts is complete and fish has been removed from this repo.
 
 `firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). It has two surfaces:
 

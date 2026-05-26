@@ -39,6 +39,12 @@ in
         ];
         bashrcExtra = ''
           
+          # Ensure ~/.local/bin (where dotfiles/bin is symlinked) is on PATH.
+          case ":$PATH:" in
+            *":$HOME/.local/bin:"*) ;;
+            *) export PATH="$HOME/.local/bin:$PATH" ;;
+          esac
+          
           # Readline-dependent setup. Skip cleanly on bash builds without
           # readline (pkgs.bash in nix dev shells) — `set -o vi`, `bind`,
           # `complete`, and the fzf bindings all need readline. The cd-to-home
@@ -46,10 +52,6 @@ in
           if [[ $- == *i* ]] && type bind >/dev/null 2>&1; then
             # vi-mode (use 'set -o emacs' to switch back temporarily)
             set -o vi
-          
-            # Bind ! and !$ to insert last command / last arg
-            bind -m vi-insert '"!":"\e_"'
-            bind -m vi-insert '"$":"\e."'
           
             # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)
             if command -v fzf-share >/dev/null 2>&1; then

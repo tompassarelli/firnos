@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# firn — wrapper for compiled bytecode.
+#
+# Per-racket cache key: the .zo lives at SHARE_DIR/<racket-store-hash>/firn.zo.
+# If the current racket's store hash matches what this wrapper was built
+# against, exec the cached .zo. Otherwise rebuild (one-time per racket).
+
+set -euo pipefail
+
+SHARE_DIR="/home/tom/.local/share/firn"
+BUILT_RACKET_HASH="5d6dfd9cc066"
+BUILT_RACKET_VERSION="9.1"
+REPO="${FIRN_REPO:-$HOME/code/nixos-config}"
+BUILD_SCRIPT="$REPO/scripts/firn-build-bin"
+
+if ! command -v racket >/dev/null 2>&1; then
+  echo "firn: racket not on PATH" >&2
+  exit 1
+fi
+CURRENT_RACKET_BIN="$(readlink -f "$(command -v racket)")"
+CURRENT_RACKET_HASH="$(printf '%s' "$CURRENT_RACKET_BIN" | sha1sum | cut -c1-12)"
+ZO="$SHARE_DIR/$CURRENT_RACKET_HASH/firn.zo"
+
+if [ ! -f "$ZO" ]; then
+  CURRENT_RACKET_VERSION="$(racket --version 2>/dev/null | grep -oP 'v\K[0-9.]+' || echo unknown)"
+  echo "firn: first run under racket $CURRENT_RACKET_VERSION ($CURRENT_RACKET_BIN); building cache (~20s)..." >&2
+  echo "firn: subsequent runs will be instant — you'll only see this again when racket upgrades." >&2
+  if [ ! -x "$BUILD_SCRIPT" ]; then
+    echo "firn: build script missing at $BUILD_SCRIPT — cannot self-build." >&2
+    exit 1
+  fi
+  "$BUILD_SCRIPT" >&2
+fi
+
+exec racket "$ZO" "$@"
