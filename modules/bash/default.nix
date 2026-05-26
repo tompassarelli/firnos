@@ -7,7 +7,7 @@ in
   options.myConfig.modules.bash.enable = lib.mkEnableOption "Bash shell configuration";
   config = lib.mkIf config.myConfig.modules.bash.enable {
     programs.bash.completion.enable = true;
-    environment.systemPackages = with pkgs; [ fzf blesh ];
+    environment.systemPackages = with pkgs; [ fzf ];
     home-manager.users.${username} = ({ config, ... }: {
       home.file.".local/bin".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/bin";
       programs.bash = {
@@ -53,16 +53,17 @@ in
             # vi-mode (use 'set -o emacs' to switch back temporarily)
             set -o vi
           
+            # Ctrl+L → clear screen, in every keymap. vi-mode doesn't
+            # bind this by default (it's an emacs-mode default), so
+            # set it explicitly in both vi-insert and vi-command.
+            bind -m emacs       '"\C-l": clear-screen'
+            bind -m vi-insert   '"\C-l": clear-screen'
+            bind -m vi-command  '"\C-l": clear-screen'
+          
             # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)
             if command -v fzf-share >/dev/null 2>&1; then
               source "$(fzf-share)/key-bindings.bash"
               source "$(fzf-share)/completion.bash"
-            fi
-          
-            # blesh: fish-style autosuggestions + syntax highlighting
-            if [ -f /run/current-system/sw/share/blesh/ble.sh ]; then
-              source /run/current-system/sw/share/blesh/ble.sh --noattach
-              ble-attach
             fi
           fi
           

@@ -1,12 +1,11 @@
 #lang beagle/nix
 (ns modules.bash)
 
-;; Bash interactive shell with fish-like ergonomics:
-;;   - bash-completion       — fish-quality completion
-;;   - blesh (bash-line-editor) — autosuggestions + syntax highlighting
+;; Bash interactive shell:
+;;   - bash-completion        — completion
 ;;   - fzf with bash bindings — fuzzy history (Ctrl-R) + dir nav (Alt-C)
-;;   - shellAliases           — same set we had under fish
-;;   - dotfiles/bin on PATH   — custom commands (formerly fish functions)
+;;   - shellAliases           — short command aliases
+;;   - dotfiles/bin on PATH   — custom commands
 ;;
 ;; Vi-mode, history options, and prompt are configured via bashrcExtra.
 ;; The dotfiles/bin/ scripts are symlinked rather than copied so live
@@ -21,7 +20,7 @@
      (lib/mkIf config.myConfig.modules.bash.enable
        {
         :programs.bash {:completion.enable true}
-        :environment.systemPackages (with pkgs [fzf blesh])
+        :environment.systemPackages (with pkgs [fzf])
 
         :home-manager.users
           {username
@@ -72,16 +71,17 @@
                     "  # vi-mode (use 'set -o emacs' to switch back temporarily)"
                     "  set -o vi"
                     ""
+                    "  # Ctrl+L → clear screen, in every keymap. vi-mode doesn't"
+                    "  # bind this by default (it's an emacs-mode default), so"
+                    "  # set it explicitly in both vi-insert and vi-command."
+                    "  bind -m emacs       '\"\\C-l\": clear-screen'"
+                    "  bind -m vi-insert   '\"\\C-l\": clear-screen'"
+                    "  bind -m vi-command  '\"\\C-l\": clear-screen'"
+                    ""
                     "  # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)"
                     "  if command -v fzf-share >/dev/null 2>&1; then"
                     "    source \"$(fzf-share)/key-bindings.bash\""
                     "    source \"$(fzf-share)/completion.bash\""
-                    "  fi"
-                    ""
-                    "  # blesh: fish-style autosuggestions + syntax highlighting"
-                    "  if [ -f /run/current-system/sw/share/blesh/ble.sh ]; then"
-                    "    source /run/current-system/sw/share/blesh/ble.sh --noattach"
-                    "    ble-attach"
                     "  fi"
                     "fi"
                     ""
