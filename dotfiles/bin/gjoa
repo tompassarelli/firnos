@@ -6,6 +6,19 @@ root="$HOME/code/gjoa"
 nix_bin="$root/result/bin/gjoa"
 mach_bin="$root/engine/obj-x86_64-pc-linux-gnu/dist/bin/gjoa"
 
+# ── TEMPORARY: in-process security gate suppression ──────────────────────
+# REMOVE AFTER 2026-06-02 REBUILD.
+#
+# The 2026-05-26 build pins Firefox 151.0.1; Mozilla shipped 151.0.2 the
+# next day. The in-process gate (src/gjoa/chrome/src/security/index.ts)
+# quits on any newer version. The TS file is now softened — patch-behind
+# is a warn, not a quit — but that change is sealed in omni.ja and only
+# takes effect after the next Sunday nix build (2026-06-02).
+#
+# Until then, set GJOA_ALLOW_INSECURE=1 here so daily launches don't hit
+# the modal. `gjoa status` will still flag the patch-behind state.
+export GJOA_ALLOW_INSECURE=1
+
 if [ ! -d "$root" ]; then
   echo "gjoa: $root not found" >&2
   exit 1
@@ -81,6 +94,11 @@ EOF
   # CVE count against your pin, build state, weekly rebuild budget, what
   # command to run next. ~1-2 sec. No caching.
   status) shift; direnv exec "$root" env -C "$root" bun tools/scripts/status.ts "$@" ;;
+
+  # ── preflight gate (mandatory before any nix/full-mach build) ───────────
+  # Runs every gate mechanically. Exits non-zero if any fails. Claude must
+  # show this output before proposing a rebuild — CLAUDE.md Rule #0.
+  preflight) shift; direnv exec "$root" env -C "$root" bun tools/scripts/preflight.ts "$@" ;;
 
   # ── dev-loop verbs ──────────────────────────────────────────────────────
   build) shift; direnv exec "$root" env -C "$root/engine" ./mach build "$@" ;;

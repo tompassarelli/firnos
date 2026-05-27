@@ -15,6 +15,7 @@ in
           window-padding-y = 4;
           app-notifications = "no-clipboard-copy";
           command = "/run/current-system/sw/bin/bash";
+          working-directory = "home";
         };
       };
     };
