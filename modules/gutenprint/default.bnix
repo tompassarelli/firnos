@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.gutenprint.enable
          (lib.mkEnableOption "Gutenprint printer drivers")
          :config

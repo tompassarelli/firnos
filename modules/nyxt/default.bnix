@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.nyxt.enable
          (lib.mkEnableOption "Enable Nyxt browser")
          :options.myConfig.modules.nyxt.default

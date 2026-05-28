@@ -2,24 +2,24 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 firn-mic
-                 (pkgs.writeShellApplication {:name
-                                              "firn-mic"
-                                              :runtimeInputs
-                                              (with pkgs
-                                                    [wireplumber
-                                                     pipewire
-                                                     jq
-                                                     python3
-                                                     coreutils
-                                                     gnugrep
-                                                     gawk
-                                                     gnused])
-                                              :text
-                                              (builtins.readFile (p "./firn-mic"))}))
+(module [config lib pkgs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              firn-mic
+              (pkgs.writeShellApplication {:name
+                                           "firn-mic"
+                                           :runtimeInputs
+                                           (with pkgs
+                                                 [wireplumber
+                                                  pipewire
+                                                  jq
+                                                  python3
+                                                  coreutils
+                                                  gnugrep
+                                                  gawk
+                                                  gnused])
+                                           :text
+                                           (builtins.readFile (p "./firn-mic"))})]
              {:options.myConfig.modules.framework13-mic.enable
               (lib.mkEnableOption "Framework 13 AMD AI 300 mic fix + firn-mic CLI (forces UCM profile that exposes the actual internal mic; see `firn-mic doctor`)")
               :config
@@ -49,7 +49,7 @@
                           (ms "set -eu\n# Find the card index of the ALC285 codec (stable across reboots).\ncard=$(grep -l 'Realtek ALC285' /proc/asound/card*/codec* 2>/dev/null \\\n        | sed -nE 's|.*/card([0-9]+)/.*|\\1|p' | head -1)\nif [ -z \"$card\" ]; then\n  echo \"firn-mic-alsa-init: ALC285 codec not found, skipping\" >&2\n  exit 0\nfi\namixer -c \"$card\" set 'Internal Mic Boost' 0 >/dev/null\necho \"firn-mic-alsa-init: card$card 'Internal Mic Boost' = 0 dB\"\n")}
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:systemd.user.services.firn-mic-ensure
                                    {:Unit
                                     {:Description

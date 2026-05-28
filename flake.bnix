@@ -52,40 +52,40 @@
   :gjoa
   {:url "github:tompassarelli/gjoa"}}
  :outputs
- (module (params self
-                 nixpkgs
-                 nixpkgs-unstable
-                 nixpkgs-master
-                 home-manager
-                 nix-darwin
-                 stylix
-                 sops-nix
-                 nur
-                 lem
-                 elephant
-                 walker
-                 kanata-git
-                 glide
-                 quickshell
-                 zen-browser
-                 palefox
-                 gjoa
-                 ...)
-         (let (<- firnModules
-                  (p "./modules")
-                  firnBundles
-                  (p "./bundles")
-                  firnBundlesDarwin
-                  (p "./bundles-darwin"))
+ (module [self
+          nixpkgs
+          nixpkgs-unstable
+          nixpkgs-master
+          home-manager
+          nix-darwin
+          stylix
+          sops-nix
+          nur
+          lem
+          elephant
+          walker
+          kanata-git
+          glide
+          quickshell
+          zen-browser
+          palefox
+          gjoa
+          ...]
+         (let [firnModules
+               (p "./modules")
+               firnBundles
+               (p "./bundles")
+               firnBundlesDarwin
+               (p "./bundles-darwin")]
               {:lib.mkSystem
-               (module (params hostname
-                               hostConfig
-                               hardwareConfig
-                               (system "x86_64-linux")
-                               (extraModules [])
-                               (extraOverlays [])
-                               (extraSpecialArgs {})
-                               ...)
+               (module [hostname
+                        hostConfig
+                        hardwareConfig
+                        (system "x86_64-linux")
+                        (extraModules [])
+                        (extraOverlays [])
+                        (extraSpecialArgs {})
+                        ...]
                        (nixpkgs.lib.nixosSystem {:system
                                                  system
                                                  :specialArgs
@@ -115,9 +115,9 @@
                                                       home-manager.nixosModules.home-manager
                                                       sops-nix.nixosModules.sops
                                                       hostConfig
-                                                      (module (params config
-                                                                      pkgs
-                                                                      ...)
+                                                      (module [config
+                                                               pkgs
+                                                               ...]
                                                               {:networking.hostName
                                                                hostname
                                                                :sops.age.keyFile
@@ -133,24 +133,24 @@
                                                                      [sops
                                                                       age])
                                                                :imports
-                                                               (let (<- moduleDirs
-                                                                        (builtins.attrNames (nixpkgs.lib.filterAttrs (fn (params n)
-                                                                                                                         (fn (params v)
-                                                                                                                             (== v
-                                                                                                                                 "directory")))
-                                                                                              (builtins.readDir (p "./modules"))))
-                                                                        bundleDirs
-                                                                        (builtins.attrNames (nixpkgs.lib.filterAttrs (fn (params n)
-                                                                                                                         (fn (params v)
-                                                                                                                             (== v
-                                                                                                                                 "directory")))
-                                                                                              (builtins.readDir (p "./bundles")))))
-                                                                    (++ (builtins.map (fn (params m)
+                                                               (let [moduleDirs
+                                                                     (builtins.attrNames (nixpkgs.lib.filterAttrs (fn [n]
+                                                                                                                      (fn [v]
+                                                                                                                          (== v
+                                                                                                                              "directory")))
+                                                                                           (builtins.readDir (p "./modules"))))
+                                                                     bundleDirs
+                                                                     (builtins.attrNames (nixpkgs.lib.filterAttrs (fn [n]
+                                                                                                                      (fn [v]
+                                                                                                                          (== v
+                                                                                                                              "directory")))
+                                                                                           (builtins.readDir (p "./bundles"))))]
+                                                                    (++ (builtins.map (fn [m]
                                                                                           (s firnModules
                                                                                              "/"
                                                                                              m))
                                                                           moduleDirs)
-                                                                        (builtins.map (fn (params b)
+                                                                        (builtins.map (fn [b]
                                                                                           (s firnBundles
                                                                                              "/"
                                                                                              b))
@@ -183,8 +183,8 @@
                                                                  :nixpkgs.config.allowUnfree
                                                                  true}}})
                                                       {:nixpkgs.overlays
-                                                       (++ [(fn (params final)
-                                                                (fn (params prev)
+                                                       (++ [(fn [final]
+                                                                (fn [prev]
                                                                     {:unstable
                                                                      (import nixpkgs-unstable
                                                                              {:system
@@ -198,7 +198,7 @@
                                                                               :config.allowUnfree
                                                                               true})
                                                                      :kanata-git
-                                                                     (final.unstable.kanata.overrideAttrs (fn (params old)
+                                                                     (final.unstable.kanata.overrideAttrs (fn [old]
                                                                                                               {:src
                                                                                                                kanata-git
                                                                                                                :version
@@ -222,52 +222,52 @@
                                                                                                                     (s glide
                                                                                                                        "/Cargo.lock")})
                                                                      :nyxt4
-                                                                     (let (<- nyxt-tarball
-                                                                              (final.fetchurl {:url
-                                                                                               "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz"
-                                                                                               :hash
-                                                                                               "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ="})
-                                                                              nyxt-appimage
-                                                                              (final.runCommand "nyxt.AppImage"
-                                                                                {}
-                                                                                (ms "tar xzf "
-                                                                                    nyxt-tarball
-                                                                                    " -O > $out\nchmod +x $out\n"))
-                                                                              nyxt-extracted
-                                                                              (final.appimageTools.extractType2 {:pname
-                                                                                                                 "nyxt"
-                                                                                                                 :version
-                                                                                                                 "4.0.0"
-                                                                                                                 :src
-                                                                                                                 nyxt-appimage})
-                                                                              cl-electron-extracted
-                                                                              (final.appimageTools.extractType2 {:pname
-                                                                                                                 "cl-electron-server"
-                                                                                                                 :version
-                                                                                                                 "4.0.0"
-                                                                                                                 :src
-                                                                                                                 (s nyxt-extracted
-                                                                                                                    "/usr/bin/cl-electron-server")})
-                                                                              nyxt-unwrapped
-                                                                              (final.runCommand "nyxt-unwrapped-4.0.0"
-                                                                                {}
-                                                                                (ms "mkdir -p $out/app/Nyxt/_build/cl-electron $out/share/applications $out/share/icons/hicolor/256x256/apps\n\n# Nyxt binary and libs\ncp "
-                                                                                    nyxt-extracted
-                                                                                    "/usr/bin/nyxt $out/app/Nyxt/\ncp -r "
-                                                                                    nyxt-extracted
-                                                                                    "/usr/lib/* $out/app/Nyxt/ 2>/dev/null || true\n\n# cl-electron (full Electron distribution)\ncp -r "
-                                                                                    cl-electron-extracted
-                                                                                    "/* $out/app/Nyxt/_build/cl-electron/\n\n# Desktop integration\ncp "
-                                                                                    nyxt-extracted
-                                                                                    "/nyxt.desktop $out/share/applications/ 2>/dev/null || true\ncp "
-                                                                                    nyxt-extracted
-                                                                                    "/nyxt.png $out/share/icons/hicolor/256x256/apps/ 2>/dev/null || true\nsed -i \"s|Exec=.*|Exec=nyxt %u|\" $out/share/applications/nyxt.desktop 2>/dev/null || true\n")))
+                                                                     (let [nyxt-tarball
+                                                                           (final.fetchurl {:url
+                                                                                            "https://github.com/atlas-engineer/nyxt/releases/download/4.0.0/Linux-Nyxt-x86_64.tar.gz"
+                                                                                            :hash
+                                                                                            "sha256-v+x6K5svLA3L+IjEdTjmJEf3hvgwhwrvqAcelpY1ScQ="})
+                                                                           nyxt-appimage
+                                                                           (final.runCommand "nyxt.AppImage"
+                                                                             {}
+                                                                             (ms "tar xzf "
+                                                                                 nyxt-tarball
+                                                                                 " -O > $out\nchmod +x $out\n"))
+                                                                           nyxt-extracted
+                                                                           (final.appimageTools.extractType2 {:pname
+                                                                                                              "nyxt"
+                                                                                                              :version
+                                                                                                              "4.0.0"
+                                                                                                              :src
+                                                                                                              nyxt-appimage})
+                                                                           cl-electron-extracted
+                                                                           (final.appimageTools.extractType2 {:pname
+                                                                                                              "cl-electron-server"
+                                                                                                              :version
+                                                                                                              "4.0.0"
+                                                                                                              :src
+                                                                                                              (s nyxt-extracted
+                                                                                                                 "/usr/bin/cl-electron-server")})
+                                                                           nyxt-unwrapped
+                                                                           (final.runCommand "nyxt-unwrapped-4.0.0"
+                                                                             {}
+                                                                             (ms "mkdir -p $out/app/Nyxt/_build/cl-electron $out/share/applications $out/share/icons/hicolor/256x256/apps\n\n# Nyxt binary and libs\ncp "
+                                                                                 nyxt-extracted
+                                                                                 "/usr/bin/nyxt $out/app/Nyxt/\ncp -r "
+                                                                                 nyxt-extracted
+                                                                                 "/usr/lib/* $out/app/Nyxt/ 2>/dev/null || true\n\n# cl-electron (full Electron distribution)\ncp -r "
+                                                                                 cl-electron-extracted
+                                                                                 "/* $out/app/Nyxt/_build/cl-electron/\n\n# Desktop integration\ncp "
+                                                                                 nyxt-extracted
+                                                                                 "/nyxt.desktop $out/share/applications/ 2>/dev/null || true\ncp "
+                                                                                 nyxt-extracted
+                                                                                 "/nyxt.png $out/share/icons/hicolor/256x256/apps/ 2>/dev/null || true\nsed -i \"s|Exec=.*|Exec=nyxt %u|\" $out/share/applications/nyxt.desktop 2>/dev/null || true\n"))]
                                                                           (final.buildFHSEnv {:pname
                                                                                               "nyxt"
                                                                                               :version
                                                                                               "4.0.0"
                                                                                               :targetPkgs
-                                                                                              (fn (params p)
+                                                                                              (fn [p]
                                                                                                   (with p
                                                                                                         [nyxt-unwrapped
                                                                                                          glib
@@ -334,13 +334,13 @@
                                                            extraOverlays)}]
                                                      extraModules)}))
                :lib.mkDarwinSystem
-               (module (params hostname
-                               hostConfig
-                               (system "aarch64-darwin")
-                               (extraModules [])
-                               (extraOverlays [])
-                               (extraSpecialArgs {})
-                               ...)
+               (module [hostname
+                        hostConfig
+                        (system "aarch64-darwin")
+                        (extraModules [])
+                        (extraOverlays [])
+                        (extraSpecialArgs {})
+                        ...]
                        (nix-darwin.lib.darwinSystem {:system
                                                      system
                                                      :specialArgs
@@ -357,12 +357,12 @@
                                                      :modules
                                                      (++ [home-manager.darwinModules.home-manager
                                                           hostConfig
-                                                          (module (params config
-                                                                          lib
-                                                                          pkgs
-                                                                          ...)
+                                                          (module [config
+                                                                   lib
+                                                                   pkgs
+                                                                   ...]
                                                                   {:imports
-                                                                   (++ (builtins.map (fn (params m)
+                                                                   (++ (builtins.map (fn [m]
                                                                                          (s firnModules
                                                                                             "/"
                                                                                             m))
@@ -393,12 +393,12 @@
                                                                           "direnv"
                                                                           "ripgrep"
                                                                           "fd"])
-                                                                       (builtins.map (fn (params b)
+                                                                       (builtins.map (fn [b]
                                                                                          (s firnBundlesDarwin
                                                                                             "/"
                                                                                             b))
-                                                                         (builtins.attrNames (nixpkgs.lib.filterAttrs (fn (params n)
-                                                                                                                          (fn (params v)
+                                                                         (builtins.attrNames (nixpkgs.lib.filterAttrs (fn [n]
+                                                                                                                          (fn [v]
                                                                                                                               (== v
                                                                                                                                   "directory")))
                                                                                                (builtins.readDir (p "./bundles-darwin"))))))
@@ -444,8 +444,8 @@
                                                                       :nixpkgs.config.allowUnfree
                                                                       true}}}})
                                                           {:nixpkgs.overlays
-                                                           (++ [(fn (params final)
-                                                                    (fn (params prev)
+                                                           (++ [(fn [final]
+                                                                    (fn [prev]
                                                                         {:unstable
                                                                          (import nixpkgs-unstable
                                                                                  {:system
@@ -497,7 +497,7 @@
                 :path
                 (p "./template")}
                :devShells.x86_64-linux.default
-               (let (<- pkgs nixpkgs.legacyPackages.x86_64-linux)
+               (let [pkgs nixpkgs.legacyPackages.x86_64-linux]
                     (pkgs.mkShell {:packages
                                    [pkgs.pre-commit pkgs.gitleaks]
                                    :shellHook

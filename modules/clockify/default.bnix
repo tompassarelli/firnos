@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib flakeRoot ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib flakeRoot ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.clockify.enable
               (lib.mkEnableOption "clockify")
               :config

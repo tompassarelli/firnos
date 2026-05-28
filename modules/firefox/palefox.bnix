@@ -2,20 +2,18 @@
 
 (ns palefox)
 
-(module (params config lib pkgs inputs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 palefoxRoot
-                 inputs.palefox
-                 palefoxFirefox
-                 (pkgs.firefox.overrideAttrs (fn (params old)
-                                                 {:buildCommand
-                                                  (s (get-or old
-                                                             buildCommand
-                                                             "")
-                                                     (ms "cat >> \"$out/lib/firefox/defaults/pref/autoconfig.js\" <<'EOF'\npref(\"general.config.filename\", \"config.js\");\npref(\"general.config.sandbox_enabled\", false);\nEOF\ncp "
-                                                         palefoxRoot
-                                                         "/program/config.generated.js \"$out/lib/firefox/config.js\"\n"))})))
+(module [config lib pkgs inputs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              palefoxRoot
+              inputs.palefox
+              palefoxFirefox
+              (pkgs.firefox.overrideAttrs (fn [old]
+                                              {:buildCommand
+                                               (s (get-or old buildCommand "")
+                                                  (ms "cat >> \"$out/lib/firefox/defaults/pref/autoconfig.js\" <<'EOF'\npref(\"general.config.filename\", \"config.js\");\npref(\"general.config.sandbox_enabled\", false);\nEOF\ncp "
+                                                      palefoxRoot
+                                                      "/program/config.generated.js \"$out/lib/firefox/config.js\"\n"))}))]
              {:config
               (lib.mkIf config.myConfig.modules.firefox.palefox.enable
                         {:myConfig.modules.firefox.enable
@@ -24,7 +22,7 @@
                          {:enable true :package palefoxFirefox}
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:programs.firefox
                                    {:enable
                                     true

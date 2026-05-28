@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.uv.enable
          (lib.mkEnableOption "uv Python package manager")
          :config

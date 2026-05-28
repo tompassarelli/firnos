@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.bundles.media
          {:enable
           (lib.mkEnableOption "media consumption and viewing")

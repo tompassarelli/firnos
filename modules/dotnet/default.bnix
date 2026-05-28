@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.dotnet.enable
          (lib.mkEnableOption ".NET SDK and CLI tools")
          :config

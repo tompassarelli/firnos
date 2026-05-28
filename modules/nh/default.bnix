@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.nh.enable
          (lib.mkEnableOption "Nix helper (nicer nixos-rebuild output, generation diff, search, clean)")
          :config

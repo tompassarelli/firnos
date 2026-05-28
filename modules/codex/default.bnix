@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.codex.enable
          (lib.mkEnableOption "OpenAI Codex CLI (master/bleeding-edge)")
          :config

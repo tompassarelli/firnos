@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.bundles.theming
          {:enable
           (lib.mkEnableOption "visual theming stack")

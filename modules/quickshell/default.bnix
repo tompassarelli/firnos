@@ -2,11 +2,11 @@
 
 (ns default)
 
-(module (params config lib pkgs inputs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 monoFont
-                 config.stylix.fonts.monospace.name)
+(module [config lib pkgs inputs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              monoFont
+              config.stylix.fonts.monospace.name]
              {:options.myConfig.modules.quickshell.enable
               (lib.mkEnableOption "Quickshell (Qt6/QML) status bar")
               :config
@@ -19,7 +19,7 @@
                          {username {:extraGroups ["input"]}}
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:systemd.user.services.quickshell
                                    {:Unit
                                     {:Description

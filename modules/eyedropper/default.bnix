@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.eyedropper.enable
          (lib.mkEnableOption "Wayland color picker")
          :config

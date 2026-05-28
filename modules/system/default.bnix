@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- cfg config.myConfig.modules.system)
+(module [config lib pkgs ...]
+        (let [cfg config.myConfig.modules.system]
              {:options.myConfig.modules.system.stateVersion
               (lib.mkOption {:type
                              lib.types.str

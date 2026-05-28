@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- msodbcsql18 pkgs.unstable.unixodbcDrivers.msodbcsql18)
+(module [config lib pkgs ...]
+        (let [msodbcsql18 pkgs.unstable.unixodbcDrivers.msodbcsql18]
              {:options.myConfig.modules.unixodbc.enable
               (lib.mkEnableOption "unixODBC with MSSQL driver")
               :config

@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.hugo.enable
          (lib.mkEnableOption "Hugo static site generator")
          :config

@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.rofi.enable
               (lib.mkEnableOption "Rofi application launcher")
               :config
@@ -17,7 +17,7 @@
                                   (ms "# Parse niri workspaces: \"   1 \"name\"\" or \" * 2 \"name\"\" format\nselected=$(niri msg workspaces | grep -E '^\\s*\\*?\\s*[0-9]+' | \\\n  sed 's/^\\s*\\*\\?\\s*\\([0-9]\\+\\)\\s*\\(\"\\?\\)\\([^\"]*\\)\\(\"\\?\\)/\\1: \\3/' | \\\n  sed 's/: $/: (unnamed)/' | \\\n  rofi -dmenu -p \"Workspace\" -i)\n\n[ -n \"$selected\" ] && {\n  id=$(echo \"$selected\" | cut -d: -f1)\n  niri msg action focus-workspace \"$id\"\n}\n"))])
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:xdg.configFile
                                    {"rofi/config.rasi"
                                     {:source

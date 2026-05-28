@@ -2,8 +2,8 @@
 
 (ns nyxt)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:config
               (lib.mkIf config.myConfig.modules.nyxt.enable
                         {:environment.systemPackages
@@ -26,7 +26,7 @@
                                     "nyxt.desktop"})
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:xdg.configFile
                                    {"nyxt/config.lisp"
                                     {:source

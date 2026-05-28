@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.claude.enable
               (lib.mkEnableOption "Claude Code CLI configuration")
               :config
@@ -12,7 +12,7 @@
                          [pkgs.master.claude-code]
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:home.file
                                    {".claude/settings.json"
                                     {:source

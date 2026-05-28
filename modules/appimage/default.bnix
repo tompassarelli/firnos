@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.appimage.enable
          (lib.mkEnableOption "AppImage support via appimage-run + binfmt")
          :config

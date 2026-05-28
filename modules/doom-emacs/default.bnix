@@ -2,18 +2,18 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 chosenTheme
-                 config.myConfig.modules.stylix.chosenTheme)
+(module [config lib pkgs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              chosenTheme
+              config.myConfig.modules.stylix.chosenTheme]
              {:options.myConfig.modules.doom-emacs.enable
               (lib.mkEnableOption "Doom Emacs configuration (dotfiles, daemon, secrets)")
               :config
               (lib.mkIf config.myConfig.modules.doom-emacs.enable
                         {:home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:home.sessionVariables
                                    {:DOOMDIR
                                     (s config.home.homeDirectory

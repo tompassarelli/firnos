@@ -2,7 +2,7 @@
 
 (ns claude-sandbox)
 
-(module (params pkgs)
+(module [pkgs]
         (pkgs.dockerTools.buildLayeredImage {:name
                                              "claude-sandbox"
                                              :tag

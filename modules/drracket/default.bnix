@@ -2,18 +2,18 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- racoPackages
-                 ["drracket-vim-tool" "db"]
-                 racoEnsure
-                 (pkgs.writeShellScript "raco-ensure-packages"
-                   (ms "for pkg in "
-                       (lib.concatStringsSep " " racoPackages)
-                       "; do\n  if ! "
-                       pkgs.unstable.racket
-                       "/bin/raco pkg show \"$pkg\" 2>/dev/null | grep -q \"Package name:\"; then\n    "
-                       pkgs.unstable.racket
-                       "/bin/raco pkg install --auto --skip-installed \"$pkg\"\n  fi\ndone\n")))
+(module [config lib pkgs ...]
+        (let [racoPackages
+              ["drracket-vim-tool" "db"]
+              racoEnsure
+              (pkgs.writeShellScript "raco-ensure-packages"
+                (ms "for pkg in "
+                    (lib.concatStringsSep " " racoPackages)
+                    "; do\n  if ! "
+                    pkgs.unstable.racket
+                    "/bin/raco pkg show \"$pkg\" 2>/dev/null | grep -q \"Package name:\"; then\n    "
+                    pkgs.unstable.racket
+                    "/bin/raco pkg install --auto --skip-installed \"$pkg\"\n  fi\ndone\n"))]
              {:options.myConfig.modules.drracket.enable
               (lib.mkEnableOption "DrRacket IDE")
               :config

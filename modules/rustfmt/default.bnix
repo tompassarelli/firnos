@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.rustfmt.enable
          (lib.mkEnableOption "Rust formatter")
          :config

@@ -2,27 +2,25 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 chosenTheme
-                 config.myConfig.modules.stylix.chosenTheme
-                 schemeFile
-                 (s pkgs.base16-schemes "/share/themes/" chosenTheme ".yaml")
-                 schemeYaml
-                 (builtins.readFile schemeFile)
-                 variant
-                 (let (<- lines
-                          (lib.splitString "\n" schemeYaml)
-                          variantLine
-                          (lib.findFirst (fn (params line)
-                                             (lib.hasPrefix "variant:" line))
-                            ""
-                            lines)
-                          match
-                          (builtins.match ".*variant: \"([^\"]+)\".*"
-                            variantLine))
-                      (if (!= match nil) (builtins.head match) "dark")))
+(module [config lib pkgs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              chosenTheme
+              config.myConfig.modules.stylix.chosenTheme
+              schemeFile
+              (s pkgs.base16-schemes "/share/themes/" chosenTheme ".yaml")
+              schemeYaml
+              (builtins.readFile schemeFile)
+              variant
+              (let [lines
+                    (lib.splitString "\n" schemeYaml)
+                    variantLine
+                    (lib.findFirst (fn [line] (lib.hasPrefix "variant:" line))
+                      ""
+                      lines)
+                    match
+                    (builtins.match ".*variant: \"([^\"]+)\".*" variantLine)]
+                   (if (!= match nil) (builtins.head match) "dark"))]
              {:options.myConfig.modules.styling.enable
               (lib.mkEnableOption "system-wide theming and styling")
               :config
@@ -48,7 +46,7 @@
                            {:terminal 14}}}
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:stylix.targets.firefox
                                    {:profileNames
                                     [username]

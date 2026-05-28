@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.framework.enable
          (lib.mkEnableOption "Framework Computer specific tools")
          :config

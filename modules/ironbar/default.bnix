@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.ironbar.enable
               (lib.mkEnableOption "Ironbar status bar for Wayland")
               :config
@@ -12,7 +12,7 @@
                          [pkgs.unstable.ironbar]
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:systemd.user.services.ironbar
                                    {:Unit
                                     {:Description

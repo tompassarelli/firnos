@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs flakeRoot ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs flakeRoot ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.awscli.enable
               (lib.mkEnableOption "awscli")
               :config

@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.cargo.enable
          (lib.mkEnableOption "Rust package manager")
          :config

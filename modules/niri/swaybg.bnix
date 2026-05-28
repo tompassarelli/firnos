@@ -2,16 +2,16 @@
 
 (ns swaybg)
 
-(module (params config lib pkgs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 chosenTheme
-                 config.myConfig.modules.stylix.chosenTheme)
+(module [config lib pkgs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              chosenTheme
+              config.myConfig.modules.stylix.chosenTheme]
              {:config
               (lib.mkIf config.myConfig.modules.niri.enable
                         {:home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:systemd.user.services.swaybg
                                    {:Unit
                                     {:Description

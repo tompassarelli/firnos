@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.mpv.enable
          (lib.mkEnableOption "mpv media player")
          :config

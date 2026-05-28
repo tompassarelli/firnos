@@ -2,23 +2,23 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 isDark
-                 (== config.stylix.polarity "dark"))
+(module [config lib pkgs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              isDark
+              (== config.stylix.polarity "dark")]
              {:options.myConfig.modules.gtk.enable
               (lib.mkEnableOption "GTK theming configuration")
               :config
               (lib.mkIf config.myConfig.modules.gtk.enable
                         {:home-manager.users
                          {username
-                          (module (params config ...)
-                                  (let (<- stylixGtkFont
-                                           (s (s config.gtk.font.name " ")
-                                              (toString config.gtk.font.size))
-                                           stylixGtkTheme
-                                           config.gtk.theme.name)
+                          (module [config ...]
+                                  (let [stylixGtkFont
+                                        (s (s config.gtk.font.name " ")
+                                           (toString config.gtk.font.size))
+                                        stylixGtkTheme
+                                        config.gtk.theme.name]
                                        {:gtk.enable
                                         true
                                         :home.packages

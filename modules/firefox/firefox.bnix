@@ -2,7 +2,7 @@
 
 (ns firefox)
 
-(module (params config lib ...)
+(module [config lib ...]
         {:config
          (lib.mkIf config.myConfig.modules.firefox.enable
                    {:programs.firefox.enable

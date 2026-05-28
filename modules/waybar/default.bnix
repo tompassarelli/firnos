@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.waybar.enable
               (lib.mkEnableOption "Waybar status bar for Wayland")
               :config
@@ -12,7 +12,7 @@
                          (with pkgs [waybar])
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:xdg.configFile
                                    {"waybar/config"
                                     {:source

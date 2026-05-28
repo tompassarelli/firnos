@@ -2,8 +2,8 @@
 
 (ns default)
 
-(module (params config lib pkgs inputs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs inputs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.walker.enable
               (lib.mkEnableOption "Walker modern wayland app launcher")
               :config
@@ -13,7 +13,7 @@
                             (ms "name=$(echo \"\" | walker --dmenu)\n[ -n \"$name\" ] && niri msg action set-workspace-name \"$name\"\n"))]
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:imports
                                    [inputs.walker.homeManagerModules.default]
                                    :home.file

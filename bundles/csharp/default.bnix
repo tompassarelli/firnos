@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.bundles.csharp
          {:enable
           (lib.mkEnableOption "C# / .NET development (dotnet, sqlcmd, Windows VM)")

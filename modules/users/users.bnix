@@ -2,8 +2,8 @@
 
 (ns users)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.users.enable
               (lib.mkEnableOption "Enable user configuration")
               :options.myConfig.modules.users.username

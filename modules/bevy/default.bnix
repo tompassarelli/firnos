@@ -2,19 +2,19 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- bevyLibs
-                 (with pkgs
-                       [alsa-lib
-                        vulkan-loader
-                        vulkan-tools
-                        wayland
-                        libxkbcommon
-                        xorg.libX11
-                        xorg.libXcursor
-                        xorg.libXrandr
-                        xorg.libXi
-                        libudev-zero]))
+(module [config lib pkgs ...]
+        (let [bevyLibs
+              (with pkgs
+                    [alsa-lib
+                     vulkan-loader
+                     vulkan-tools
+                     wayland
+                     libxkbcommon
+                     xorg.libX11
+                     xorg.libXcursor
+                     xorg.libXrandr
+                     xorg.libXi
+                     libudev-zero])]
              {:options.myConfig.modules.bevy.enable
               (lib.mkEnableOption "Bevy game engine development libraries")
               :config

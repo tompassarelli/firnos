@@ -2,8 +2,8 @@
 
 (ns kanata)
 
-(module (params config lib pkgs ...)
-        (let (<- cfg config.myConfig.modules.kanata)
+(module [config lib pkgs ...]
+        (let [cfg config.myConfig.modules.kanata]
              {:config
               (lib.mkIf cfg.enable
                         {:hardware.uinput.enable

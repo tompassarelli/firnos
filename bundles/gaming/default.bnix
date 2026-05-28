@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.bundles.gaming
          {:enable
           (lib.mkEnableOption "gaming platforms and tools")

@@ -2,15 +2,15 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
-        (let (<- username config.myConfig.modules.users.username)
+(module [config lib pkgs ...]
+        (let [username config.myConfig.modules.users.username]
              {:options.myConfig.modules.atuin.enable
               (lib.mkEnableOption "atuin shell history sync")
               :config
               (lib.mkIf config.myConfig.modules.atuin.enable
                         {:home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:programs.atuin
                                    {:enable
                                     true

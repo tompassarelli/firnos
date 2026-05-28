@@ -2,16 +2,16 @@
 
 (ns default)
 
-(module (params config lib pkgs inputs ...)
-        (let (<- username
-                 config.myConfig.modules.users.username
-                 lem-ncurses
-                 (inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (fn (params o)
-                                                                                     {:postPatch
-                                                                                      (s (get-or o
-                                                                                                 postPatch
-                                                                                                 "")
-                                                                                         (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd\n"))})))
+(module [config lib pkgs inputs ...]
+        (let [username
+              config.myConfig.modules.users.username
+              lem-ncurses
+              (inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (fn [o]
+                                                                                  {:postPatch
+                                                                                   (s (get-or o
+                                                                                              postPatch
+                                                                                              "")
+                                                                                      (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd\n"))}))]
              {:options.myConfig.modules.lem.enable
               (lib.mkEnableOption "Lem Common Lisp editor")
               :config
@@ -20,7 +20,7 @@
                          [lem-ncurses]
                          :home-manager.users
                          {username
-                          (module (params config ...)
+                          (module [config ...]
                                   {:xdg.desktopEntries.lem
                                    {:name
                                     "Lem"

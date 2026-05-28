@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.pkg-config.enable
          (lib.mkEnableOption "pkg-config build tool")
          :config

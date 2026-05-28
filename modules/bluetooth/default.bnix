@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module (params config lib pkgs ...)
+(module [config lib pkgs ...]
         {:options.myConfig.modules.bluetooth.enable
          (lib.mkEnableOption "Enable Bluetooth configuration")
          :config

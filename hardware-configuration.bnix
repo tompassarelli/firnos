@@ -2,7 +2,7 @@
 
 (ns hardware-configuration)
 
-(module (params config lib pkgs modulesPath ...)
+(module [config lib pkgs modulesPath ...]
         {:imports
          [(s modulesPath "/installer/scan/not-detected.nix")]
          :boot.initrd.availableKernelModules
