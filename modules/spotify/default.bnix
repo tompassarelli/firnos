@@ -3,8 +3,8 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  {:options.myConfig.modules.spotify.enable
-    (lib.mkEnableOption "Spotify TUI player")
-   :config
-    (lib.mkIf config.myConfig.modules.spotify.enable
-      {:environment.systemPackages (with pkgs [spotify])})})
+  '{options.myConfig.modules.spotify.enable
+     (lib.mkEnableOption "Spotify TUI player")
+    config
+     (lib.mkIf config.myConfig.modules.spotify.enable
+       '{environment.systemPackages (with pkgs [spotify])})})

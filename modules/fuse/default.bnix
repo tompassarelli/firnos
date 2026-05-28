@@ -3,8 +3,8 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  {:options.myConfig.modules.fuse.enable
-    (lib.mkEnableOption "FUSE filesystem support")
-   :config
-    (lib.mkIf config.myConfig.modules.fuse.enable
-      {:environment.systemPackages (with pkgs [fuse])})})
+  '{options.myConfig.modules.fuse.enable
+     (lib.mkEnableOption "FUSE filesystem support")
+    config
+     (lib.mkIf config.myConfig.modules.fuse.enable
+       '{environment.systemPackages (with pkgs [fuse])})})

@@ -3,6 +3,6 @@
 (ns xwayland-satellite)
 
 (module [config lib pkgs ...]
-  {:config
-    (lib.mkIf config.myConfig.modules.niri.enable
-      {:environment.systemPackages [pkgs.unstable.xwayland-satellite]})})
+  '{config
+     (lib.mkIf config.myConfig.modules.niri.enable
+       '{environment.systemPackages [pkgs.unstable.xwayland-satellite]})})

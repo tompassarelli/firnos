@@ -4,91 +4,92 @@
 
 (module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.waybar.enable
-      (lib.mkEnableOption "Waybar status bar for Wayland")
-     :config
-      (lib.mkIf config.myConfig.modules.waybar.enable
-        {:environment.systemPackages (with pkgs [waybar])
-         :home-manager.users
-          {username
-            (module [config ...]
-              {:xdg.configFile
-                {"waybar/config"
-                  {:source
-                    (config.lib.file.mkOutOfStoreSymlink
-                      (s config.home.homeDirectory
-                        "/code/nixos-config/dotfiles/waybar/config"))}
-                 "waybar/stylix.css"
-                  {:text
-                    (with config.lib.stylix.colors
-                      (ms "@define-color base00 #"
-                        base00
-                        ";\n@define-color base01 #"
-                        base01
-                        ";\n@define-color base02 #"
-                        base02
-                        ";\n@define-color base03 #"
-                        base03
-                        ";\n@define-color base04 #"
-                        base04
-                        ";\n@define-color base05 #"
-                        base05
-                        ";\n@define-color base06 #"
-                        base06
-                        ";\n@define-color base07 #"
-                        base07
-                        ";\n@define-color base08 #"
-                        base08
-                        ";\n@define-color base09 #"
-                        base09
-                        ";\n@define-color base0A #"
-                        base0A
-                        ";\n@define-color base0B #"
-                        base0B
-                        ";\n@define-color base0C #"
-                        base0C
-                        ";\n@define-color base0D #"
-                        base0D
-                        ";\n@define-color base0E #"
-                        base0E
-                        ";\n@define-color base0F #"
-                        base0F
-                        ";\n\n* {\n  font-family: \""
-                        config.stylix.fonts.monospace.name
-                        "\";\n  font-size: "
-                        (toString config.stylix.fonts.sizes.desktop)
-                        "pt;\n}\n\nwindow#waybar, tooltip {\n  background: alpha(@base00, "
-                        (toString config.stylix.opacity.desktop)
-                        ");\n  color: @base05;\n}\n\ntooltip {\n  border-color: @base0D;\n}\n\n.modules-left #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-left #workspaces button.focused,\n.modules-left #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n\n.modules-center #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-center #workspaces button.focused,\n.modules-center #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n\n.modules-right #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-right #workspaces button.focused,\n.modules-right #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n"))}
-                 "waybar/style.css"
-                  {:source
-                    (config.lib.file.mkOutOfStoreSymlink
-                      (s config.home.homeDirectory
-                        "/code/nixos-config/dotfiles/waybar/style.css"))}
-                 "waybar/overview-waybar.py"
-                  {:source
-                    (config.lib.file.mkOutOfStoreSymlink
-                      (s config.home.homeDirectory
-                        "/code/nixos-config/dotfiles/waybar/overview-waybar.py"))}}
-               :systemd.user.services.waybar
-                {:Unit
-                  {:Description "Highly customizable Wayland bar"
-                   :PartOf      ["graphical-session.target"]
-                   :After
-                    ["graphical-session.target" "xdg-desktop-portal.service"]
-                   :Requisite   ["graphical-session.target"]}
-                 :Service
-                  {:ExecStart (s pkgs.waybar "/bin/waybar")
-                   :Restart   "on-failure"}
-                 :Install {:WantedBy ["niri.service"]}}
-               :systemd.user.services.waybar-overview
-                {:Unit
-                  {:Description
-                    "Waybar visibility controller (overview + workspace switch)"
-                   :PartOf      ["graphical-session.target"]
-                   :After       ["waybar.service"]
-                   :Requires    ["waybar.service"]}
-                 :Service
-                  {:ExecStart "%h/.config/waybar/overview-waybar.py"
-                   :Restart   "on-failure"}
-                 :Install {:WantedBy ["niri.service"]}}})}})}))
+    '{options.myConfig.modules.waybar.enable
+       (lib.mkEnableOption "Waybar status bar for Wayland")
+      config
+       (lib.mkIf config.myConfig.modules.waybar.enable
+         '{environment.systemPackages (with pkgs [waybar])
+           home-manager.users
+            {username
+              (module [config ...]
+                '{xdg.configFile
+                   '{"waybar/config"
+                      '{source
+                         (config.lib.file.mkOutOfStoreSymlink
+                           (s config.home.homeDirectory
+                             "/code/nixos-config/dotfiles/waybar/config"))}
+                     "waybar/stylix.css"
+                      '{text
+                         (with config.lib.stylix.colors
+                           (ms "@define-color base00 #"
+                             base00
+                             ";\n@define-color base01 #"
+                             base01
+                             ";\n@define-color base02 #"
+                             base02
+                             ";\n@define-color base03 #"
+                             base03
+                             ";\n@define-color base04 #"
+                             base04
+                             ";\n@define-color base05 #"
+                             base05
+                             ";\n@define-color base06 #"
+                             base06
+                             ";\n@define-color base07 #"
+                             base07
+                             ";\n@define-color base08 #"
+                             base08
+                             ";\n@define-color base09 #"
+                             base09
+                             ";\n@define-color base0A #"
+                             base0A
+                             ";\n@define-color base0B #"
+                             base0B
+                             ";\n@define-color base0C #"
+                             base0C
+                             ";\n@define-color base0D #"
+                             base0D
+                             ";\n@define-color base0E #"
+                             base0E
+                             ";\n@define-color base0F #"
+                             base0F
+                             ";\n\n* {\n  font-family: \""
+                             config.stylix.fonts.monospace.name
+                             "\";\n  font-size: "
+                             (toString config.stylix.fonts.sizes.desktop)
+                             "pt;\n}\n\nwindow#waybar, tooltip {\n  background: alpha(@base00, "
+                             (toString config.stylix.opacity.desktop)
+                             ");\n  color: @base05;\n}\n\ntooltip {\n  border-color: @base0D;\n}\n\n.modules-left #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-left #workspaces button.focused,\n.modules-left #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n\n.modules-center #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-center #workspaces button.focused,\n.modules-center #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n\n.modules-right #workspaces button {\n  border-bottom: 3px solid transparent;\n}\n.modules-right #workspaces button.focused,\n.modules-right #workspaces button.active {\n  border-bottom: 3px solid @base05;\n}\n"))}
+                     "waybar/style.css"
+                      '{source
+                         (config.lib.file.mkOutOfStoreSymlink
+                           (s config.home.homeDirectory
+                             "/code/nixos-config/dotfiles/waybar/style.css"))}
+                     "waybar/overview-waybar.py"
+                      '{source
+                         (config.lib.file.mkOutOfStoreSymlink
+                           (s config.home.homeDirectory
+                             "/code/nixos-config/dotfiles/waybar/overview-waybar.py"))}}
+                  systemd.user.services.waybar
+                   '{Unit
+                      '{Description "Highly customizable Wayland bar"
+                        PartOf      ["graphical-session.target"]
+                        After
+                         ["graphical-session.target"
+                          "xdg-desktop-portal.service"]
+                        Requisite   ["graphical-session.target"]}
+                     Service
+                      '{ExecStart (s pkgs.waybar "/bin/waybar")
+                        Restart   "on-failure"}
+                     Install '{WantedBy ["niri.service"]}}
+                  systemd.user.services.waybar-overview
+                   '{Unit
+                      '{Description
+                         "Waybar visibility controller (overview + workspace switch)"
+                        PartOf      ["graphical-session.target"]
+                        After       ["waybar.service"]
+                        Requires    ["waybar.service"]}
+                     Service
+                      '{ExecStart "%h/.config/waybar/overview-waybar.py"
+                        Restart   "on-failure"}
+                     Install '{WantedBy ["niri.service"]}}})}})}))

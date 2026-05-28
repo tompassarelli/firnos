@@ -3,11 +3,11 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  {:options.myConfig.modules.stylix.enable
-    (lib.mkEnableOption "Stylix base16 theming")
-   :options.myConfig.modules.stylix.chosenTheme
-    (lib.mkOption
-      {:type        lib.types.str
-       :description
-        "The base16 theme to use for styling (e.g., 'tokyo-night-dark', 'everforest-dark-hard')"})
-   :imports [(p "./fonts.nix") (p "./xdg-portal.nix") (p "./stylix.nix")]})
+  '{options.myConfig.modules.stylix.enable
+     (lib.mkEnableOption "Stylix base16 theming")
+    options.myConfig.modules.stylix.chosenTheme
+     (lib.mkOption
+       '{type        lib.types.str
+         description
+          "The base16 theme to use for styling (e.g., 'tokyo-night-dark', 'everforest-dark-hard')"})
+    imports [(p "./fonts.nix") (p "./xdg-portal.nix") (p "./stylix.nix")]})

@@ -4,20 +4,20 @@
 
 (module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:config
-      (lib.mkIf config.myConfig.modules.niri.enable
-        {:home-manager.users
-          {username
-            (module [config ...]
-              {:systemd.user.services.swayidle
-                {:Unit
-                  {:Description "Idle manager for Wayland"
-                   :PartOf      ["graphical-session.target"]
-                   :After       ["graphical-session.target"]
-                   :Requisite   ["graphical-session.target"]}
-                 :Service
-                  {:ExecStart
-                    (s pkgs.swayidle
-                      "/bin/swayidle -w timeout 601 'niri msg action power-off-monitors' timeout 600 'swaylock -f' before-sleep 'swaylock -f'")
-                   :Restart   "on-failure"}
-                 :Install {:WantedBy ["niri.service"]}}})}})}))
+    '{config
+       (lib.mkIf config.myConfig.modules.niri.enable
+         '{home-manager.users
+            {username
+              (module [config ...]
+                '{systemd.user.services.swayidle
+                   '{Unit
+                      '{Description "Idle manager for Wayland"
+                        PartOf      ["graphical-session.target"]
+                        After       ["graphical-session.target"]
+                        Requisite   ["graphical-session.target"]}
+                     Service
+                      '{ExecStart
+                         (s pkgs.swayidle
+                           "/bin/swayidle -w timeout 601 'niri msg action power-off-monitors' timeout 600 'swaylock -f' before-sleep 'swaylock -f'")
+                        Restart   "on-failure"}
+                     Install '{WantedBy ["niri.service"]}}})}})}))

@@ -4,46 +4,46 @@
 
 (module [config lib pkgs flakeRoot ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.bash.enable
-      (lib.mkEnableOption "Bash shell configuration")
-     :config
-      (lib.mkIf config.myConfig.modules.bash.enable
-        {:programs.bash.completion.enable true
-         :environment.systemPackages (with pkgs [fzf])
-         :home-manager.users
-          {username
-            (module [config ...]
-              {:home.file
-                {".local/bin"
-                  {:source
-                    (config.lib.file.mkOutOfStoreSymlink
-                      (s config.home.homeDirectory
-                        "/code/nixos-config/dotfiles/bin"))}}
-               :programs.bash
-                {:enable          true
-                 :shellAliases
-                  {:du    "dust"
-                   :ls    "eza"
-                   :ps    "procs"
-                   :v     "nvim"
-                   :e     "emacsclient -n -c -a emacs"
-                   :etui  "emacsclient -t -a emacs"
-                   :gits  "git status"
-                   :gitd  "git diff"
-                   :gitdc "git diff --cached"
-                   :gita  "git add -v . && git status"
-                   :gitp  "git push"}
-                 :historyControl  ["ignoredups" "erasedups"]
-                 :historySize     100000
-                 :historyFileSize 100000
-                 :shellOptions
-                  ["histappend"
-                   "checkwinsize"
-                   "cmdhist"
-                   "globstar"
-                   "autocd"
-                   "cdspell"
-                   "dirspell"]
-                 :bashrcExtra
-                  (ms
-                    "\n# Ensure ~/.local/bin (where dotfiles/bin is symlinked) is on PATH.\ncase \":$PATH:\" in\n  *\":$HOME/.local/bin:\"*) ;;\n  *) export PATH=\"$HOME/.local/bin:$PATH\" ;;\nesac\n\n# Readline-dependent setup. Skip cleanly on bash builds without\n# readline (pkgs.bash in nix dev shells) — `set -o vi`, `bind`,\n# `complete`, and the fzf bindings all need readline. The cd-to-home\n# block below is intentionally outside this gate.\nif [[ $- == *i* ]] && type bind >/dev/null 2>&1; then\n  # vi-mode (use 'set -o emacs' to switch back temporarily)\n  set -o vi\n\n  # Ctrl+L → clear screen, in every keymap. vi-mode doesn't\n  # bind this by default (it's an emacs-mode default), so\n  # set it explicitly in both vi-insert and vi-command.\n  bind -m emacs       '\"\\C-l\": clear-screen'\n  bind -m vi-insert   '\"\\C-l\": clear-screen'\n  bind -m vi-command  '\"\\C-l\": clear-screen'\n\n  # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)\n  if command -v fzf-share >/dev/null 2>&1; then\n    source \"$(fzf-share)/key-bindings.bash\"\n    source \"$(fzf-share)/completion.bash\"\n  fi\nfi\n\n# Change to home dir on interactive start (skip in Emacs vterm).\n# No readline dep, runs even in stripped bash.\nif [ -z \"$INSIDE_EMACS\" ] && [ -t 0 ]; then\n  case \"$PWD\" in\n    \"$HOME\"*) ;;\n    *) cd \"$HOME\" ;;\n  esac\nfi\n")}})}})}))
+    '{options.myConfig.modules.bash.enable
+       (lib.mkEnableOption "Bash shell configuration")
+      config
+       (lib.mkIf config.myConfig.modules.bash.enable
+         '{programs.bash.completion.enable true
+           environment.systemPackages (with pkgs [fzf])
+           home-manager.users
+            {username
+              (module [config ...]
+                '{home.file
+                   '{".local/bin"
+                      '{source
+                         (config.lib.file.mkOutOfStoreSymlink
+                           (s config.home.homeDirectory
+                             "/code/nixos-config/dotfiles/bin"))}}
+                  programs.bash
+                   '{enable          true
+                     shellAliases
+                      '{du    "dust"
+                        ls    "eza"
+                        ps    "procs"
+                        v     "nvim"
+                        e     "emacsclient -n -c -a emacs"
+                        etui  "emacsclient -t -a emacs"
+                        gits  "git status"
+                        gitd  "git diff"
+                        gitdc "git diff --cached"
+                        gita  "git add -v . && git status"
+                        gitp  "git push"}
+                     historyControl  ["ignoredups" "erasedups"]
+                     historySize     100000
+                     historyFileSize 100000
+                     shellOptions
+                      ["histappend"
+                       "checkwinsize"
+                       "cmdhist"
+                       "globstar"
+                       "autocd"
+                       "cdspell"
+                       "dirspell"]
+                     bashrcExtra
+                      (ms
+                        "\n# Ensure ~/.local/bin (where dotfiles/bin is symlinked) is on PATH.\ncase \":$PATH:\" in\n  *\":$HOME/.local/bin:\"*) ;;\n  *) export PATH=\"$HOME/.local/bin:$PATH\" ;;\nesac\n\n# Readline-dependent setup. Skip cleanly on bash builds without\n# readline (pkgs.bash in nix dev shells) — `set -o vi`, `bind`,\n# `complete`, and the fzf bindings all need readline. The cd-to-home\n# block below is intentionally outside this gate.\nif [[ $- == *i* ]] && type bind >/dev/null 2>&1; then\n  # vi-mode (use 'set -o emacs' to switch back temporarily)\n  set -o vi\n\n  # Ctrl+L → clear screen, in every keymap. vi-mode doesn't\n  # bind this by default (it's an emacs-mode default), so\n  # set it explicitly in both vi-insert and vi-command.\n  bind -m emacs       '\"\\C-l\": clear-screen'\n  bind -m vi-insert   '\"\\C-l\": clear-screen'\n  bind -m vi-command  '\"\\C-l\": clear-screen'\n\n  # fzf integration (Ctrl-R for fuzzy history, Alt-C for cd)\n  if command -v fzf-share >/dev/null 2>&1; then\n    source \"$(fzf-share)/key-bindings.bash\"\n    source \"$(fzf-share)/completion.bash\"\n  fi\nfi\n\n# Change to home dir on interactive start (skip in Emacs vterm).\n# No readline dep, runs even in stripped bash.\nif [ -z \"$INSIDE_EMACS\" ] && [ -t 0 ]; then\n  case \"$PWD\" in\n    \"$HOME\"*) ;;\n    *) cd \"$HOME\" ;;\n  esac\nfi\n")}})}})}))

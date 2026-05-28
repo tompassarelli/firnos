@@ -4,16 +4,16 @@
 
 (module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.mako.enable
-      (lib.mkEnableOption "Mako notification daemon")
-     :config
-      (lib.mkIf config.myConfig.modules.mako.enable
-        {:home-manager.users
-          {username
-            {:services.mako
-              {:enable   true
-               :settings
-                {:default-timeout 0
-                 :icons 0
-                 "app-name=kitty" {:default-timeout 0}
-                 "app-name=Spotify" {:invisible 1}}}}}})}))
+    '{options.myConfig.modules.mako.enable
+       (lib.mkEnableOption "Mako notification daemon")
+      config
+       (lib.mkIf config.myConfig.modules.mako.enable
+         '{home-manager.users
+            {username
+              '{services.mako
+                 '{enable   true
+                   settings
+                    '{default-timeout 0
+                      icons 0
+                      "app-name=kitty" '{default-timeout 0}
+                      "app-name=Spotify" '{invisible 1}}}}}})}))

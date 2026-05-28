@@ -15,28 +15,28 @@
           (lib.findFirst (fn [line] (lib.hasPrefix "variant:" line)) "" lines)
          match       (builtins.match ".*variant: \"([^\"]+)\".*" variantLine)]
         (if (!= match nil) (builtins.head match) "dark"))]
-    {:options.myConfig.modules.styling.enable
-      (lib.mkEnableOption "system-wide theming and styling")
-     :config
-      (lib.mkIf config.myConfig.modules.styling.enable
-        {:stylix
-          {:enable       true
-           :base16Scheme schemeFile
-           :polarity     variant
-           :fonts
-            {:monospace {:package pkgs.commit-mono :name "CommitMono"}
-             :sansSerif {:package pkgs.dejavu_fonts :name "DejaVu Sans"}
-             :serif
-              {:package pkgs.ia-writer-quattro :name "iA Writer Quattro S"}
-             :sizes     {:terminal 14}}}
-         :home-manager.users
-          {username
-            (module [config ...]
-              {:stylix.targets.firefox
-                {:profileNames [username] :colorTheme.enable true}
-               :xdg.configFile
-                {"themes"
-                  {:source
-                    (config.lib.file.mkOutOfStoreSymlink
-                      (s config.home.homeDirectory
-                        "/code/nixos-config/dotfiles/themes"))}}})}})}))
+    '{options.myConfig.modules.styling.enable
+       (lib.mkEnableOption "system-wide theming and styling")
+      config
+       (lib.mkIf config.myConfig.modules.styling.enable
+         '{stylix
+            '{enable       true
+              base16Scheme schemeFile
+              polarity     variant
+              fonts
+               '{monospace '{package pkgs.commit-mono name "CommitMono"}
+                 sansSerif '{package pkgs.dejavu_fonts name "DejaVu Sans"}
+                 serif
+                  '{package pkgs.ia-writer-quattro name "iA Writer Quattro S"}
+                 sizes     '{terminal 14}}}
+           home-manager.users
+            {username
+              (module [config ...]
+                '{stylix.targets.firefox
+                   '{profileNames [username] colorTheme.enable true}
+                  xdg.configFile
+                   '{"themes"
+                      '{source
+                         (config.lib.file.mkOutOfStoreSymlink
+                           (s config.home.homeDirectory
+                             "/code/nixos-config/dotfiles/themes"))}}})}})}))

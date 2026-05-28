@@ -3,80 +3,80 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  {:options.myConfig.bundles.doom-emacs
-    {:enable (lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)")
-     :doom-emacs.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable doom-emacs"})
-     :emacs.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable emacs"})
-     :nerd-fonts.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable nerd-fonts"})
-     :ripgrep.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable ripgrep"})
-     :fd.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable fd"})
-     :clang.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable clang"})
-     :cmake.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable cmake"})
-     :gnumake.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable gnumake"})
-     :gcc.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable gcc"})
-     :libtool.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable libtool"})
-     :sbcl.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable sbcl"})
-     :gnome-screenshot.enable
-      (lib.mkOption
-        {:type        lib.types.bool
-         :default     true
-         :description "Enable gnome-screenshot"})
-     :graphviz.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable graphviz"})
-     :shellcheck.enable
-      (lib.mkOption
-        {:type lib.types.bool :default true :description "Enable shellcheck"})}
-   :config
-    (lib.mkIf config.myConfig.bundles.doom-emacs.enable
-      {:myConfig.modules.doom-emacs.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.doom-emacs.enable)
-       :myConfig.modules.emacs.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.emacs.enable)
-       :myConfig.modules.nerd-fonts.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.nerd-fonts.enable)
-       :myConfig.modules.ripgrep.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.ripgrep.enable)
-       :myConfig.modules.fd.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.fd.enable)
-       :myConfig.modules.clang.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.clang.enable)
-       :myConfig.modules.cmake.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.cmake.enable)
-       :myConfig.modules.gnumake.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.gnumake.enable)
-       :myConfig.modules.gcc.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.gcc.enable)
-       :myConfig.modules.libtool.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.libtool.enable)
-       :myConfig.modules.sbcl.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.sbcl.enable)
-       :myConfig.modules.gnome-screenshot.enable
-        (lib.mkDefault
-          config.myConfig.bundles.doom-emacs.gnome-screenshot.enable)
-       :myConfig.modules.graphviz.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.graphviz.enable)
-       :myConfig.modules.shellcheck.enable
-        (lib.mkDefault config.myConfig.bundles.doom-emacs.shellcheck.enable)})})
+  '{options.myConfig.bundles.doom-emacs
+     '{enable (lib.mkEnableOption "Doom Emacs (emacs + build deps + tools)")
+       doom-emacs.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable doom-emacs"})
+       emacs.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable emacs"})
+       nerd-fonts.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable nerd-fonts"})
+       ripgrep.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable ripgrep"})
+       fd.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable fd"})
+       clang.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable clang"})
+       cmake.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable cmake"})
+       gnumake.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable gnumake"})
+       gcc.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable gcc"})
+       libtool.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable libtool"})
+       sbcl.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable sbcl"})
+       gnome-screenshot.enable
+        (lib.mkOption
+          '{type        lib.types.bool
+            default     true
+            description "Enable gnome-screenshot"})
+       graphviz.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable graphviz"})
+       shellcheck.enable
+        (lib.mkOption
+          '{type lib.types.bool default true description "Enable shellcheck"})}
+    config
+     (lib.mkIf config.myConfig.bundles.doom-emacs.enable
+       '{myConfig.modules.doom-emacs.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.doom-emacs.enable)
+         myConfig.modules.emacs.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.emacs.enable)
+         myConfig.modules.nerd-fonts.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.nerd-fonts.enable)
+         myConfig.modules.ripgrep.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.ripgrep.enable)
+         myConfig.modules.fd.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.fd.enable)
+         myConfig.modules.clang.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.clang.enable)
+         myConfig.modules.cmake.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.cmake.enable)
+         myConfig.modules.gnumake.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.gnumake.enable)
+         myConfig.modules.gcc.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.gcc.enable)
+         myConfig.modules.libtool.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.libtool.enable)
+         myConfig.modules.sbcl.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.sbcl.enable)
+         myConfig.modules.gnome-screenshot.enable
+          (lib.mkDefault
+            config.myConfig.bundles.doom-emacs.gnome-screenshot.enable)
+         myConfig.modules.graphviz.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.graphviz.enable)
+         myConfig.modules.shellcheck.enable
+          (lib.mkDefault config.myConfig.bundles.doom-emacs.shellcheck.enable)})})
