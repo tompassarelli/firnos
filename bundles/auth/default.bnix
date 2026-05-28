@@ -1,13 +1,28 @@
 #lang beagle/nix
-(ns bundles.auth)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.auth
-     {:enable (lib/mkEnableOption "authentication (polkit + GNOME Keyring)")
-      :polkit.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable polkit"})
-      :gnome-keyring.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable gnome-keyring"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.auth.enable
-       {:myConfig.modules.polkit.enable (lib/mkDefault config.myConfig.bundles.auth.polkit.enable)
-        :myConfig.modules.gnome-keyring.enable (lib/mkDefault config.myConfig.bundles.auth.gnome-keyring.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.auth
+         {:enable
+          (lib.mkEnableOption "authentication (polkit + GNOME Keyring)")
+          :polkit.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable polkit"})
+          :gnome-keyring.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable gnome-keyring"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.auth.enable
+                   {:myConfig.modules.polkit.enable
+                    (lib.mkDefault config.myConfig.bundles.auth.polkit.enable)
+                    :myConfig.modules.gnome-keyring.enable
+                    (lib.mkDefault config.myConfig.bundles.auth.gnome-keyring.enable)})})

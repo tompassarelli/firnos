@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.codex)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.codex.enable
-     (lib/mkEnableOption "OpenAI Codex CLI (master/bleeding-edge)")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.codex.enable
-       {
-        :environment.systemPackages [pkgs.master.codex]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.codex.enable
+         (lib.mkEnableOption "OpenAI Codex CLI (master/bleeding-edge)")
+         :config
+         (lib.mkIf config.myConfig.modules.codex.enable
+                   {:environment.systemPackages [pkgs.master.codex]})})

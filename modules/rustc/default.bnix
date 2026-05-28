@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.rustc)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.rustc.enable
-     (lib/mkEnableOption "Rust compiler")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.rustc.enable
-       {:environment.systemPackages (with pkgs [pkgs.unstable.rustc])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.rustc.enable
+         (lib.mkEnableOption "Rust compiler")
+         :config
+         (lib.mkIf config.myConfig.modules.rustc.enable
+                   {:environment.systemPackages [pkgs.unstable.rustc]})})

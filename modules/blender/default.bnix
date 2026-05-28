@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.blender)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.blender.enable
-     (lib/mkEnableOption "Blender 3D editor")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.blender.enable
-       {:environment.systemPackages (with pkgs [blender])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.blender.enable
+         (lib.mkEnableOption "Blender 3D editor")
+         :config
+         (lib.mkIf config.myConfig.modules.blender.enable
+                   {:environment.systemPackages (with pkgs [blender])})})

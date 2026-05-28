@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.freetds)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.freetds.enable
-     (lib/mkEnableOption "FreeTDS (TDS protocol library for MSSQL)")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.freetds.enable
-       {:environment.systemPackages (with pkgs [freetds])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.freetds.enable
+         (lib.mkEnableOption "FreeTDS (TDS protocol library for MSSQL)")
+         :config
+         (lib.mkIf config.myConfig.modules.freetds.enable
+                   {:environment.systemPackages (with pkgs [freetds])})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.graphviz)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.graphviz.enable
-     (lib/mkEnableOption "Graphviz graph visualization")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.graphviz.enable
-       {:environment.systemPackages (with pkgs [graphviz])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.graphviz.enable
+         (lib.mkEnableOption "Graphviz graph visualization")
+         :config
+         (lib.mkIf config.myConfig.modules.graphviz.enable
+                   {:environment.systemPackages (with pkgs [graphviz])})})

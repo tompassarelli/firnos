@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.imagemagick)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.imagemagick.enable
-     (lib/mkEnableOption "ImageMagick image processing")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.imagemagick.enable
-       {:environment.systemPackages (with pkgs [imagemagick])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.imagemagick.enable
+         (lib.mkEnableOption "ImageMagick image processing")
+         :config
+         (lib.mkIf config.myConfig.modules.imagemagick.enable
+                   {:environment.systemPackages (with pkgs [imagemagick])})})

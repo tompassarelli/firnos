@@ -1,12 +1,39 @@
 #lang beagle/nix
-(ns modules.theme-switcher)
 
-(module [config lib pkgs]
-  (let [switch-theme (pkgs.writeShellScriptBin "switch-theme" (ms "#!/usr/bin/env bash" "" "# Theme switcher script for NixOS using walker dmenu" "set -e" "" "FLAKE_DIR=\"$HOME/code/nixos-config\"" "HOSTNAME=$(${pkgs.hostname}/bin/hostname)" "HOST_CONFIG=\"$FLAKE_DIR/hosts/$HOSTNAME/configuration.nix\"" "" "# List of common base16 themes" "# You can expand this list or dynamically generate it" "THEMES=(" "    \"tokyo-night-dark\"" "    \"tokyo-night-light\"" "    \"catppuccin-mocha\"" "    \"catppuccin-latte\"" "    \"dracula\"" "    \"gruvbox-dark-hard\"" "    \"gruvbox-light-hard\"" "    \"nord\"" "    \"solarized-dark\"" "    \"solarized-light\"" "    \"onedark\"" "    \"everforest\"" "    \"everforest-dark-hard\"" "    \"rose-pine\"" "    \"rose-pine-dawn\"" ")" "" "# Get current theme from host configuration" "CURRENT_THEME=$(${pkgs.gnugrep}/bin/grep -Po '(?<=myConfig\\.modules\\.stylix\\.chosenTheme = \")[^\"]+' \"$HOST_CONFIG\" | ${pkgs.coreutils}/bin/head -1)" "" "# Show themes in walker dmenu" "SELECTED=$(printf '%s\\n' \"''${THEMES[@]}\" | ${pkgs.walker}/bin/walker --dmenu -p \"Select theme:\")" "" "# Exit if no selection" "if [ -z \"$SELECTED\" ]; then" "    echo \"No theme selected\"" "    exit 0" "fi" "" "# Exit if same theme" "if [ \"$SELECTED\" = \"$CURRENT_THEME\" ]; then" "    echo \"Theme '$SELECTED' is already active\"" "    exit 0" "fi" "" "echo \"Switching theme from '$CURRENT_THEME' to '$SELECTED'...\"" "" "# Backup host configuration" "${pkgs.coreutils}/bin/cp \"$HOST_CONFIG\" \"$HOST_CONFIG.bak\"" "" "# Update the chosenTheme line in host configuration" "${pkgs.gnused}/bin/sed -i \"s/myConfig\\.modules\\.stylix\\.chosenTheme = \\\"$CURRENT_THEME\\\"/myConfig.modules.stylix.chosenTheme = \\\"$SELECTED\\\"/\" \"$HOST_CONFIG\"" "" "# Verify the change" "if ! ${pkgs.gnugrep}/bin/grep -q \"myConfig\\.modules\\.stylix\\.chosenTheme = \\\"$SELECTED\\\"\" \"$HOST_CONFIG\"; then" "    echo \"Error: Failed to update theme in host configuration\"" "    ${pkgs.coreutils}/bin/mv \"$HOST_CONFIG.bak\" \"$HOST_CONFIG\"" "    exit 1" "fi" "" "echo \"Updated $HOST_CONFIG with theme '$SELECTED'\"" "" "# Rebuild NixOS configuration" "echo \"Rebuilding NixOS configuration...\"" "if sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake \"$FLAKE_DIR#$HOSTNAME\"; then" "    echo \"System rebuilt successfully!\"" "" "    # Restart services that need the new theme" "    echo \"Restarting services...\"" "    ${pkgs.systemd}/bin/systemctl --user restart swaybg.service 2>/dev/null || true" "" "    # You may need to restart other services here" "    # ${pkgs.systemd}/bin/systemctl --user restart waybar.service 2>/dev/null || true" "" "    echo \"Theme switched to '$SELECTED' successfully!\"" "    ${pkgs.coreutils}/bin/rm \"$HOST_CONFIG.bak\"" "else" "    echo \"Error: nixos-rebuild failed, restoring backup\"" "    ${pkgs.coreutils}/bin/mv \"$HOST_CONFIG.bak\" \"$HOST_CONFIG\"" "    exit 1" "fi"))]
-  {:options.myConfig.modules.theme-switcher.enable
-     (lib/mkEnableOption "theme switcher script")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.theme-switcher.enable
-       {
-        :environment.systemPackages [switch-theme]})}))
+(module (params config lib pkgs ...)
+        (let (<- switch-theme
+                 (pkgs.writeShellScriptBin "switch-theme"
+                   (ms "#!/usr/bin/env bash\n\n# Theme switcher script for NixOS using walker dmenu\nset -e\n\nFLAKE_DIR=\"$HOME/code/nixos-config\"\nHOSTNAME=$("
+                       pkgs.hostname
+                       "/bin/hostname)\nHOST_CONFIG=\"$FLAKE_DIR/hosts/$HOSTNAME/configuration.nix\"\n\n# List of common base16 themes\n# You can expand this list or dynamically generate it\nTHEMES=(\n    \"tokyo-night-dark\"\n    \"tokyo-night-light\"\n    \"catppuccin-mocha\"\n    \"catppuccin-latte\"\n    \"dracula\"\n    \"gruvbox-dark-hard\"\n    \"gruvbox-light-hard\"\n    \"nord\"\n    \"solarized-dark\"\n    \"solarized-light\"\n    \"onedark\"\n    \"everforest\"\n    \"everforest-dark-hard\"\n    \"rose-pine\"\n    \"rose-pine-dawn\"\n)\n\n# Get current theme from host configuration\nCURRENT_THEME=$("
+                       pkgs.gnugrep
+                       "/bin/grep -Po '(?<=myConfig\\.modules\\.stylix\\.chosenTheme = \")[^\"]+' \"$HOST_CONFIG\" | "
+                       pkgs.coreutils
+                       "/bin/head -1)\n\n# Show themes in walker dmenu\nSELECTED=$(printf '%s\\n' \"${THEMES[@]}\" | "
+                       pkgs.walker
+                       "/bin/walker --dmenu -p \"Select theme:\")\n\n# Exit if no selection\nif [ -z \"$SELECTED\" ]; then\n    echo \"No theme selected\"\n    exit 0\nfi\n\n# Exit if same theme\nif [ \"$SELECTED\" = \"$CURRENT_THEME\" ]; then\n    echo \"Theme '$SELECTED' is already active\"\n    exit 0\nfi\n\necho \"Switching theme from '$CURRENT_THEME' to '$SELECTED'...\"\n\n# Backup host configuration\n"
+                       pkgs.coreutils
+                       "/bin/cp \"$HOST_CONFIG\" \"$HOST_CONFIG.bak\"\n\n# Update the chosenTheme line in host configuration\n"
+                       pkgs.gnused
+                       "/bin/sed -i \"s/myConfig\\.modules\\.stylix\\.chosenTheme = \\\"$CURRENT_THEME\\\"/myConfig.modules.stylix.chosenTheme = \\\"$SELECTED\\\"/\" \"$HOST_CONFIG\"\n\n# Verify the change\nif ! "
+                       pkgs.gnugrep
+                       "/bin/grep -q \"myConfig\\.modules\\.stylix\\.chosenTheme = \\\"$SELECTED\\\"\" \"$HOST_CONFIG\"; then\n    echo \"Error: Failed to update theme in host configuration\"\n    "
+                       pkgs.coreutils
+                       "/bin/mv \"$HOST_CONFIG.bak\" \"$HOST_CONFIG\"\n    exit 1\nfi\n\necho \"Updated $HOST_CONFIG with theme '$SELECTED'\"\n\n# Rebuild NixOS configuration\necho \"Rebuilding NixOS configuration...\"\nif sudo "
+                       pkgs.nixos-rebuild
+                       "/bin/nixos-rebuild switch --flake \"$FLAKE_DIR#$HOSTNAME\"; then\n    echo \"System rebuilt successfully!\"\n\n    # Restart services that need the new theme\n    echo \"Restarting services...\"\n    "
+                       pkgs.systemd
+                       "/bin/systemctl --user restart swaybg.service 2>/dev/null || true\n\n    # You may need to restart other services here\n    # "
+                       pkgs.systemd
+                       "/bin/systemctl --user restart waybar.service 2>/dev/null || true\n\n    echo \"Theme switched to '$SELECTED' successfully!\"\n    "
+                       pkgs.coreutils
+                       "/bin/rm \"$HOST_CONFIG.bak\"\nelse\n    echo \"Error: nixos-rebuild failed, restoring backup\"\n    "
+                       pkgs.coreutils
+                       "/bin/mv \"$HOST_CONFIG.bak\" \"$HOST_CONFIG\"\n    exit 1\nfi\n")))
+             {:options.myConfig.modules.theme-switcher.enable
+              (lib.mkEnableOption "theme switcher script")
+              :config
+              (lib.mkIf config.myConfig.modules.theme-switcher.enable
+                        {:environment.systemPackages [switch-theme]})}))

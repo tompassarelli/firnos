@@ -1,14 +1,35 @@
 #lang beagle/nix
-(ns modules.starship)
 
-(module [config lib pkgs]
-  (let [username config.myConfig.modules.users.username]
-  {:options.myConfig.modules.starship.enable
-     (lib/mkEnableOption "starship prompt")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.starship.enable
-       {
-        :home-manager.users
-          {username
-            {            :programs.starship {:enable true :enableFishIntegration true :settings {:add_newline false :format (lib.concatStrings ["$directory" "$character"]) :directory {:truncation_length 0 :truncate_to_repo false} :character {:success_symbol "[λ](bold green)" :error_symbol "[λ](bold red)" :vimcmd_symbol "[λ](bold green)"} :username.disabled true :hostname.disabled true}}}}})}))
+(module (params config lib pkgs ...)
+        (let (<- username config.myConfig.modules.users.username)
+             {:options.myConfig.modules.starship.enable
+              (lib.mkEnableOption "starship prompt")
+              :config
+              (lib.mkIf config.myConfig.modules.starship.enable
+                        {:home-manager.users
+                         {username
+                          {:programs.starship
+                           {:enable
+                            true
+                            :enableFishIntegration
+                            true
+                            :settings
+                            {:add_newline
+                             false
+                             :format
+                             (lib.concatStrings ["$directory" "$character"])
+                             :directory
+                             {:truncation_length 0 :truncate_to_repo false}
+                             :character
+                             {:success_symbol
+                              "[λ](bold green)"
+                              :error_symbol
+                              "[λ](bold red)"
+                              :vimcmd_symbol
+                              "[λ](bold green)"}
+                             :username.disabled
+                             true
+                             :hostname.disabled
+                             true}}}}})}))

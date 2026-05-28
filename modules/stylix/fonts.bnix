@@ -1,5 +1,8 @@
 #lang beagle/nix
-(ns stylix.fonts)
 
-(module [config lib]
-  {:config (lib/mkIf config.myConfig.modules.stylix.enable {:fonts.fontconfig.enable true})})
+(ns fonts)
+
+(module (params config lib ...)
+        {:config
+         (lib.mkIf config.myConfig.modules.stylix.enable
+                   {:fonts.fontconfig.enable true})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.rust-analyzer)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.rust-analyzer.enable
-     (lib/mkEnableOption "Rust language server")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.rust-analyzer.enable
-       {:environment.systemPackages (with pkgs [pkgs.unstable.rust-analyzer])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.rust-analyzer.enable
+         (lib.mkEnableOption "Rust language server")
+         :config
+         (lib.mkIf config.myConfig.modules.rust-analyzer.enable
+                   {:environment.systemPackages [pkgs.unstable.rust-analyzer]})})

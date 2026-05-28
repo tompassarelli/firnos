@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.unzip)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.unzip.enable
-     (lib/mkEnableOption "unzip archive tool")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.unzip.enable
-       {
-        :environment.systemPackages [pkgs.unzip]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.unzip.enable
+         (lib.mkEnableOption "unzip archive tool")
+         :config
+         (lib.mkIf config.myConfig.modules.unzip.enable
+                   {:environment.systemPackages [pkgs.unzip]})})

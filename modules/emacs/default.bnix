@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.emacs)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.emacs.enable
-     (lib/mkEnableOption "GNU Emacs editor")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.emacs.enable
-       {
-        :environment.systemPackages (with pkgs [emacs-pgtk])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.emacs.enable
+         (lib.mkEnableOption "GNU Emacs editor")
+         :config
+         (lib.mkIf config.myConfig.modules.emacs.enable
+                   {:environment.systemPackages (with pkgs [emacs-pgtk])})})

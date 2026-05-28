@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.nix-ld)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.nix-ld.enable
-     (lib/mkEnableOption "nix-ld dynamic library shim")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.nix-ld.enable
-       {
-        :programs.nix-ld.enable true})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.nix-ld.enable
+         (lib.mkEnableOption "nix-ld dynamic library shim")
+         :config
+         (lib.mkIf config.myConfig.modules.nix-ld.enable
+                   {:programs.nix-ld.enable true})})

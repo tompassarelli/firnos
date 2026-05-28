@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.sbcl)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.sbcl.enable
-     (lib/mkEnableOption "Steel Bank Common Lisp compiler")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.sbcl.enable
-       {:environment.systemPackages (with pkgs [sbcl])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.sbcl.enable
+         (lib.mkEnableOption "Steel Bank Common Lisp compiler")
+         :config
+         (lib.mkIf config.myConfig.modules.sbcl.enable
+                   {:environment.systemPackages (with pkgs [sbcl])})})

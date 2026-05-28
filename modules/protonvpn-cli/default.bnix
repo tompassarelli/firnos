@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.protonvpn-cli)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.protonvpn-cli.enable
-     (lib/mkEnableOption "ProtonVPN CLI client")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.protonvpn-cli.enable
-       {:environment.systemPackages (with pkgs [protonvpn-cli])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.protonvpn-cli.enable
+         (lib.mkEnableOption "ProtonVPN CLI client")
+         :config
+         (lib.mkIf config.myConfig.modules.protonvpn-cli.enable
+                   {:environment.systemPackages (with pkgs [protonvpn-cli])})})

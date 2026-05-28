@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.polkit)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.polkit.enable
-     (lib/mkEnableOption "Polkit security configuration")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.polkit.enable
-       {:security.polkit.enable true})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.polkit.enable
+         (lib.mkEnableOption "Polkit security configuration")
+         :config
+         (lib.mkIf config.myConfig.modules.polkit.enable
+                   {:security.polkit.enable true})})

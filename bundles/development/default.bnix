@@ -1,29 +1,100 @@
 #lang beagle/nix
-(ns bundles.development)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.development
-     {:enable (lib/mkEnableOption "core development workflow")
-      :git.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable git"})
-      :gh.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable gh"})
-      :forgejo-cli.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable forgejo-cli"})
-      :delta.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable delta"})
-      :vim.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable vim"})
-      :claude.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable claude"})
-      :direnv.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable direnv"})
-      :containers.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable containers"})
-      :ripgrep.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable ripgrep"})
-      :fd.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable fd"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.development.enable
-       {:myConfig.modules.git.enable (lib/mkDefault config.myConfig.bundles.development.git.enable)
-        :myConfig.modules.gh.enable (lib/mkDefault config.myConfig.bundles.development.gh.enable)
-        :myConfig.modules.forgejo-cli.enable (lib/mkDefault config.myConfig.bundles.development.forgejo-cli.enable)
-        :myConfig.modules.delta.enable (lib/mkDefault config.myConfig.bundles.development.delta.enable)
-        :myConfig.modules.vim.enable (lib/mkDefault config.myConfig.bundles.development.vim.enable)
-        :myConfig.modules.claude.enable (lib/mkDefault config.myConfig.bundles.development.claude.enable)
-        :myConfig.modules.direnv.enable (lib/mkDefault config.myConfig.bundles.development.direnv.enable)
-        :myConfig.modules.containers.enable (lib/mkDefault config.myConfig.bundles.development.containers.enable)
-        :myConfig.modules.ripgrep.enable (lib/mkDefault config.myConfig.bundles.development.ripgrep.enable)
-        :myConfig.modules.fd.enable (lib/mkDefault config.myConfig.bundles.development.fd.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.development
+         {:enable
+          (lib.mkEnableOption "core development workflow")
+          :git.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable git"})
+          :gh.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable gh"})
+          :forgejo-cli.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable forgejo-cli"})
+          :delta.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable delta"})
+          :vim.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable vim"})
+          :claude.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable claude"})
+          :direnv.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable direnv"})
+          :containers.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable containers"})
+          :ripgrep.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable ripgrep"})
+          :fd.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable fd"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.development.enable
+                   {:myConfig.modules.git.enable
+                    (lib.mkDefault config.myConfig.bundles.development.git.enable)
+                    :myConfig.modules.gh.enable
+                    (lib.mkDefault config.myConfig.bundles.development.gh.enable)
+                    :myConfig.modules.forgejo-cli.enable
+                    (lib.mkDefault config.myConfig.bundles.development.forgejo-cli.enable)
+                    :myConfig.modules.delta.enable
+                    (lib.mkDefault config.myConfig.bundles.development.delta.enable)
+                    :myConfig.modules.vim.enable
+                    (lib.mkDefault config.myConfig.bundles.development.vim.enable)
+                    :myConfig.modules.claude.enable
+                    (lib.mkDefault config.myConfig.bundles.development.claude.enable)
+                    :myConfig.modules.direnv.enable
+                    (lib.mkDefault config.myConfig.bundles.development.direnv.enable)
+                    :myConfig.modules.containers.enable
+                    (lib.mkDefault config.myConfig.bundles.development.containers.enable)
+                    :myConfig.modules.ripgrep.enable
+                    (lib.mkDefault config.myConfig.bundles.development.ripgrep.enable)
+                    :myConfig.modules.fd.enable
+                    (lib.mkDefault config.myConfig.bundles.development.fd.enable)})})

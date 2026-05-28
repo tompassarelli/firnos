@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.input)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.input.enable
-     (lib/mkEnableOption "touchpad support (libinput)")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.input.enable
-       {
-        :services.libinput.enable true})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.input.enable
+         (lib.mkEnableOption "touchpad support (libinput)")
+         :config
+         (lib.mkIf config.myConfig.modules.input.enable
+                   {:services.libinput.enable true})})

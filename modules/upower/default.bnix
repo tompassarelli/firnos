@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.upower)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.upower.enable
-     (lib/mkEnableOption "UPower power management")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.upower.enable
-       {
-        :services.upower.enable true})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.upower.enable
+         (lib.mkEnableOption "UPower power management")
+         :config
+         (lib.mkIf config.myConfig.modules.upower.enable
+                   {:services.upower.enable true})})

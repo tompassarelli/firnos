@@ -1,22 +1,37 @@
 #lang beagle/nix
-(ns modules.niri)
 
-(module [config lib pkgs]
-  (let [username config.myConfig.modules.users.username
-        niri-viewport-nav (pkgs.writers.writePython3Bin "niri-viewport-nav" {:libraries []} (ms "import json" "import subprocess" "import sys" "" "" "def get_windows():" "    result = subprocess.run(" "        [\"niri\", \"msg\", \"-j\", \"windows\"]," "        capture_output=True, text=True" "    )" "    return json.loads(result.stdout)" "" "" "def get_focused_workspace():" "    result = subprocess.run(" "        [\"niri\", \"msg\", \"-j\", \"workspaces\"]," "        capture_output=True, text=True" "    )" "    workspaces = json.loads(result.stdout)" "    for ws in workspaces:" "        if ws.get(\"is_focused\"):" "            return ws[\"id\"]" "    return None" "" "" "def focus_window(window_id):" "    cmd = [\"niri\", \"msg\", \"action\", \"focus-window\", \"--id\", str(window_id)]" "    subprocess.run(cmd)" "" "" "def main():" "    if len(sys.argv) < 2 or sys.argv[1] not in (\"next\", \"prev\"):" "        print(\"Usage: niri-viewport-nav [next|prev]\", file=sys.stderr)" "        sys.exit(1)" "" "    direction = sys.argv[1]" "    ws_id = get_focused_workspace()" "    if ws_id is None:" "        sys.exit(1)" "" "    windows = get_windows()" "    # Filter to current workspace, non-floating" "    ws_windows = [" "        w for w in windows" "        if w[\"workspace_id\"] == ws_id and not w[\"is_floating\"]" "    ]" "" "    if not ws_windows:" "        sys.exit(0)" "" "    # Sort by column position" "    ws_windows.sort(" "        key=lambda w: w[\"layout\"][\"pos_in_scrolling_layout\"][0]" "    )" "" "    # Find screen width from fullscreen window or estimate from 50%" "    screen_width = None" "    for w in ws_windows:" "        width = w[\"layout\"][\"tile_size\"][0]" "        if width > 1000:  # Likely fullscreen" "            screen_width = width" "            break" "    if screen_width is None and ws_windows:" "        # Estimate: 50% window * 2" "        screen_width = ws_windows[0][\"layout\"][\"tile_size\"][0] * 2" "" "    if screen_width is None:" "        sys.exit(1)" "" "    # Group windows into viewports based on cumulative width" "    viewports = []" "    current_viewport = []" "    current_width = 0" "" "    for w in ws_windows:" "        width = w[\"layout\"][\"tile_size\"][0]" "        if current_width + width > screen_width + 10:  # float tolerance" "            viewports.append(current_viewport)" "            current_viewport = [w]" "            current_width = width" "        else:" "            current_viewport.append(w)" "            current_width += width" "" "    if current_viewport:" "        viewports.append(current_viewport)" "" "    # Find which viewport has the focused window" "    focused_idx = None" "    for i, vp in enumerate(viewports):" "        for w in vp:" "            if w[\"is_focused\"]:" "                focused_idx = i" "                break" "        if focused_idx is not None:" "            break" "" "    if focused_idx is None:" "        sys.exit(0)" "" "    # Navigate to next/prev viewport" "    if direction == \"next\":" "        target_idx = (focused_idx + 1) % len(viewports)" "    else:" "        target_idx = (focused_idx - 1) % len(viewports)" "" "    # Focus target viewport - overshoot then return to position correctly" "    target_vp = viewports[target_idx]" "    if len(target_vp) > 1:" "        # Focus last window first, then first window" "        # This scrolls view so first window is at left edge" "        focus_window(target_vp[-1][\"id\"])" "        focus_window(target_vp[0][\"id\"])" "    else:" "        focus_window(target_vp[0][\"id\"])" "" "" "if __name__ == \"__main__\":" "    main()"))]
-  {:options.myConfig.modules.niri.enable
-     (lib/mkEnableOption "Enable niri compositor configuration")
+(ns default)
 
-   :imports [(p "./xwayland-satellite.nix") (p "./swaybg.nix") (p "./swayidle.nix")]
-
-   :config
-     (lib/mkIf config.myConfig.modules.niri.enable
-       {
-        :programs.niri.enable true
-        :programs.niri.package pkgs.unstable.niri
-        :environment.systemPackages [niri-viewport-nav]
-        :environment.sessionVariables.NIXOS_OZONE_WL "1"
-        :security.chromiumSuidSandbox.enable true
-        :home-manager.users
-          {username
-            (module [config] {:xdg.configFile {"niri/config.kdl" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/niri/config.kdl"))}}})}})}))
+(module (params config lib pkgs ...)
+        (let (<- username
+                 config.myConfig.modules.users.username
+                 niri-viewport-nav
+                 (pkgs.writers.writePython3Bin "niri-viewport-nav"
+                   {:libraries []}
+                   (ms "import json\nimport subprocess\nimport sys\n\n\ndef get_windows():\n    result = subprocess.run(\n        [\"niri\", \"msg\", \"-j\", \"windows\"],\n        capture_output=True, text=True\n    )\n    return json.loads(result.stdout)\n\n\ndef get_focused_workspace():\n    result = subprocess.run(\n        [\"niri\", \"msg\", \"-j\", \"workspaces\"],\n        capture_output=True, text=True\n    )\n    workspaces = json.loads(result.stdout)\n    for ws in workspaces:\n        if ws.get(\"is_focused\"):\n            return ws[\"id\"]\n    return None\n\n\ndef focus_window(window_id):\n    cmd = [\"niri\", \"msg\", \"action\", \"focus-window\", \"--id\", str(window_id)]\n    subprocess.run(cmd)\n\n\ndef main():\n    if len(sys.argv) < 2 or sys.argv[1] not in (\"next\", \"prev\"):\n        print(\"Usage: niri-viewport-nav [next|prev]\", file=sys.stderr)\n        sys.exit(1)\n\n    direction = sys.argv[1]\n    ws_id = get_focused_workspace()\n    if ws_id is None:\n        sys.exit(1)\n\n    windows = get_windows()\n    # Filter to current workspace, non-floating\n    ws_windows = [\n        w for w in windows\n        if w[\"workspace_id\"] == ws_id and not w[\"is_floating\"]\n    ]\n\n    if not ws_windows:\n        sys.exit(0)\n\n    # Sort by column position\n    ws_windows.sort(\n        key=lambda w: w[\"layout\"][\"pos_in_scrolling_layout\"][0]\n    )\n\n    # Find screen width from fullscreen window or estimate from 50%\n    screen_width = None\n    for w in ws_windows:\n        width = w[\"layout\"][\"tile_size\"][0]\n        if width > 1000:  # Likely fullscreen\n            screen_width = width\n            break\n    if screen_width is None and ws_windows:\n        # Estimate: 50% window * 2\n        screen_width = ws_windows[0][\"layout\"][\"tile_size\"][0] * 2\n\n    if screen_width is None:\n        sys.exit(1)\n\n    # Group windows into viewports based on cumulative width\n    viewports = []\n    current_viewport = []\n    current_width = 0\n\n    for w in ws_windows:\n        width = w[\"layout\"][\"tile_size\"][0]\n        if current_width + width > screen_width + 10:  # float tolerance\n            viewports.append(current_viewport)\n            current_viewport = [w]\n            current_width = width\n        else:\n            current_viewport.append(w)\n            current_width += width\n\n    if current_viewport:\n        viewports.append(current_viewport)\n\n    # Find which viewport has the focused window\n    focused_idx = None\n    for i, vp in enumerate(viewports):\n        for w in vp:\n            if w[\"is_focused\"]:\n                focused_idx = i\n                break\n        if focused_idx is not None:\n            break\n\n    if focused_idx is None:\n        sys.exit(0)\n\n    # Navigate to next/prev viewport\n    if direction == \"next\":\n        target_idx = (focused_idx + 1) % len(viewports)\n    else:\n        target_idx = (focused_idx - 1) % len(viewports)\n\n    # Focus target viewport - overshoot then return to position correctly\n    target_vp = viewports[target_idx]\n    if len(target_vp) > 1:\n        # Focus last window first, then first window\n        # This scrolls view so first window is at left edge\n        focus_window(target_vp[-1][\"id\"])\n        focus_window(target_vp[0][\"id\"])\n    else:\n        focus_window(target_vp[0][\"id\"])\n\n\nif __name__ == \"__main__\":\n    main()\n")))
+             {:options.myConfig.modules.niri.enable
+              (lib.mkEnableOption "Enable niri compositor configuration")
+              :imports
+              [(p "./xwayland-satellite.nix")
+               (p "./swaybg.nix")
+               (p "./swayidle.nix")]
+              :config
+              (lib.mkIf config.myConfig.modules.niri.enable
+                        {:programs.niri.enable
+                         true
+                         :programs.niri.package
+                         pkgs.unstable.niri
+                         :environment.systemPackages
+                         [niri-viewport-nav]
+                         :environment.sessionVariables.NIXOS_OZONE_WL
+                         "1"
+                         :security.chromiumSuidSandbox.enable
+                         true
+                         :home-manager.users
+                         {username
+                          (module (params config ...)
+                                  {:xdg.configFile
+                                   {"niri/config.kdl"
+                                    {:source
+                                     (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory
+                                                                             "/code/nixos-config/dotfiles/niri/config.kdl"))}}})}})}))

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.fwupd)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.fwupd.enable
-     (lib/mkEnableOption "fwupd firmware updater")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.fwupd.enable
-       {:environment.systemPackages (with pkgs [fwupd])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.fwupd.enable
+         (lib.mkEnableOption "fwupd firmware updater")
+         :config
+         (lib.mkIf config.myConfig.modules.fwupd.enable
+                   {:environment.systemPackages (with pkgs [fwupd])})})

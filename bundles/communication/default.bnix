@@ -1,17 +1,46 @@
 #lang beagle/nix
-(ns bundles.communication)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.communication
-     {:enable (lib/mkEnableOption "communication applications")
-      :discord.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable discord"})
-      :zoom.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable zoom"})
-      :slack.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable slack"})
-      :mail.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable mail"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.communication.enable
-       {:myConfig.modules.discord.enable (lib/mkDefault config.myConfig.bundles.communication.discord.enable)
-        :myConfig.modules.zoom.enable (lib/mkDefault config.myConfig.bundles.communication.zoom.enable)
-        :myConfig.modules.slack.enable (lib/mkDefault config.myConfig.bundles.communication.slack.enable)
-        :myConfig.modules.mail.enable (lib/mkDefault config.myConfig.bundles.communication.mail.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.communication
+         {:enable
+          (lib.mkEnableOption "communication applications")
+          :discord.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable discord"})
+          :zoom.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable zoom"})
+          :slack.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable slack"})
+          :mail.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable mail"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.communication.enable
+                   {:myConfig.modules.discord.enable
+                    (lib.mkDefault config.myConfig.bundles.communication.discord.enable)
+                    :myConfig.modules.zoom.enable
+                    (lib.mkDefault config.myConfig.bundles.communication.zoom.enable)
+                    :myConfig.modules.slack.enable
+                    (lib.mkDefault config.myConfig.bundles.communication.slack.enable)
+                    :myConfig.modules.mail.enable
+                    (lib.mkDefault config.myConfig.bundles.communication.mail.enable)})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.cmake)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.cmake.enable
-     (lib/mkEnableOption "CMake build system")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.cmake.enable
-       {:environment.systemPackages (with pkgs [cmake])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.cmake.enable
+         (lib.mkEnableOption "CMake build system")
+         :config
+         (lib.mkIf config.myConfig.modules.cmake.enable
+                   {:environment.systemPackages (with pkgs [cmake])})})

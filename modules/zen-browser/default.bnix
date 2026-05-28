@@ -1,8 +1,16 @@
 #lang beagle/nix
-(ns modules.zen-browser)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.zen-browser.enable (lib/mkEnableOption "Enable Zen Browser")
-   :options.myConfig.modules.zen-browser.default (lib/mkOption {:type lib/types.bool :default false :description "Set Zen Browser as the default browser via MIME types"})
-   :imports [(p "./zen-browser.nix")]})
+(ns default)
 
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.zen-browser.enable
+         (lib.mkEnableOption "Enable Zen Browser")
+         :options.myConfig.modules.zen-browser.default
+         (lib.mkOption {:type
+                        lib.types.bool
+                        :default
+                        false
+                        :description
+                        "Set Zen Browser as the default browser via MIME types"})
+         :imports
+         [(p "./zen-browser.nix")]})

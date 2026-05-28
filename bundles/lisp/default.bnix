@@ -1,18 +1,46 @@
 #lang beagle/nix
-(ns bundles.lisp)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.lisp
-     {:enable (lib/mkEnableOption "Lisp development")
-      :doom-emacs.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable Doom Emacs bundle"})
-      :lem.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable Lem"})
-      :sbcl.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable SBCL"})
-      :clojure.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable Clojure"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.lisp.enable
-       {
-        :myConfig.bundles.doom-emacs.enable (lib/mkDefault config.myConfig.bundles.lisp.doom-emacs.enable)
-        :myConfig.modules.lem.enable (lib/mkDefault config.myConfig.bundles.lisp.lem.enable)
-        :myConfig.modules.sbcl.enable (lib/mkDefault config.myConfig.bundles.lisp.sbcl.enable)
-        :myConfig.modules.clojure.enable (lib/mkDefault config.myConfig.bundles.lisp.clojure.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.lisp
+         {:enable
+          (lib.mkEnableOption "Lisp development")
+          :doom-emacs.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable Doom Emacs bundle"})
+          :lem.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable Lem"})
+          :sbcl.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable SBCL"})
+          :clojure.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable Clojure"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.lisp.enable
+                   {:myConfig.bundles.doom-emacs.enable
+                    (lib.mkDefault config.myConfig.bundles.lisp.doom-emacs.enable)
+                    :myConfig.modules.lem.enable
+                    (lib.mkDefault config.myConfig.bundles.lisp.lem.enable)
+                    :myConfig.modules.sbcl.enable
+                    (lib.mkDefault config.myConfig.bundles.lisp.sbcl.enable)
+                    :myConfig.modules.clojure.enable
+                    (lib.mkDefault config.myConfig.bundles.lisp.clojure.enable)})})

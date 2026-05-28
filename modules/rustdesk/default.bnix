@@ -1,11 +1,11 @@
 #lang beagle/nix
-(ns modules.rustdesk)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.rustdesk.enable
-     (lib/mkEnableOption "RustDesk remote desktop")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.rustdesk.enable
-       {
-        :environment.systemPackages (with pkgs [rustdesk-flutter])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.rustdesk.enable
+         (lib.mkEnableOption "RustDesk remote desktop")
+         :config
+         (lib.mkIf config.myConfig.modules.rustdesk.enable
+                   {:environment.systemPackages
+                    (with pkgs [rustdesk-flutter])})})

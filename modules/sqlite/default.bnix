@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.sqlite)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.sqlite.enable
-     (lib/mkEnableOption "SQLite database")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.sqlite.enable
-       {
-        :environment.systemPackages [pkgs.sqlite]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.sqlite.enable
+         (lib.mkEnableOption "SQLite database")
+         :config
+         (lib.mkIf config.myConfig.modules.sqlite.enable
+                   {:environment.systemPackages [pkgs.sqlite]})})

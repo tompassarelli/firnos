@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.wget)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.wget.enable
-     (lib/mkEnableOption "wget download tool")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.wget.enable
-       {
-        :environment.systemPackages [pkgs.wget]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.wget.enable
+         (lib.mkEnableOption "wget download tool")
+         :config
+         (lib.mkIf config.myConfig.modules.wget.enable
+                   {:environment.systemPackages [pkgs.wget]})})

@@ -1,12 +1,15 @@
 #lang beagle/nix
-(ns modules.g203-led)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.g203-led.enable
-     (lib/mkEnableOption "Logitech G102/G203 LED control")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.g203-led.enable
-       {
-        :environment.systemPackages (with pkgs [g203-led])
-        :services.udev.extraRules (ms "ACTION==\"add\", SUBSYSTEM==\"usb\", ATTR{idVendor}==\"046d\", ATTR{idProduct}==\"c092\", RUN+=\"${pkgs.g203-led}/bin/g203-led lightsync solid 000000\"")})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.g203-led.enable
+         (lib.mkEnableOption "Logitech G102/G203 LED control")
+         :config
+         (lib.mkIf config.myConfig.modules.g203-led.enable
+                   {:environment.systemPackages
+                    (with pkgs [g203-led])
+                    :services.udev.extraRules
+                    (ms "ACTION==\"add\", SUBSYSTEM==\"usb\", ATTR{idVendor}==\"046d\", ATTR{idProduct}==\"c092\", RUN+=\""
+                        pkgs.g203-led
+                        "/bin/g203-led lightsync solid 000000\"\n")})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.lutris)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.lutris.enable
-     (lib/mkEnableOption "Lutris gaming platform")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.lutris.enable
-       {:environment.systemPackages (with pkgs [pkgs.unstable.lutris])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.lutris.enable
+         (lib.mkEnableOption "Lutris gaming platform")
+         :config
+         (lib.mkIf config.myConfig.modules.lutris.enable
+                   {:environment.systemPackages [pkgs.unstable.lutris]})})

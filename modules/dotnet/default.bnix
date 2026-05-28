@@ -1,12 +1,13 @@
 #lang beagle/nix
-(ns modules.dotnet)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.dotnet.enable
-     (lib/mkEnableOption ".NET SDK and CLI tools")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.dotnet.enable
-       {
-        :environment.systemPackages (with pkgs [dotnet-sdk_8])
-        :environment.sessionVariables.PATH ["$HOME/.dotnet/tools"]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.dotnet.enable
+         (lib.mkEnableOption ".NET SDK and CLI tools")
+         :config
+         (lib.mkIf config.myConfig.modules.dotnet.enable
+                   {:environment.systemPackages
+                    (with pkgs [dotnet-sdk_8])
+                    :environment.sessionVariables.PATH
+                    ["$HOME/.dotnet/tools"]})})

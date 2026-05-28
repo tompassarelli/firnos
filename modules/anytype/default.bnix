@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.anytype)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.anytype.enable
-     (lib/mkEnableOption "Anytype — local-first knowledge/notes workspace")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.anytype.enable
-       {:environment.systemPackages (with pkgs [anytype])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.anytype.enable
+         (lib.mkEnableOption "Anytype — local-first knowledge/notes workspace")
+         :config
+         (lib.mkIf config.myConfig.modules.anytype.enable
+                   {:environment.systemPackages (with pkgs [anytype])})})

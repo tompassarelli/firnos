@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.ssh)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.ssh.enable
-     (lib/mkEnableOption "SSH server")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.ssh.enable
-       {
-        :services.openssh.enable true})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.ssh.enable
+         (lib.mkEnableOption "SSH server")
+         :config
+         (lib.mkIf config.myConfig.modules.ssh.enable
+                   {:services.openssh.enable true})})

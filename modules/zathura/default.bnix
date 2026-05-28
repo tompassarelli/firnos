@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.zathura)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.zathura.enable
-     (lib/mkEnableOption "Zathura PDF viewer")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.zathura.enable
-       {
-        :environment.systemPackages [pkgs.zathura]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.zathura.enable
+         (lib.mkEnableOption "Zathura PDF viewer")
+         :config
+         (lib.mkIf config.myConfig.modules.zathura.enable
+                   {:environment.systemPackages [pkgs.zathura]})})

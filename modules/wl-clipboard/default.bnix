@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.wl-clipboard)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.wl-clipboard.enable
-     (lib/mkEnableOption "Wayland clipboard utilities")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.wl-clipboard.enable
-       {:environment.systemPackages (with pkgs [wl-clipboard])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.wl-clipboard.enable
+         (lib.mkEnableOption "Wayland clipboard utilities")
+         :config
+         (lib.mkIf config.myConfig.modules.wl-clipboard.enable
+                   {:environment.systemPackages (with pkgs [wl-clipboard])})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.fd)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.fd.enable
-     (lib/mkEnableOption "fd file finder")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.fd.enable
-       {:environment.systemPackages (with pkgs [fd])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.fd.enable
+         (lib.mkEnableOption "fd file finder")
+         :config
+         (lib.mkIf config.myConfig.modules.fd.enable
+                   {:environment.systemPackages (with pkgs [fd])})})

@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.racket)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.racket.enable
-     (lib/mkEnableOption "Racket programming language")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.racket.enable
-       {
-        :environment.systemPackages [pkgs.unstable.racket]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.racket.enable
+         (lib.mkEnableOption "Racket programming language")
+         :config
+         (lib.mkIf config.myConfig.modules.racket.enable
+                   {:environment.systemPackages [pkgs.unstable.racket]})})

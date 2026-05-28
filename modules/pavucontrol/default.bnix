@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.pavucontrol)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.pavucontrol.enable
-     (lib/mkEnableOption "PulseAudio volume control")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.pavucontrol.enable
-       {:environment.systemPackages (with pkgs [pavucontrol])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.pavucontrol.enable
+         (lib.mkEnableOption "PulseAudio volume control")
+         :config
+         (lib.mkIf config.myConfig.modules.pavucontrol.enable
+                   {:environment.systemPackages (with pkgs [pavucontrol])})})

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.discord)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.discord.enable
-     (lib/mkEnableOption "Discord chat client")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.discord.enable
-       {:environment.systemPackages (with pkgs [discord])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.discord.enable
+         (lib.mkEnableOption "Discord chat client")
+         :config
+         (lib.mkIf config.myConfig.modules.discord.enable
+                   {:environment.systemPackages (with pkgs [discord])})})

@@ -1,17 +1,44 @@
 #lang beagle/nix
-(ns modules.lem)
 
-(module [config lib pkgs inputs]
-  (let [username config.myConfig.modules.users.username
-        lem-ncurses (inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (fn (o) {:postPatch (s (get-or o (quote postPatch) (s "")) (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd"))}))]
-  {:options.myConfig.modules.lem.enable
-     (lib/mkEnableOption "Lem Common Lisp editor")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.lem.enable
-       {
-        :environment.systemPackages [lem-ncurses]
-        :home-manager.users
-          {username
-            (module [config] {:xdg.desktopEntries.lem {:name "Lem" :comment "Common Lisp Editor" :exec (s pkgs.unstable.ghostty "/bin/ghostty -e " lem-ncurses "/bin/lem") :terminal false :type "Application" :categories ["Development" "TextEditor"]}
-            :home.file {".lem" {:source (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory "/code/nixos-config/dotfiles/lem"))}}})}})}))
+(module (params config lib pkgs inputs ...)
+        (let (<- username
+                 config.myConfig.modules.users.username
+                 lem-ncurses
+                 (inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs (fn (params o)
+                                                                                     {:postPatch
+                                                                                      (s (get-or o
+                                                                                                 postPatch
+                                                                                                 "")
+                                                                                         (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd\n"))})))
+             {:options.myConfig.modules.lem.enable
+              (lib.mkEnableOption "Lem Common Lisp editor")
+              :config
+              (lib.mkIf config.myConfig.modules.lem.enable
+                        {:environment.systemPackages
+                         [lem-ncurses]
+                         :home-manager.users
+                         {username
+                          (module (params config ...)
+                                  {:xdg.desktopEntries.lem
+                                   {:name
+                                    "Lem"
+                                    :comment
+                                    "Common Lisp Editor"
+                                    :exec
+                                    (s pkgs.unstable.ghostty
+                                       "/bin/ghostty -e "
+                                       lem-ncurses
+                                       "/bin/lem")
+                                    :terminal
+                                    false
+                                    :type
+                                    "Application"
+                                    :categories
+                                    ["Development" "TextEditor"]}
+                                   :home.file
+                                   {".lem"
+                                    {:source
+                                     (config.lib.file.mkOutOfStoreSymlink (s config.home.homeDirectory
+                                                                             "/code/nixos-config/dotfiles/lem"))}}})}})}))

@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.mpv)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.mpv.enable
-     (lib/mkEnableOption "mpv media player")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.mpv.enable
-       {:environment.systemPackages (with pkgs [mpv])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.mpv.enable
+         (lib.mkEnableOption "mpv media player")
+         :config
+         (lib.mkIf config.myConfig.modules.mpv.enable
+                   {:environment.systemPackages (with pkgs [mpv])})})

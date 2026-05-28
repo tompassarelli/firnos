@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.curl)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.curl.enable
-     (lib/mkEnableOption "curl HTTP client")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.curl.enable
-       {:environment.systemPackages (with pkgs [curl])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.curl.enable
+         (lib.mkEnableOption "curl HTTP client")
+         :config
+         (lib.mkIf config.myConfig.modules.curl.enable
+                   {:environment.systemPackages (with pkgs [curl])})})

@@ -1,8 +1,16 @@
 #lang beagle/nix
-(ns modules.gjoa)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.gjoa.enable (lib/mkEnableOption "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")
-   :options.myConfig.modules.gjoa.default (lib/mkOption {:type lib/types.bool :default false :description "Set Gjoa as the default browser via MIME types"})
-   :imports [(p "./gjoa.nix")]})
+(ns default)
 
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.gjoa.enable
+         (lib.mkEnableOption "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")
+         :options.myConfig.modules.gjoa.default
+         (lib.mkOption {:type
+                        lib.types.bool
+                        :default
+                        false
+                        :description
+                        "Set Gjoa as the default browser via MIME types"})
+         :imports
+         [(p "./gjoa.nix")]})

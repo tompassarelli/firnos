@@ -1,10 +1,10 @@
 #lang beagle/nix
-(ns modules.procs)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.procs.enable
-     (lib/mkEnableOption "Enable procs (modern ps replacement)")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.procs.enable
-       {:environment.systemPackages (with pkgs [procs])})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.procs.enable
+         (lib.mkEnableOption "Enable procs (modern ps replacement)")
+         :config
+         (lib.mkIf config.myConfig.modules.procs.enable
+                   {:environment.systemPackages (with pkgs [procs])})})

@@ -1,7 +1,9 @@
 #lang beagle/nix
-(ns niri.niri)
 
-;; submodule implementation
-(module [config lib pkgs]
-  {:config (lib/mkIf config.myConfig.modules.niri.enable
-    {:environment.systemPackages [pkgs.unstable.xwayland-satellite]})})
+(ns xwayland-satellite)
+
+(module (params config lib pkgs ...)
+        {:config
+         (lib.mkIf config.myConfig.modules.niri.enable
+                   {:environment.systemPackages
+                    [pkgs.unstable.xwayland-satellite]})})

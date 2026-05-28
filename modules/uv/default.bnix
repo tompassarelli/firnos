@@ -1,11 +1,10 @@
 #lang beagle/nix
-(ns modules.uv)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.uv.enable
-     (lib/mkEnableOption "uv Python package manager")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.uv.enable
-       {
-        :environment.systemPackages [pkgs.uv]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.uv.enable
+         (lib.mkEnableOption "uv Python package manager")
+         :config
+         (lib.mkIf config.myConfig.modules.uv.enable
+                   {:environment.systemPackages [pkgs.uv]})})

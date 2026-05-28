@@ -1,15 +1,37 @@
 #lang beagle/nix
-(ns bundles.printing)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.printing
-     {:enable (lib/mkEnableOption "printing support (CUPS + drivers)")
-      :printing.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable printing"})
-      :gutenprint.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable gutenprint"})
-      :hplip.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable hplip"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.printing.enable
-       {:myConfig.modules.printing.enable (lib/mkDefault config.myConfig.bundles.printing.printing.enable)
-        :myConfig.modules.gutenprint.enable (lib/mkDefault config.myConfig.bundles.printing.gutenprint.enable)
-        :myConfig.modules.hplip.enable (lib/mkDefault config.myConfig.bundles.printing.hplip.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.printing
+         {:enable
+          (lib.mkEnableOption "printing support (CUPS + drivers)")
+          :printing.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable printing"})
+          :gutenprint.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable gutenprint"})
+          :hplip.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable hplip"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.printing.enable
+                   {:myConfig.modules.printing.enable
+                    (lib.mkDefault config.myConfig.bundles.printing.printing.enable)
+                    :myConfig.modules.gutenprint.enable
+                    (lib.mkDefault config.myConfig.bundles.printing.gutenprint.enable)
+                    :myConfig.modules.hplip.enable
+                    (lib.mkDefault config.myConfig.bundles.printing.hplip.enable)})})

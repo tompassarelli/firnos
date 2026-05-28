@@ -1,14 +1,17 @@
 #lang beagle/nix
-(ns modules.boot)
 
-(module [config lib pkgs]
-  {:options.myConfig.modules.boot.enable
-     (lib/mkEnableOption "boot configuration")
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.modules.boot.enable
-       {
-        :boot.loader.systemd-boot.enable true
-        :boot.loader.efi.canTouchEfiVariables true
-        :boot.kernelModules ["uinput"]
-        :boot.kernelParams ["amdgpu.vpe_enable=0"]})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.modules.boot.enable
+         (lib.mkEnableOption "boot configuration")
+         :config
+         (lib.mkIf config.myConfig.modules.boot.enable
+                   {:boot.loader.systemd-boot.enable
+                    true
+                    :boot.loader.efi.canTouchEfiVariables
+                    true
+                    :boot.kernelModules
+                    ["uinput"]
+                    :boot.kernelParams
+                    ["amdgpu.vpe_enable=0"]})})

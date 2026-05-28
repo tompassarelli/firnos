@@ -1,16 +1,37 @@
 #lang beagle/nix
-(ns bundles.vpn)
 
-(module [config lib pkgs]
-  {:options.myConfig.bundles.vpn
-     {:enable (lib/mkEnableOption "VPN support")
-      :wireguard.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable WireGuard"})
-      :protonvpn-gui.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable ProtonVPN GUI"})
-      :protonvpn-cli.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable ProtonVPN CLI"})}
+(ns default)
 
-   :config
-     (lib/mkIf config.myConfig.bundles.vpn.enable
-       {
-        :myConfig.modules.wireguard.enable (lib/mkDefault config.myConfig.bundles.vpn.wireguard.enable)
-        :myConfig.modules.protonvpn-gui.enable (lib/mkDefault config.myConfig.bundles.vpn.protonvpn-gui.enable)
-        :myConfig.modules.protonvpn-cli.enable (lib/mkDefault config.myConfig.bundles.vpn.protonvpn-cli.enable)})})
+(module (params config lib pkgs ...)
+        {:options.myConfig.bundles.vpn
+         {:enable
+          (lib.mkEnableOption "VPN support")
+          :wireguard.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable WireGuard"})
+          :protonvpn-gui.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable ProtonVPN GUI"})
+          :protonvpn-cli.enable
+          (lib.mkOption {:type
+                         lib.types.bool
+                         :default
+                         true
+                         :description
+                         "Enable ProtonVPN CLI"})}
+         :config
+         (lib.mkIf config.myConfig.bundles.vpn.enable
+                   {:myConfig.modules.wireguard.enable
+                    (lib.mkDefault config.myConfig.bundles.vpn.wireguard.enable)
+                    :myConfig.modules.protonvpn-gui.enable
+                    (lib.mkDefault config.myConfig.bundles.vpn.protonvpn-gui.enable)
+                    :myConfig.modules.protonvpn-cli.enable
+                    (lib.mkDefault config.myConfig.bundles.vpn.protonvpn-cli.enable)})})
