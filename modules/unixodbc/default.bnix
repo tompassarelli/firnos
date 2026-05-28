@@ -4,20 +4,20 @@
 
 (module [config lib pkgs ...]
   (let [msodbcsql18 pkgs.unstable.unixodbcDrivers.msodbcsql18]
-    '{options.myConfig.modules.unixodbc.enable
-       (lib.mkEnableOption "unixODBC with MSSQL driver")
-      config
-       (lib.mkIf config.myConfig.modules.unixodbc.enable
-         '{environment.systemPackages [pkgs.unixODBC msodbcsql18]
-           environment.variables '{ODBCSYSINI "/etc" ODBCINI "/etc/odbc.ini"}
-           environment.etc
-            '{"odbcinst.ini"
-               '{text
-                  (ms
-                    "[ODBC Driver 18 for SQL Server]\nDescription = Microsoft ODBC Driver 18 for SQL Server\nDriver = "
-                    msodbcsql18
-                    "/lib/libmsodbcsql-18.1.so.1.1\n")}
-              "odbc.ini"
-               '{text
-                  (ms
-                    "[msa_data]\nDriver = ODBC Driver 18 for SQL Server\nServer = localhost\nDatabase = msa_data\nTrustServerCertificate = Yes\n")}}})}))
+    {:options.myConfig.modules.unixodbc.enable
+      (lib.mkEnableOption "unixODBC with MSSQL driver")
+     :config
+      (lib.mkIf config.myConfig.modules.unixodbc.enable
+        {:environment.systemPackages [pkgs.unixODBC msodbcsql18]
+         :environment.variables {:ODBCSYSINI "/etc" :ODBCINI "/etc/odbc.ini"}
+         :environment.etc
+          {"odbcinst.ini"
+            {:text
+              (ms
+                "[ODBC Driver 18 for SQL Server]\nDescription = Microsoft ODBC Driver 18 for SQL Server\nDriver = "
+                msodbcsql18
+                "/lib/libmsodbcsql-18.1.so.1.1\n")}
+           "odbc.ini"
+            {:text
+              (ms
+                "[msa_data]\nDriver = ODBC Driver 18 for SQL Server\nServer = localhost\nDatabase = msa_data\nTrustServerCertificate = Yes\n")}}})}))

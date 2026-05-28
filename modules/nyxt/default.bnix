@@ -3,11 +3,11 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  '{options.myConfig.modules.nyxt.enable
-     (lib.mkEnableOption "Enable Nyxt browser")
-    options.myConfig.modules.nyxt.default
-     (lib.mkOption
-       '{type        lib.types.bool
-         default     false
-         description "Set Nyxt as the default browser via MIME types"})
-    imports [(p "./nyxt.nix")]})
+  {:options.myConfig.modules.nyxt.enable
+    (lib.mkEnableOption "Enable Nyxt browser")
+   :options.myConfig.modules.nyxt.default
+    (lib.mkOption
+      {:type        lib.types.bool
+       :default     false
+       :description "Set Nyxt as the default browser via MIME types"})
+   :imports [(p "./nyxt.nix")]})

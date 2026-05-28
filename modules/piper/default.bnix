@@ -3,9 +3,9 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  '{options.myConfig.modules.piper.enable
-     (lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)")
-    config
-     (lib.mkIf config.myConfig.modules.piper.enable
-       '{services.ratbagd.enable true
-         environment.systemPackages (with pkgs [piper])})})
+  {:options.myConfig.modules.piper.enable
+    (lib.mkEnableOption "gaming mouse configuration (Piper + ratbagd)")
+   :config
+    (lib.mkIf config.myConfig.modules.piper.enable
+      {:services.ratbagd.enable true
+       :environment.systemPackages (with pkgs [piper])})})

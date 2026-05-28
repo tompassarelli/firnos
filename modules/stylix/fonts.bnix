@@ -3,6 +3,6 @@
 (ns fonts)
 
 (module [config lib ...]
-  '{config
-     (lib.mkIf config.myConfig.modules.stylix.enable
-       '{fonts.fontconfig.enable true})})
+  {:config
+    (lib.mkIf config.myConfig.modules.stylix.enable
+      {:fonts.fontconfig.enable true})})

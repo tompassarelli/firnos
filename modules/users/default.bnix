@@ -2,4 +2,4 @@
 
 (ns default)
 
-(module [lib ...] '{imports [(p "./users.nix")]})
+(module [lib ...] {:imports [(p "./users.nix")]})

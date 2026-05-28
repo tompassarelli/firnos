@@ -4,18 +4,17 @@
 
 (module [config lib pkgs ...]
   (let [postgresPackage pkgs.unstable.postgresql_18]
-    '{options.myConfig.modules.postgresql.enable
-       (lib.mkEnableOption "PostgreSQL database server for local development")
-      config
-       (lib.mkIf config.myConfig.modules.postgresql.enable
-         '{services.postgresql
-            '{enable          true
-              package         postgresPackage
-              authentication
-               (pkgs.lib.mkOverride 10
-                 (ms
-                   "# TYPE  DATABASE        USER            ADDRESS                 METHOD\nlocal   all             all                                     trust\nhost    all             all             127.0.0.1/32            trust\nhost    all             all             ::1/128                 trust\n"))
-              ensureDatabases ["postgres"]
-              ensureUsers
-               ['{name "postgres" ensureClauses.superuser true}]}
-           environment.systemPackages [postgresPackage]})}))
+    {:options.myConfig.modules.postgresql.enable
+      (lib.mkEnableOption "PostgreSQL database server for local development")
+     :config
+      (lib.mkIf config.myConfig.modules.postgresql.enable
+        {:services.postgresql
+          {:enable          true
+           :package         postgresPackage
+           :authentication
+            (pkgs.lib.mkOverride 10
+              (ms
+                "# TYPE  DATABASE        USER            ADDRESS                 METHOD\nlocal   all             all                                     trust\nhost    all             all             127.0.0.1/32            trust\nhost    all             all             ::1/128                 trust\n"))
+           :ensureDatabases ["postgres"]
+           :ensureUsers     [{:name "postgres" :ensureClauses.superuser true}]}
+         :environment.systemPackages [postgresPackage]})}))

@@ -4,26 +4,26 @@
 
 (module [config lib pkgs ...]
   (let [cfg config.myConfig.modules.kanata]
-    '{config
-       (lib.mkIf cfg.enable
-         '{hardware.uinput.enable true
-           services.udev.extraRules
-            (ms
-              "KERNEL==\"uinput\", MODE=\"0660\", GROUP=\"uinput\", OPTIONS+=\"static_node=uinput\"\n")
-           users.groups.uinput '{}
-           users.users.kanata
-            '{isSystemUser true group "kanata" extraGroups ["input" "uinput"]}
-           users.groups.kanata '{}
-           services.kanata
-            '{enable    true
-              package   pkgs.kanata-git
-              keyboards
-               (lib.mkIf (!= cfg.devices [])
-                 '{main
-                    '{devices     cfg.devices
-                      port        (lib.mkIf (!= cfg.port nil) cfg.port)
-                      extraDefCfg "process-unmapped-keys yes"
-                      config      (builtins.readFile cfg.configFile)}})}
-           systemd.services.kanata-main.serviceConfig
+    {:config
+      (lib.mkIf cfg.enable
+        {:hardware.uinput.enable true
+         :services.udev.extraRules
+          (ms
+            "KERNEL==\"uinput\", MODE=\"0660\", GROUP=\"uinput\", OPTIONS+=\"static_node=uinput\"\n")
+         :users.groups.uinput {}
+         :users.users.kanata
+          {:isSystemUser true :group "kanata" :extraGroups ["input" "uinput"]}
+         :users.groups.kanata {}
+         :services.kanata
+          {:enable    true
+           :package   pkgs.kanata-git
+           :keyboards
             (lib.mkIf (!= cfg.devices [])
-              '{DynamicUser (lib.mkForce false) User "kanata"})})}))
+              {:main
+                {:devices     cfg.devices
+                 :port        (lib.mkIf (!= cfg.port nil) cfg.port)
+                 :extraDefCfg "process-unmapped-keys yes"
+                 :config      (builtins.readFile cfg.configFile)}})}
+         :systemd.services.kanata-main.serviceConfig
+          (lib.mkIf (!= cfg.devices [])
+            {:DynamicUser (lib.mkForce false) :User "kanata"})})}))

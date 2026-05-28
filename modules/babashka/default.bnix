@@ -3,8 +3,8 @@
 (ns default)
 
 (module [config lib pkgs ...]
-  '{options.myConfig.modules.babashka.enable
-     (lib.mkEnableOption "Babashka native Clojure scripting")
-    config
-     (lib.mkIf config.myConfig.modules.babashka.enable
-       '{environment.systemPackages (with pkgs [babashka])})})
+  {:options.myConfig.modules.babashka.enable
+    (lib.mkEnableOption "Babashka native Clojure scripting")
+   :config
+    (lib.mkIf config.myConfig.modules.babashka.enable
+      {:environment.systemPackages (with pkgs [babashka])})})

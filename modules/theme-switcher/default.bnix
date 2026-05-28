@@ -34,8 +34,8 @@
           "/bin/rm \"$HOST_CONFIG.bak\"\nelse\n    echo \"Error: nixos-rebuild failed, restoring backup\"\n    "
           pkgs.coreutils
           "/bin/mv \"$HOST_CONFIG.bak\" \"$HOST_CONFIG\"\n    exit 1\nfi\n"))]
-    '{options.myConfig.modules.theme-switcher.enable
-       (lib.mkEnableOption "theme switcher script")
-      config
-       (lib.mkIf config.myConfig.modules.theme-switcher.enable
-         '{environment.systemPackages [switch-theme]})}))
+    {:options.myConfig.modules.theme-switcher.enable
+      (lib.mkEnableOption "theme switcher script")
+     :config
+      (lib.mkIf config.myConfig.modules.theme-switcher.enable
+        {:environment.systemPackages [switch-theme]})}))

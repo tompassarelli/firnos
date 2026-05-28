@@ -4,10 +4,9 @@
 
 (module [config lib flakeRoot ...]
   (let [username config.myConfig.modules.users.username]
-    '{options.myConfig.modules.clockify.enable (lib.mkEnableOption "clockify")
-      config
-       (lib.mkIf config.myConfig.modules.clockify.enable
-         '{sops.secrets
-            '{"msa-clockify-api-key"
-               '{sopsFile (s flakeRoot "/secrets/clockify.yaml")
-                 owner    username}}})}))
+    {:options.myConfig.modules.clockify.enable (lib.mkEnableOption "clockify")
+     :config
+      (lib.mkIf config.myConfig.modules.clockify.enable
+        {:sops.secrets
+          {"msa-clockify-api-key"
+            {:sopsFile (s flakeRoot "/secrets/clockify.yaml") :owner username}}})}))
