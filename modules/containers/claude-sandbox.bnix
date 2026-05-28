@@ -3,51 +3,35 @@
 (ns claude-sandbox)
 
 (module [pkgs]
-        (pkgs.dockerTools.buildLayeredImage {:name
-                                             "claude-sandbox"
-                                             :tag
-                                             "latest"
-                                             :contents
-                                             (with pkgs
-                                                   [bashInteractive
-                                                    coreutils
-                                                    gnused
-                                                    gnugrep
-                                                    findutils
-                                                    gawk
-                                                    less
-                                                    which
-                                                    gnutar
-                                                    gzip
-                                                    xz
-                                                    git
-                                                    gh
-                                                    openssh
-                                                    nix
-                                                    claude-code
-                                                    nodejs
-                                                    python3
-                                                    ripgrep
-                                                    fd
-                                                    curl
-                                                    jq])
-                                             :extraCommands
-                                             (ms "mkdir -p home/dev/.claude\nmkdir -p home/dev/.config/nix\nmkdir -p work\nmkdir -p tmp\nchmod 1777 tmp\nmkdir -p nix/var/nix/{profiles,gcroots,db}\nmkdir -p etc\necho \"dev:x:1000:1000::/home/dev:/bin/bash\" > etc/passwd\necho \"dev:x:1000:\" > etc/group\n# Enable flakes and nix-command in container\necho \"experimental-features = nix-command flakes\" > home/dev/.config/nix/nix.conf\n# Starter flake for declarative package management\ncp "
-                                                 (p "./devshell-flake.nix")
-                                                 " home/dev/flake.nix\nchmod 644 home/dev/flake.nix\n# Instructions for Claude Code\ncp "
-                                                 (p "./CLAUDE.md")
-                                                 " work/CLAUDE.md\nchmod 644 work/CLAUDE.md\n")
-                                             :config
-                                             {:Cmd
-                                              ["/bin/bash"]
-                                              :WorkingDir
-                                              "/work"
-                                              :User
-                                              "dev"
-                                              :Env
-                                              ["HOME=/home/dev"
-                                               "USER=dev"
-                                               (s "SSL_CERT_FILE="
-                                                  pkgs.cacert
-                                                  "/etc/ssl/certs/ca-bundle.crt")
-                                               "NIX_CONF_DIR=/home/dev/.config/nix"]}}))
+  (pkgs.dockerTools.buildLayeredImage
+    {:name          "claude-sandbox"
+     :tag           "latest"
+     :contents
+      (with pkgs
+        [bashInteractive coreutils
+         gnused          gnugrep
+         findutils       gawk
+         less            which
+         gnutar          gzip
+         xz              git
+         gh              openssh
+         nix             claude-code
+         nodejs          python3
+         ripgrep         fd
+         curl            jq])
+     :extraCommands
+      (ms
+        "mkdir -p home/dev/.claude\nmkdir -p home/dev/.config/nix\nmkdir -p work\nmkdir -p tmp\nchmod 1777 tmp\nmkdir -p nix/var/nix/{profiles,gcroots,db}\nmkdir -p etc\necho \"dev:x:1000:1000::/home/dev:/bin/bash\" > etc/passwd\necho \"dev:x:1000:\" > etc/group\n# Enable flakes and nix-command in container\necho \"experimental-features = nix-command flakes\" > home/dev/.config/nix/nix.conf\n# Starter flake for declarative package management\ncp "
+        (p "./devshell-flake.nix")
+        " home/dev/flake.nix\nchmod 644 home/dev/flake.nix\n# Instructions for Claude Code\ncp "
+        (p "./CLAUDE.md")
+        " work/CLAUDE.md\nchmod 644 work/CLAUDE.md\n")
+     :config
+      {:Cmd        ["/bin/bash"]
+       :WorkingDir "/work"
+       :User       "dev"
+       :Env
+        ["HOME=/home/dev"
+         "USER=dev"
+         (s "SSL_CERT_FILE=" pkgs.cacert "/etc/ssl/certs/ca-bundle.crt")
+         "NIX_CONF_DIR=/home/dev/.config/nix"]}}))

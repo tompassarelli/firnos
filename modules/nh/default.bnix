@@ -3,8 +3,9 @@
 (ns default)
 
 (module [config lib pkgs ...]
-        {:options.myConfig.modules.nh.enable
-         (lib.mkEnableOption "Nix helper (nicer nixos-rebuild output, generation diff, search, clean)")
-         :config
-         (lib.mkIf config.myConfig.modules.nh.enable
-                   {:environment.systemPackages (with pkgs [nh])})})
+  {:options.myConfig.modules.nh.enable
+    (lib.mkEnableOption
+      "Nix helper (nicer nixos-rebuild output, generation diff, search, clean)")
+   :config
+    (lib.mkIf config.myConfig.modules.nh.enable
+      {:environment.systemPackages (with pkgs [nh])})})

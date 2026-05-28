@@ -3,26 +3,25 @@
 (ns default)
 
 (module [config lib pkgs ...]
-        (let [racoPackages
-              ["drracket-vim-tool" "db"]
-              racoEnsure
-              (pkgs.writeShellScript "raco-ensure-packages"
-                (ms "for pkg in "
-                    (lib.concatStringsSep " " racoPackages)
-                    "; do\n  if ! "
-                    pkgs.unstable.racket
-                    "/bin/raco pkg show \"$pkg\" 2>/dev/null | grep -q \"Package name:\"; then\n    "
-                    pkgs.unstable.racket
-                    "/bin/raco pkg install --auto --skip-installed \"$pkg\"\n  fi\ndone\n"))]
-             {:options.myConfig.modules.drracket.enable
-              (lib.mkEnableOption "DrRacket IDE")
-              :config
-              (lib.mkIf config.myConfig.modules.drracket.enable
-                        {:environment.systemPackages
-                         [pkgs.unstable.racket]
-                         :system.activationScripts.racoPackages.text
-                         (ms "sudo -u "
-                             config.myConfig.modules.users.username
-                             " "
-                             racoEnsure
-                             " || true\n")})}))
+  (let
+    [racoPackages ["drracket-vim-tool" "db"]
+     racoEnsure
+      (pkgs.writeShellScript "raco-ensure-packages"
+        (ms "for pkg in "
+          (lib.concatStringsSep " " racoPackages)
+          "; do\n  if ! "
+          pkgs.unstable.racket
+          "/bin/raco pkg show \"$pkg\" 2>/dev/null | grep -q \"Package name:\"; then\n    "
+          pkgs.unstable.racket
+          "/bin/raco pkg install --auto --skip-installed \"$pkg\"\n  fi\ndone\n"))]
+    {:options.myConfig.modules.drracket.enable
+      (lib.mkEnableOption "DrRacket IDE")
+     :config
+      (lib.mkIf config.myConfig.modules.drracket.enable
+        {:environment.systemPackages [pkgs.unstable.racket]
+         :system.activationScripts.racoPackages.text
+          (ms "sudo -u "
+            config.myConfig.modules.users.username
+            " "
+            racoEnsure
+            " || true\n")})}))

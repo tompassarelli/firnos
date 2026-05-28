@@ -3,48 +3,31 @@
 (ns users)
 
 (module [config lib pkgs ...]
-        (let [username config.myConfig.modules.users.username]
-             {:options.myConfig.modules.users.enable
-              (lib.mkEnableOption "Enable user configuration")
-              :options.myConfig.modules.users.username
-              (lib.mkOption {:type
-                             lib.types.str
-                             :default
-                             "tom"
-                             :description
-                             "Primary system username"})
-              :config
-              (lib.mkIf config.myConfig.modules.users.enable
-                        {:users.users
-                         {username
-                          {:shell
-                           pkgs.bashInteractive
-                           :isNormalUser
-                           true
-                           :home
-                           (s "/home/" username)
-                           :extraGroups
-                           ["wheel" "networkmanager" "plugdev"]}}
-                         :security.sudo.extraConfig
-                         (ms "Defaults timestamp_timeout=30\nDefaults timestamp_type=global\n")
-                         :systemd.tmpfiles.rules
-                         [(s "d /home/"
-                             username
-                             "/Documents 0755 "
-                             username
-                             " users -")
-                          (s "d /home/"
-                             username
-                             "/Pictures/Screenshots 0755 "
-                             username
-                             " users -")
-                          (s "d /home/"
-                             username
-                             "/code 0755 "
-                             username
-                             " users -")
-                          (s "d /home/"
-                             username
-                             "/src 0755 "
-                             username
-                             " users -")]})}))
+  (let [username config.myConfig.modules.users.username]
+    {:options.myConfig.modules.users.enable
+      (lib.mkEnableOption "Enable user configuration")
+     :options.myConfig.modules.users.username
+      (lib.mkOption
+        {:type        lib.types.str
+         :default     "tom"
+         :description "Primary system username"})
+     :config
+      (lib.mkIf config.myConfig.modules.users.enable
+        {:users.users
+          {username
+            {:shell        pkgs.bashInteractive
+             :isNormalUser true
+             :home         (s "/home/" username)
+             :extraGroups  ["wheel" "networkmanager" "plugdev"]}}
+         :security.sudo.extraConfig
+          (ms
+            "Defaults timestamp_timeout=30\nDefaults timestamp_type=global\n")
+         :systemd.tmpfiles.rules
+          [(s "d /home/" username "/Documents 0755 " username " users -")
+           (s "d /home/"
+             username
+             "/Pictures/Screenshots 0755 "
+             username
+             " users -")
+           (s "d /home/" username "/code 0755 " username " users -")
+           (s "d /home/" username "/src 0755 " username " users -")]})}))
