@@ -6,6 +6,7 @@
     environment.systemPackages = with pkgs; [ g203-led ];
     services.udev.extraRules = ''
       ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c092", RUN+="${pkgs.g203-led}/bin/g203-led lightsync solid 000000"
+
     '';
   };
 }

@@ -14,20 +14,20 @@
 
 set -euo pipefail
 
-# Resolve repo root from this script's location so firn-build works
-# regardless of cwd. FIRN_REPO env var takes precedence if set.
 cd "${FIRN_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 BEAGLE_PATH="${BEAGLE_PATH:-$(cd .. && pwd)/beagle}"
-BEAGLE_BUILD="$BEAGLE_PATH/bin/beagle-build"
-if [ ! -x "$BEAGLE_BUILD" ]; then
-  echo "firn-build: beagle-build not found at $BEAGLE_BUILD" >&2
+BEAGLE_BUILD_ALL="$BEAGLE_PATH/bin/beagle-build-all"
+if [ ! -x "$BEAGLE_BUILD_ALL" ]; then
+  echo "firn-build: beagle-build-all not found at $BEAGLE_BUILD_ALL" >&2
   echo "  set BEAGLE_PATH=/path/to/beagle" >&2
   exit 1
 fi
 
-count=0
-errors=0
+# Collect stale .bnix files (missing .nix or .nix older than .bnix).
+# One Racket process then builds them all (beagle-build-all --in-place),
+# avoiding the per-file cold-start that dominated the old loop.
+stale=()
 while IFS= read -r -d '' src; do
   case "$src" in
     ./scripts/*) continue ;;
@@ -35,24 +35,15 @@ while IFS= read -r -d '' src; do
   esac
 
   nix="${src%.bnix}.nix"
-
-  # Skip if .nix is newer than .bnix
   if [ -f "$nix" ] && [ "$nix" -nt "$src" ]; then
     continue
   fi
+  stale+=("$src")
+done < <(find . -name '*.bnix' -not -path './result*' -not -path './.direnv/*' -print0)
 
-  if "$BEAGLE_BUILD" "$src" "$nix" >/dev/null 2>&1; then
-    count=$((count + 1))
-  else
-    echo "firn-build: FAILED $src" >&2
-    "$BEAGLE_BUILD" "$src" "$nix" 2>&1 | head -20 >&2 || true
-    errors=$((errors + 1))
-  fi
-done < <(find . -name '*.bnix' -not -path './result*' -print0)
-
-if [ "$errors" -gt 0 ]; then
-  echo "firn-build: $count regenerated, $errors failed." >&2
-  exit 1
+if [ "${#stale[@]}" -eq 0 ]; then
+  echo "firn-build: nothing to rebuild."
+  exit 0
 fi
 
-echo "firn-build: $count file(s) regenerated."
+"$BEAGLE_BUILD_ALL" --in-place "${stale[@]}"

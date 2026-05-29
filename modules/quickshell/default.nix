@@ -7,7 +7,9 @@ in
 {
   options.myConfig.modules.quickshell.enable = lib.mkEnableOption "Quickshell (Qt6/QML) status bar";
   config = lib.mkIf config.myConfig.modules.quickshell.enable {
-    environment.systemPackages = [ inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+    environment.systemPackages = [
+      ((inputs.quickshell.packages."${pkgs.stdenv.hostPlatform.system}").default)
+    ];
     users.users.${username}.extraGroups = [ "input" ];
     home-manager.users.${username} = ({ config, ... }: {
       systemd.user.services.quickshell = {
@@ -18,7 +20,7 @@ in
           Requisite = [ "graphical-session.target" ];
         };
         Service = {
-          ExecStart = "${inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/qs";
+          ExecStart = "${(inputs.quickshell.packages."${pkgs.stdenv.hostPlatform.system}").default}/bin/qs";
           Restart = "on-failure";
         };
         Install = {
@@ -37,7 +39,7 @@ in
         "quickshell/NotificationPopup.qml".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/quickshell/NotificationPopup.qml";
         "quickshell/StylixColors.qml".text = with config.lib.stylix.colors; ''
           import QtQuick
-          
+
           QtObject {
               readonly property color base00: "#${base00}"
               readonly property color base01: "#${base01}"
@@ -57,6 +59,7 @@ in
               readonly property color base0F: "#${base0F}"
               readonly property string fontFamily: "${monoFont}"
           }
+
         '';
       };
     });

@@ -96,6 +96,54 @@ Word-boundary matching prevents partial collisions; string literals are skipped.
 
 Use the Edit tool directly on `.bnix` files. The source is beagle/nix s-expressions — edits are straightforward keyword/value changes in maps.
 
+**Every Edit/Write to a `.bnix` file triggers `.claude/hooks/post-edit-check.sh`** automatically — it runs `beagle-syntax` (structural delimiter check) and `beagle-validate` (schema check) on the file and prints actionable hints to stderr. If the hook flags a syntax error, fix delimiters first before deeper edits.
+
+## Query the compiler instead of grep
+
+For anything mechanical (what's the signature of X, what fields does record R have, who calls this, where is this declared), use the daemon-backed query tools — they answer in ~100ms warm and never go stale:
+
+```bash
+beagle-syntax FILE                      # structural delimiter check (--ledger for trace, --repair --emit-patch for auto-fix)
+beagle-sig NAME FILE...                 # typed signature lookup
+beagle-fields RECORD FILE...            # record fields, types, accessors
+beagle-provides FILE                    # module exports
+beagle-callers NAME FILE...             # call sites
+beagle-impact NAME FILE...              # change impact: callers + transitive
+beagle-expand FILE                      # show macro expansion
+beagle-daemon status                    # confirm the warm cache is up
+beagle-daemon start --watch .           # if not running
+```
+
+The daemon auto-starts on first edit via the PostToolUse hook, but `beagle-daemon status` at session start avoids cold-start delay.
+
+## Repair pipeline (when validate alone isn't enough)
+
+`firn validate` catches most things in seconds. When a bug isn't pinned to one file or the validator says something's wrong but the fix isn't obvious, use the evidence-ranked repair tools. They take a **verify script** as argument — the oracle that decides whether a speculative fix actually worked. This repo ships one:
+
+```bash
+# Confidence-ranked repair queue (does not modify files):
+beagle-repair . scripts/firn-verify
+
+# Auto-apply fixes above the confidence threshold, then re-verify:
+beagle-repair . scripts/firn-verify --auto --threshold 0.85
+
+# Emit a patch you can review before applying:
+beagle-repair . scripts/firn-verify --emit-patch
+```
+
+The pipeline combines six evidence layers (specfix-oracle 0.95, type-error + suggestion 0.90, type-error + fix-plan 0.85, trace + semantic agreement 0.80, semantic suspicion 0.65, blame 0.60) and ranks by confidence.
+
+When stuck on a specific function or after a verify failure:
+
+```bash
+beagle-trace . scripts/firn-verify --focus FN-NAME      # execution trace
+beagle-cascade . scripts/firn-verify --from-failures    # cross-file impact of the failure
+beagle-blame . scripts/firn-verify                      # semantic blame: which form is responsible
+beagle-specfix . scripts/firn-verify                    # speculative fix verified against oracle
+```
+
+`scripts/firn-verify` runs Rungs 1 + 2 (firn-build + firn-validate). Pass `--eval` to it for the heavier Rung 3 (full `nix build`) — only worth it when the validator can't see the bug.
+
 ## Diagnosing schema errors
 
 When the validator reports an unknown option, type mismatch, or you're about to write a new `(set …)`, use `firn schema explain` instead of digging through `schema.json` by hand:

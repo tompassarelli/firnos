@@ -11,6 +11,7 @@ in
       xdg.configFile."autostart/remmina-applet.desktop".text = ''
         [Desktop Entry]
         Hidden=true
+
       '';
     };
   };

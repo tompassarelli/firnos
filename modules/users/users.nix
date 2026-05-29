@@ -20,6 +20,7 @@ in
     security.sudo.extraConfig = ''
       Defaults timestamp_timeout=30
       Defaults timestamp_type=global
+
     '';
     systemd.tmpfiles.rules = [
       "d /home/${username}/Documents 0755 ${username} users -"

@@ -100,7 +100,7 @@
             moduleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./modules));
             bundleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles));
           in
-          (builtins.map (m: "${firnModules}/${m}") moduleDirs ++ builtins.map (b: "${firnBundles}/${b}") bundleDirs);
+          ((builtins.map (m: "${firnModules}/${m}") moduleDirs) ++ (builtins.map (b: "${firnBundles}/${b}") bundleDirs));
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = ({
             inputs = {
@@ -153,6 +153,7 @@
                 nyxt-appimage = final.runCommand "nyxt.AppImage" { } ''
                   tar xzf ${nyxt-tarball} -O > $out
                   chmod +x $out
+
                 '';
                 nyxt-extracted = final.appimageTools.extractType2 {
                   pname = "nyxt";
@@ -166,18 +167,19 @@
                 };
                 nyxt-unwrapped = final.runCommand "nyxt-unwrapped-4.0.0" { } ''
                   mkdir -p $out/app/Nyxt/_build/cl-electron $out/share/applications $out/share/icons/hicolor/256x256/apps
-                  
+
                   # Nyxt binary and libs
                   cp ${nyxt-extracted}/usr/bin/nyxt $out/app/Nyxt/
                   cp -r ${nyxt-extracted}/usr/lib/* $out/app/Nyxt/ 2>/dev/null || true
-                  
+
                   # cl-electron (full Electron distribution)
                   cp -r ${cl-electron-extracted}/* $out/app/Nyxt/_build/cl-electron/
-                  
+
                   # Desktop integration
                   cp ${nyxt-extracted}/nyxt.desktop $out/share/applications/ 2>/dev/null || true
                   cp ${nyxt-extracted}/nyxt.png $out/share/icons/hicolor/256x256/apps/ 2>/dev/null || true
                   sed -i "s|Exec=.*|Exec=nyxt %u|" $out/share/applications/nyxt.desktop 2>/dev/null || true
+
                 '';
               in
               final.buildFHSEnv {
@@ -240,11 +242,13 @@
                   export PATH="/app/Nyxt/_build/cl-electron:$PATH"
                   export ELECTRON_OZONE_PLATFORM_HINT=auto
                   exec /app/Nyxt/nyxt "$@"
+
                 '';
                 extraInstallCommands = ''
                   mkdir -p $out/share
                   ln -s ${nyxt-unwrapped}/share/applications $out/share/applications
                   ln -s ${nyxt-unwrapped}/share/icons $out/share/icons
+
                 '';
               };
             })
@@ -266,7 +270,7 @@
         home-manager.darwinModules.home-manager
         hostConfig
         ({ config, lib, pkgs, ... }: {
-          imports = (builtins.map (m: "${firnModules}/${m}") [
+          imports = ((builtins.map (m: "${firnModules}/${m}") [
             "kitty"
             "fish"
             "zoxide"
@@ -294,7 +298,7 @@
             "direnv"
             "ripgrep"
             "fd"
-          ] ++ builtins.map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles-darwin))));
+          ]) ++ (builtins.map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles-darwin)))));
           options.myConfig.modules.users.username = lib.mkOption {
             type = lib.types.str;
             default = "you";
@@ -373,6 +377,7 @@
       packages = [ pkgs.pre-commit pkgs.gitleaks ];
       shellHook = ''
         pre-commit install --allow-missing-config 2>/dev/null
+
       '';
     };
   });

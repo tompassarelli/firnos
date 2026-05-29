@@ -11,6 +11,7 @@
     boot.extraModprobeConfig = ''
       options mt7925_common disable_clc=1
       options mt7925e disable_aspm=1
+
     '';
   };
 }

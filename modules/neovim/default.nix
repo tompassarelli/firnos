@@ -15,7 +15,7 @@ in
         "nvim/init.lua".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/neovim/init.lua";
         "nvim/lua/stylix-colors.lua".text = with config.lib.stylix.colors; ''
           local M = {}
-          
+
           -- Base16 color palette
           M.palette = {
             base00 = "#${base00}",
@@ -35,7 +35,7 @@ in
             base0E = "#${base0E}",
             base0F = "#${base0F}"
           }
-          
+
           -- Stylix colorscheme setup function (adapted from stylix neovim.nix)
           M.setup = function()
             -- Try to use mini.base16 if available, fallback to manual highlights
@@ -56,8 +56,9 @@ in
               -- vim.cmd.highlight({ "Normal", "guibg=NONE", "ctermbg=NONE" })
             end
           end
-          
+
           return M
+
         '';
       };
     });

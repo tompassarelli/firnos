@@ -10,6 +10,7 @@ let
       pref("general.config.sandbox_enabled", false);
       EOF
       cp ${palefoxRoot}/program/config.generated.js "$out/lib/firefox/config.js"
+
     ''}";
   });
 in
@@ -36,7 +37,7 @@ in
             extensions = {
               force = true;
               packages = [
-                inputs.nur.legacyPackages.${pkgs.stdenv.hostPlatform.system}.repos.rycee.firefox-addons.sidebery
+                (((((inputs.nur.legacyPackages."${pkgs.stdenv.hostPlatform.system}").repos).rycee).firefox-addons).sidebery)
               ];
             };
           };

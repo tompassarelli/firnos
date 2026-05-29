@@ -10,6 +10,7 @@ in
       (pkgs.writeShellScriptBin "walker-rename-workspace" ''
         name=$(echo "" | walker --dmenu)
         [ -n "$name" ] && niri msg action set-workspace-name "$name"
+
       '')
     ];
     home-manager.users.${username} = ({ config, ... }: {
@@ -17,6 +18,7 @@ in
       home.file.".config/elephant/desktopapplications.toml".text = ''
         # Force proper Wayland env vars when launching apps (fixes Steam on niri)
         launch_prefix = "env WAYLAND_DISPLAY=wayland-1 DISPLAY=:0"
+
       '';
       programs.walker = {
         enable = true;
@@ -41,12 +43,10 @@ in
             next = [ "Down" "ctrl j" ];
             previous = [ "Up" "ctrl k" ];
           };
-          builtins.applications.actions = {
-            start = {
-              activation_mode = {
-                type = "key";
-                key = "Return";
-              };
+          builtins.applications.actions.start = {
+            activation_mode = {
+              type = "key";
+              key = "Return";
             };
           };
           builtins.windows.actions = [

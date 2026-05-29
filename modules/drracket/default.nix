@@ -8,6 +8,7 @@ let
         ${pkgs.unstable.racket}/bin/raco pkg install --auto --skip-installed "$pkg"
       fi
     done
+
   '';
 in
 {
@@ -16,6 +17,7 @@ in
     environment.systemPackages = [ pkgs.unstable.racket ];
     system.activationScripts.racoPackages.text = ''
       sudo -u ${config.myConfig.modules.users.username} ${racoEnsure} || true
+
     '';
   };
 }

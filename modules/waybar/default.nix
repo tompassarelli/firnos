@@ -29,21 +29,21 @@ in
           @define-color base0D #${base0D};
           @define-color base0E #${base0E};
           @define-color base0F #${base0F};
-          
+
           * {
             font-family: "${config.stylix.fonts.monospace.name}";
             font-size: ${toString config.stylix.fonts.sizes.desktop}pt;
           }
-          
+
           window#waybar, tooltip {
             background: alpha(@base00, ${toString config.stylix.opacity.desktop});
             color: @base05;
           }
-          
+
           tooltip {
             border-color: @base0D;
           }
-          
+
           .modules-left #workspaces button {
             border-bottom: 3px solid transparent;
           }
@@ -51,7 +51,7 @@ in
           .modules-left #workspaces button.active {
             border-bottom: 3px solid @base05;
           }
-          
+
           .modules-center #workspaces button {
             border-bottom: 3px solid transparent;
           }
@@ -59,7 +59,7 @@ in
           .modules-center #workspaces button.active {
             border-bottom: 3px solid @base05;
           }
-          
+
           .modules-right #workspaces button {
             border-bottom: 3px solid transparent;
           }
@@ -67,6 +67,7 @@ in
           .modules-right #workspaces button.active {
             border-bottom: 3px solid @base05;
           }
+
         '';
         "waybar/style.css".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/waybar/style.css";
         "waybar/overview-waybar.py".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/waybar/overview-waybar.py";

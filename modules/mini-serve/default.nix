@@ -3,6 +3,7 @@
 let
   page = pkgs.writeTextDir "index.html" ''
     <!DOCTYPE html><html><body style="background:#2b3339;margin:0"></body></html>
+
   '';
 in
 {

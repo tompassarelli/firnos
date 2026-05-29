@@ -16,7 +16,7 @@ in
       "x-scheme-handler/unknown" = "nyxt.desktop";
     };
     home-manager.users.${username} = ({ config, ... }: {
-      xdg.configFile."nyxt/config.lisp".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}${"/code/nixos-config/dotfiles/nyxt/config.lisp"}";
+      xdg.configFile."nyxt/config.lisp".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/nyxt/config.lisp";
     });
   };
 }

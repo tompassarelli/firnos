@@ -57,22 +57,23 @@ in
           @define-color base0D #${base0D};
           @define-color base0E #${base0E};
           @define-color base0F #${base0F};
-          
+
           * {
             font-family: "${config.stylix.fonts.monospace.name}";
             font-size: ${toString config.stylix.fonts.sizes.desktop}pt;
           }
-          
+
           .background {
             background: alpha(@base00, ${toString config.stylix.opacity.desktop});
             color: @base05;
           }
-          
+
           tooltip {
             background: alpha(@base00, ${toString config.stylix.opacity.desktop});
             color: @base05;
             border-color: @base0D;
           }
+
         '';
         "ironbar/style.css".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/ironbar/style.css";
         "ironbar/overview-ironbar.py".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/ironbar/overview-ironbar.py";

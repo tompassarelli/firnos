@@ -16,6 +16,7 @@ in
         [ODBC Driver 18 for SQL Server]
         Description = Microsoft ODBC Driver 18 for SQL Server
         Driver = ${msodbcsql18}/lib/libmsodbcsql-18.1.so.1.1
+
       '';
       "odbc.ini".text = ''
         [msa_data]
@@ -23,6 +24,7 @@ in
         Server = localhost
         Database = msa_data
         TrustServerCertificate = Yes
+
       '';
     };
   };

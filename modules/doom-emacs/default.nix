@@ -17,13 +17,14 @@ in
       home.sessionPath = [ "${config.home.homeDirectory}/.config/emacs/bin" ];
       home.activation.cloneDoomEmacs = config.lib.dag.entryAfter [ "writeBoundary" ] ''
         DOOM_DIR="${config.home.homeDirectory}/.config/emacs"
-        
+
         # Clone Doom if not present
         if [ ! -d "$DOOM_DIR" ]; then
           $DRY_RUN_CMD ${pkgs.git}/bin/git clone --depth 1 https://github.com/doomemacs/doomemacs "$DOOM_DIR"
           echo "Doom Emacs cloned to ~/.config/emacs"
           echo "Run: ~/.config/emacs/bin/doom install"
         fi
+
       '';
       services.emacs = {
         enable = true;
@@ -54,6 +55,7 @@ in
         (deftheme stylix-theme)
         (base16-theme-define 'stylix-theme base16-stylix-theme-colors)
         (provide-theme 'stylix-theme)
+
       '';
     });
   };

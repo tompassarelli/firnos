@@ -21,8 +21,9 @@ in
       "aws-credentials" = {
         content = ''
           [default]
-          aws_access_key_id = ${config.sops.placeholder."aws-access-key-id"}
-          aws_secret_access_key = ${config.sops.placeholder."aws-secret-access-key"}
+          aws_access_key_id = ${config.sops.placeholder.aws-access-key-id}
+          aws_secret_access_key = ${config.sops.placeholder.aws-secret-access-key}
+
         '';
         owner = username;
       };
@@ -31,6 +32,7 @@ in
           [default]
           region = us-east-2
           output = json
+
         '';
         owner = username;
       };

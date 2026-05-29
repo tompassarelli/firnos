@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, ... }:
 
 pkgs.dockerTools.buildLayeredImage {
   name = "claude-sandbox";
@@ -45,6 +45,7 @@ pkgs.dockerTools.buildLayeredImage {
     # Instructions for Claude Code
     cp ${./CLAUDE.md} work/CLAUDE.md
     chmod 644 work/CLAUDE.md
+
   '';
   config = {
     Cmd = [ "/bin/bash" ];

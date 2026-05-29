@@ -19,12 +19,14 @@ in
         gtk-application-prefer-dark-theme=${if isDark then "1" else "0"}
         gtk-font-name=${stylixGtkFont}
         gtk-theme-name=${stylixGtkTheme}
+
       '';
       xdg.configFile."gtk-4.0/settings.ini".text = lib.mkForce ''
         [Settings]
         gtk-application-prefer-dark-theme=${if isDark then "1" else "0"}
         gtk-font-name=${stylixGtkFont}
         gtk-theme-name=${stylixGtkTheme}
+
       '';
       dconf.settings."org/gnome/desktop/interface".color-scheme = lib.mkForce (if isDark then "prefer-dark" else "prefer-light");
     });

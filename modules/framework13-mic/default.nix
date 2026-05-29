@@ -55,6 +55,7 @@ in
         fi
         amixer -c "$card" set 'Internal Mic Boost' 0 >/dev/null
         echo "firn-mic-alsa-init: card$card 'Internal Mic Boost' = 0 dB"
+
       '';
     };
     home-manager.users.${username} = ({ config, ... }: {

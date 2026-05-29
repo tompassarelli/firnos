@@ -24,6 +24,7 @@ in
           watch_file .devenv.flake.nix
           eval "$(devenv print-dev-env)"
         }
+
       '';
     });
   };
