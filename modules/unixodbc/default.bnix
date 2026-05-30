@@ -13,11 +13,19 @@
          :environment.etc
           {"odbcinst.ini"
             {:text
-              (ms
-                "[ODBC Driver 18 for SQL Server]\nDescription = Microsoft ODBC Driver 18 for SQL Server\nDriver = "
-                msodbcsql18
-                "/lib/libmsodbcsql-18.1.so.1.1\n")}
+              ~''
+                [ODBC Driver 18 for SQL Server]
+                Description = Microsoft ODBC Driver 18 for SQL Server
+                Driver = ${msodbcsql18}/lib/libmsodbcsql-18.1.so.1.1
+
+              ''}
            "odbc.ini"
             {:text
-              (ms
-                "[msa_data]\nDriver = ODBC Driver 18 for SQL Server\nServer = localhost\nDatabase = msa_data\nTrustServerCertificate = Yes\n")}}})}))
+              ~''
+                [msa_data]
+                Driver = ODBC Driver 18 for SQL Server
+                Server = localhost
+                Database = msa_data
+                TrustServerCertificate = Yes
+
+              ''}}})}))

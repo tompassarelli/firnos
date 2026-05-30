@@ -11,10 +11,14 @@
         (fn [old]
           {:buildCommand
             (s (get-or old buildCommand "")
-              (ms
-                "cat >> \"$out/lib/firefox/defaults/pref/autoconfig.js\" <<'EOF'\npref(\"general.config.filename\", \"config.js\");\npref(\"general.config.sandbox_enabled\", false);\nEOF\ncp "
-                palefoxRoot
-                "/program/config.generated.js \"$out/lib/firefox/config.js\"\n"))}))]
+              ~''
+                cat >> "$out/lib/firefox/defaults/pref/autoconfig.js" <<'EOF'
+                pref("general.config.filename", "config.js");
+                pref("general.config.sandbox_enabled", false);
+                EOF
+                cp ${palefoxRoot}/program/config.generated.js "$out/lib/firefox/config.js"
+
+              '')}))]
     {:config
       (lib.mkIf config.myConfig.modules.firefox.palefox.enable
         {:myConfig.modules.firefox.enable (lib.mkDefault true)

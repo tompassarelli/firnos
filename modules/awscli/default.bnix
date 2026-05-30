@@ -16,12 +16,18 @@
          :sops.templates
           {"aws-credentials"
             {:content
-              (ms "[default]\naws_access_key_id = "
-                config.sops.placeholder.aws-access-key-id
-                "\naws_secret_access_key = "
-                config.sops.placeholder.aws-secret-access-key
-                "\n")
+              ~''
+                [default]
+                aws_access_key_id = ${config.sops.placeholder.aws-access-key-id}
+                aws_secret_access_key = ${config.sops.placeholder.aws-secret-access-key}
+
+              ''
              :owner   username}
            "aws-config"
-            {:content (ms "[default]\nregion = us-east-2\noutput = json\n")
+            {:content ~''
+                        [default]
+                        region = us-east-2
+                        output = json
+
+                      ''
              :owner   username}}})}))

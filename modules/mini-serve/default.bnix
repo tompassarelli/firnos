@@ -6,8 +6,10 @@
   (let
     [page
       (pkgs.writeTextDir "index.html"
-        (ms
-          "<!DOCTYPE html><html><body style=\"background:#2b3339;margin:0\"></body></html>\n"))]
+        ~''
+          <!DOCTYPE html><html><body style="background:#2b3339;margin:0"></body></html>
+
+        '')]
     {:options.myConfig.modules.mini-serve.enable
       (lib.mkEnableOption "Enable mini-serve localhost background page")
      :config

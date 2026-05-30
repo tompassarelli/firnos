@@ -10,7 +10,10 @@
         (fn [o]
           {:postPatch
             (s (get-or o postPatch "")
-              (ms "sed -i 's/#-os-windows \"lem-terminal\"//' lem.asd\n"))}))]
+              ~''
+                sed -i 's/#-os-windows "lem-terminal"//' lem.asd
+
+              '')}))]
     {:options.myConfig.modules.lem.enable
       (lib.mkEnableOption "Lem Common Lisp editor")
      :config

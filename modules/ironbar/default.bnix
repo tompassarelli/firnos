@@ -41,47 +41,41 @@
                  "ironbar/stylix.css"
                   {:text
                     (with config.lib.stylix.colors
-                      (ms "@define-color base00 #"
-                        base00
-                        ";\n@define-color base01 #"
-                        base01
-                        ";\n@define-color base02 #"
-                        base02
-                        ";\n@define-color base03 #"
-                        base03
-                        ";\n@define-color base04 #"
-                        base04
-                        ";\n@define-color base05 #"
-                        base05
-                        ";\n@define-color base06 #"
-                        base06
-                        ";\n@define-color base07 #"
-                        base07
-                        ";\n@define-color base08 #"
-                        base08
-                        ";\n@define-color base09 #"
-                        base09
-                        ";\n@define-color base0A #"
-                        base0A
-                        ";\n@define-color base0B #"
-                        base0B
-                        ";\n@define-color base0C #"
-                        base0C
-                        ";\n@define-color base0D #"
-                        base0D
-                        ";\n@define-color base0E #"
-                        base0E
-                        ";\n@define-color base0F #"
-                        base0F
-                        ";\n\n* {\n  font-family: \""
-                        config.stylix.fonts.monospace.name
-                        "\";\n  font-size: "
-                        (toString config.stylix.fonts.sizes.desktop)
-                        "pt;\n}\n\n.background {\n  background: alpha(@base00, "
-                        (toString config.stylix.opacity.desktop)
-                        ");\n  color: @base05;\n}\n\ntooltip {\n  background: alpha(@base00, "
-                        (toString config.stylix.opacity.desktop)
-                        ");\n  color: @base05;\n  border-color: @base0D;\n}\n"))}
+                      ~''
+                        @define-color base00 #${base00};
+                        @define-color base01 #${base01};
+                        @define-color base02 #${base02};
+                        @define-color base03 #${base03};
+                        @define-color base04 #${base04};
+                        @define-color base05 #${base05};
+                        @define-color base06 #${base06};
+                        @define-color base07 #${base07};
+                        @define-color base08 #${base08};
+                        @define-color base09 #${base09};
+                        @define-color base0A #${base0A};
+                        @define-color base0B #${base0B};
+                        @define-color base0C #${base0C};
+                        @define-color base0D #${base0D};
+                        @define-color base0E #${base0E};
+                        @define-color base0F #${base0F};
+
+                        * {
+                          font-family: "${config.stylix.fonts.monospace.name}";
+                          font-size: ${(toString config.stylix.fonts.sizes.desktop)}pt;
+                        }
+
+                        .background {
+                          background: alpha(@base00, ${(toString config.stylix.opacity.desktop)});
+                          color: @base05;
+                        }
+
+                        tooltip {
+                          background: alpha(@base00, ${(toString config.stylix.opacity.desktop)});
+                          color: @base05;
+                          border-color: @base0D;
+                        }
+
+                      '')}
                  "ironbar/style.css"
                   {:source
                     (config.lib.file.mkOutOfStoreSymlink

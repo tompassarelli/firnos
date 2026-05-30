@@ -17,5 +17,13 @@
                :xdg.configFile
                 {"direnv/lib/use_devenv.sh"
                   {:text
-                    (ms
-                      "use_devenv() {\n  watch_file devenv.nix\n  watch_file devenv.yaml\n  watch_file devenv.lock\n  watch_file .devenv.flake.nix\n  eval \"$(devenv print-dev-env)\"\n}\n")}}})}})}))
+                    ~''
+                      use_devenv() {
+                        watch_file devenv.nix
+                        watch_file devenv.yaml
+                        watch_file devenv.lock
+                        watch_file .devenv.flake.nix
+                        eval "$(devenv print-dev-env)"
+                      }
+
+                    ''}}})}})}))

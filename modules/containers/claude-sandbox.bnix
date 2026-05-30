@@ -20,12 +20,26 @@
          ripgrep         fd
          curl            jq])
      :extraCommands
-      (ms
-        "mkdir -p home/dev/.claude\nmkdir -p home/dev/.config/nix\nmkdir -p work\nmkdir -p tmp\nchmod 1777 tmp\nmkdir -p nix/var/nix/{profiles,gcroots,db}\nmkdir -p etc\necho \"dev:x:1000:1000::/home/dev:/bin/bash\" > etc/passwd\necho \"dev:x:1000:\" > etc/group\n# Enable flakes and nix-command in container\necho \"experimental-features = nix-command flakes\" > home/dev/.config/nix/nix.conf\n# Starter flake for declarative package management\ncp "
-        (p "./devshell-flake.nix")
-        " home/dev/flake.nix\nchmod 644 home/dev/flake.nix\n# Instructions for Claude Code\ncp "
-        (p "./CLAUDE.md")
-        " work/CLAUDE.md\nchmod 644 work/CLAUDE.md\n")
+      ~''
+        mkdir -p home/dev/.claude
+        mkdir -p home/dev/.config/nix
+        mkdir -p work
+        mkdir -p tmp
+        chmod 1777 tmp
+        mkdir -p nix/var/nix/{profiles,gcroots,db}
+        mkdir -p etc
+        echo "dev:x:1000:1000::/home/dev:/bin/bash" > etc/passwd
+        echo "dev:x:1000:" > etc/group
+        # Enable flakes and nix-command in container
+        echo "experimental-features = nix-command flakes" > home/dev/.config/nix/nix.conf
+        # Starter flake for declarative package management
+        cp ${(p "./devshell-flake.nix")} home/dev/flake.nix
+        chmod 644 home/dev/flake.nix
+        # Instructions for Claude Code
+        cp ${(p "./CLAUDE.md")} work/CLAUDE.md
+        chmod 644 work/CLAUDE.md
+
+      ''
      :config
       {:Cmd        ["/bin/bash"]
        :WorkingDir "/work"
