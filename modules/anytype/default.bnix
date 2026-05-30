@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Anytype — local-first knowledge/notes workspace")
    :config
     (lib.mkIf config.myConfig.modules.anytype.enable
-      {:environment.systemPackages (with pkgs [anytype])})})
+      {:environment.systemPackages (nix/with pkgs [anytype])})})

@@ -40,7 +40,7 @@
                         "/code/nixos-config/dotfiles/ironbar/config.toml"))}
                  "ironbar/stylix.css"
                   {:text
-                    (with config.lib.stylix.colors
+                    (nix/with config.lib.stylix.colors
                       ~''
                         @define-color base00 #${base00};
                         @define-color base01 #${base01};

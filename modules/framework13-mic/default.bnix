@@ -9,7 +9,7 @@
       (pkgs.writeShellApplication
         {:name          "firn-mic"
          :runtimeInputs
-          (with pkgs
+          (nix/with pkgs
             [wireplumber pipewire jq python3 coreutils gnugrep gawk gnused])
          :text          (builtins.readFile (p "./firn-mic"))})]
     {:options.myConfig.modules.framework13-mic.enable
@@ -29,7 +29,7 @@
           {:description   "Disable Internal Mic Boost on Framework 13 ALC285"
            :wantedBy      ["multi-user.target"]
            :after         ["sound.target"]
-           :path          (with pkgs [alsa-utils gnugrep gnused coreutils])
+           :path          (nix/with pkgs [alsa-utils gnugrep gnused coreutils])
            :serviceConfig {:Type "oneshot" :RemainAfterExit true}
            :script
             ~''

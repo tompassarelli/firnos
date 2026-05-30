@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Gutenprint printer drivers")
    :config
     (lib.mkIf config.myConfig.modules.gutenprint.enable
-      {:services.printing.drivers (with pkgs [gutenprint])})})
+      {:services.printing.drivers (nix/with pkgs [gutenprint])})})

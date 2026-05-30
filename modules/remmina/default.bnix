@@ -8,7 +8,7 @@
       (lib.mkEnableOption "Remmina remote desktop client")
      :config
       (lib.mkIf config.myConfig.modules.remmina.enable
-        {:environment.systemPackages (with pkgs [remmina])
+        {:environment.systemPackages (nix/with pkgs [remmina])
          :home-manager.users
           {username
             {:xdg.configFile

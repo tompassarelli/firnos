@@ -7,4 +7,4 @@
     (lib.mkEnableOption "curl HTTP client")
    :config
     (lib.mkIf config.myConfig.modules.curl.enable
-      {:environment.systemPackages (with pkgs [curl])})})
+      {:environment.systemPackages (nix/with pkgs [curl])})})

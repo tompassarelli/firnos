@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Wayland region selector")
    :config
     (lib.mkIf config.myConfig.modules.slurp.enable
-      {:environment.systemPackages (with pkgs [slurp])})})
+      {:environment.systemPackages (nix/with pkgs [slurp])})})

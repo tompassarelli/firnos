@@ -7,4 +7,4 @@
     (lib.mkEnableOption "GIMP image editor")
    :config
     (lib.mkIf config.myConfig.modules.gimp.enable
-      {:environment.systemPackages (with pkgs [gimp])})})
+      {:environment.systemPackages (nix/with pkgs [gimp])})})

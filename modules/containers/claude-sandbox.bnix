@@ -7,7 +7,7 @@
     {:name          "claude-sandbox"
      :tag           "latest"
      :contents
-      (with pkgs
+      (nix/with pkgs
         [bashInteractive coreutils
          gnused          gnugrep
          findutils       gawk

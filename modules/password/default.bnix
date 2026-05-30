@@ -7,4 +7,4 @@
     (lib.mkEnableOption "password management tools")
    :config
     (lib.mkIf config.myConfig.modules.password.enable
-      {:environment.systemPackages (with pkgs [bitwarden-desktop])})})
+      {:environment.systemPackages (nix/with pkgs [bitwarden-desktop])})})

@@ -7,4 +7,4 @@
     (lib.mkEnableOption "FFmpeg video processing")
    :config
     (lib.mkIf config.myConfig.modules.ffmpeg.enable
-      {:environment.systemPackages (with pkgs [ffmpeg])})})
+      {:environment.systemPackages (nix/with pkgs [ffmpeg])})})

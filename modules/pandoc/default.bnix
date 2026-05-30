@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Pandoc document converter")
    :config
     (lib.mkIf config.myConfig.modules.pandoc.enable
-      {:environment.systemPackages (with pkgs [pandoc])})})
+      {:environment.systemPackages (nix/with pkgs [pandoc])})})

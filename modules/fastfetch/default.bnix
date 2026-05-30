@@ -8,7 +8,7 @@
       (lib.mkEnableOption "Enable fastfetch system info display")
      :config
       (lib.mkIf config.myConfig.modules.fastfetch.enable
-        {:environment.systemPackages (with pkgs [fastfetch])
+        {:environment.systemPackages (nix/with pkgs [fastfetch])
          :home-manager.users
           {username
             (module [config ...]

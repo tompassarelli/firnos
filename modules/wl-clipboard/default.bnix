@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Wayland clipboard utilities")
    :config
     (lib.mkIf config.myConfig.modules.wl-clipboard.enable
-      {:environment.systemPackages (with pkgs [wl-clipboard])})})
+      {:environment.systemPackages (nix/with pkgs [wl-clipboard])})})

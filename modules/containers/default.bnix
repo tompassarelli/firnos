@@ -13,4 +13,4 @@
            :dockerCompat true
            :defaultNetwork.settings.dns_enabled true}
          :users.users {username {:extraGroups ["podman"]}}
-         :environment.systemPackages (with pkgs [distrobox podman-compose])})}))
+         :environment.systemPackages (nix/with pkgs [distrobox podman-compose])})}))

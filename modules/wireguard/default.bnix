@@ -72,4 +72,4 @@
                     '')]
                 (s watchdog))}
            :wantedBy      ["multi-user.target"]}
-         :environment.systemPackages (with pkgs [wireguard-tools])})}))
+         :environment.systemPackages (nix/with pkgs [wireguard-tools])})}))

@@ -5,7 +5,7 @@
 (module [config lib pkgs ...]
   {:config
     (lib.mkIf config.myConfig.modules.qutebrowser.enable
-      {:environment.systemPackages (with pkgs [qutebrowser])
+      {:environment.systemPackages (nix/with pkgs [qutebrowser])
        :xdg.mime.defaultApplications
         (lib.mkIf config.myConfig.modules.qutebrowser.default
           {"text/html" "org.qutebrowser.qutebrowser.desktop"

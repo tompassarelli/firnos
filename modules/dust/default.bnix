@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Enable dust disk usage analyzer")
    :config
     (lib.mkIf config.myConfig.modules.dust.enable
-      {:environment.systemPackages (with pkgs [dust])})})
+      {:environment.systemPackages (nix/with pkgs [dust])})})

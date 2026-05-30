@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Obsidian note-taking")
    :config
     (lib.mkIf config.myConfig.modules.obsidian.enable
-      {:environment.systemPackages (with pkgs [obsidian])})})
+      {:environment.systemPackages (nix/with pkgs [obsidian])})})

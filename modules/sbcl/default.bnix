@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Steel Bank Common Lisp compiler")
    :config
     (lib.mkIf config.myConfig.modules.sbcl.enable
-      {:environment.systemPackages (with pkgs [sbcl])})})
+      {:environment.systemPackages (nix/with pkgs [sbcl])})})

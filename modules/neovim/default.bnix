@@ -20,7 +20,7 @@
                         "/code/nixos-config/dotfiles/neovim/init.lua"))}
                  "nvim/lua/stylix-colors.lua"
                   {:text
-                    (with config.lib.stylix.colors
+                    (nix/with config.lib.stylix.colors
                       ~''
                         local M = {}
 

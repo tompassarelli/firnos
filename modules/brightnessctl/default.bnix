@@ -7,4 +7,4 @@
     (lib.mkEnableOption "screen brightness control")
    :config
     (lib.mkIf config.myConfig.modules.brightnessctl.enable
-      {:environment.systemPackages (with pkgs [brightnessctl])})})
+      {:environment.systemPackages (nix/with pkgs [brightnessctl])})})

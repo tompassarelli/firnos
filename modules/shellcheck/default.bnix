@@ -7,4 +7,4 @@
     (lib.mkEnableOption "ShellCheck shell script linter")
    :config
     (lib.mkIf config.myConfig.modules.shellcheck.enable
-      {:environment.systemPackages (with pkgs [shellcheck])})})
+      {:environment.systemPackages (nix/with pkgs [shellcheck])})})

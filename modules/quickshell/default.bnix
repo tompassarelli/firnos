@@ -82,7 +82,7 @@
                         "/code/nixos-config/dotfiles/quickshell/NotificationPopup.qml"))}
                  "quickshell/StylixColors.qml"
                   {:text
-                    (with config.lib.stylix.colors
+                    (nix/with config.lib.stylix.colors
                       ~''
                         import QtQuick
 

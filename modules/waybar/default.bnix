@@ -8,7 +8,7 @@
       (lib.mkEnableOption "Waybar status bar for Wayland")
      :config
       (lib.mkIf config.myConfig.modules.waybar.enable
-        {:environment.systemPackages (with pkgs [waybar])
+        {:environment.systemPackages (nix/with pkgs [waybar])
          :home-manager.users
           {username
             (module [config ...]
@@ -20,7 +20,7 @@
                         "/code/nixos-config/dotfiles/waybar/config"))}
                  "waybar/stylix.css"
                   {:text
-                    (with config.lib.stylix.colors
+                    (nix/with config.lib.stylix.colors
                       ~''
                         @define-color base00 #${base00};
                         @define-color base01 #${base01};

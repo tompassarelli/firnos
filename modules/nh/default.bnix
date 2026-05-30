@@ -8,4 +8,4 @@
       "Nix helper (nicer nixos-rebuild output, generation diff, search, clean)")
    :config
     (lib.mkIf config.myConfig.modules.nh.enable
-      {:environment.systemPackages (with pkgs [nh])})})
+      {:environment.systemPackages (nix/with pkgs [nh])})})

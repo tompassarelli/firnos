@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Ghostscript PostScript interpreter")
    :config
     (lib.mkIf config.myConfig.modules.ghostscript.enable
-      {:environment.systemPackages (with pkgs [ghostscript])})})
+      {:environment.systemPackages (nix/with pkgs [ghostscript])})})

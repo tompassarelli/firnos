@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Babashka native Clojure scripting")
    :config
     (lib.mkIf config.myConfig.modules.babashka.enable
-      {:environment.systemPackages (with pkgs [babashka])})})
+      {:environment.systemPackages (nix/with pkgs [babashka])})})

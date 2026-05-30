@@ -6,4 +6,4 @@
   {:options.myConfig.modules.gcc.enable (lib.mkEnableOption "GNU C compiler")
    :config
     (lib.mkIf config.myConfig.modules.gcc.enable
-      {:environment.systemPackages (with pkgs [gcc])})})
+      {:environment.systemPackages (nix/with pkgs [gcc])})})

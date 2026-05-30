@@ -7,4 +7,4 @@
     (lib.mkEnableOption "imv image viewer")
    :config
     (lib.mkIf config.myConfig.modules.imv.enable
-      {:environment.systemPackages (with pkgs [imv])})})
+      {:environment.systemPackages (nix/with pkgs [imv])})})

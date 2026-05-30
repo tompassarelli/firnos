@@ -7,5 +7,5 @@
     (lib.mkEnableOption ".NET SDK and CLI tools")
    :config
     (lib.mkIf config.myConfig.modules.dotnet.enable
-      {:environment.systemPackages (with pkgs [dotnet-sdk_8])
+      {:environment.systemPackages (nix/with pkgs [dotnet-sdk_8])
        :environment.sessionVariables.PATH ["$HOME/.dotnet/tools"]})})

@@ -8,4 +8,4 @@
       "Forgejo CLI for repo / issue / CI ops against codeberg + other Forgejo instances")
    :config
     (lib.mkIf config.myConfig.modules.forgejo-cli.enable
-      {:environment.systemPackages (with pkgs [forgejo-cli])})})
+      {:environment.systemPackages (nix/with pkgs [forgejo-cli])})})

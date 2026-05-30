@@ -8,7 +8,7 @@
       (lib.mkEnableOption "Enable tealdeer (tldr client)")
      :config
       (lib.mkIf config.myConfig.modules.tealdeer.enable
-        {:environment.systemPackages (with pkgs [tealdeer])
+        {:environment.systemPackages (nix/with pkgs [tealdeer])
          :home-manager.users
           {username
             (module [config ...]

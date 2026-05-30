@@ -7,4 +7,4 @@
     (lib.mkEnableOption "HP printer drivers")
    :config
     (lib.mkIf config.myConfig.modules.hplip.enable
-      {:services.printing.drivers (with pkgs [hplip])})})
+      {:services.printing.drivers (nix/with pkgs [hplip])})})

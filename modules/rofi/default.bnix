@@ -9,7 +9,7 @@
      :config
       (lib.mkIf config.myConfig.modules.rofi.enable
         {:environment.systemPackages
-          (with pkgs
+          (nix/with pkgs
             [rofi
              (pkgs.writeShellScriptBin "rofi-rename-workspace"
                ~''

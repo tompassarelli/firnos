@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Hugo static site generator")
    :config
     (lib.mkIf config.myConfig.modules.hugo.enable
-      {:environment.systemPackages (with pkgs [hugo])})})
+      {:environment.systemPackages (nix/with pkgs [hugo])})})

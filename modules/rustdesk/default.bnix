@@ -7,4 +7,4 @@
     (lib.mkEnableOption "RustDesk remote desktop")
    :config
     (lib.mkIf config.myConfig.modules.rustdesk.enable
-      {:environment.systemPackages (with pkgs [rustdesk-flutter])})})
+      {:environment.systemPackages (nix/with pkgs [rustdesk-flutter])})})

@@ -7,4 +7,4 @@
     (lib.mkEnableOption "FreeTDS (TDS protocol library for MSSQL)")
    :config
     (lib.mkIf config.myConfig.modules.freetds.enable
-      {:environment.systemPackages (with pkgs [freetds])})})
+      {:environment.systemPackages (nix/with pkgs [freetds])})})

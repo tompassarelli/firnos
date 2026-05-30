@@ -6,7 +6,7 @@
   (let [username config.myConfig.modules.users.username]
     {:config
       (lib.mkIf config.myConfig.modules.nyxt.enable
-        {:environment.systemPackages (with pkgs [nyxt4])
+        {:environment.systemPackages (nix/with pkgs [nyxt4])
          :myConfig.modules.fuse.enable (lib.mkDefault true)
          :programs.appimage.enable true
          :xdg.mime.defaultApplications

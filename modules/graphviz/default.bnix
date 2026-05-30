@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Graphviz graph visualization")
    :config
     (lib.mkIf config.myConfig.modules.graphviz.enable
-      {:environment.systemPackages (with pkgs [graphviz])})})
+      {:environment.systemPackages (nix/with pkgs [graphviz])})})

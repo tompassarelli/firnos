@@ -6,4 +6,4 @@
   {:options.myConfig.modules.gh.enable (lib.mkEnableOption "GitHub CLI")
    :config
     (lib.mkIf config.myConfig.modules.gh.enable
-      {:environment.systemPackages (with pkgs [gh])})})
+      {:environment.systemPackages (nix/with pkgs [gh])})})

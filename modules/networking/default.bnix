@@ -11,4 +11,4 @@
        :networking.networkmanager.unmanaged ["interface-name:wg*"]
        :networking.networkmanager.wifi.powersave false
        :networking.networkmanager.logLevel "DEBUG"
-       :environment.systemPackages (with pkgs [networkmanagerapplet])})})
+       :environment.systemPackages (nix/with pkgs [networkmanagerapplet])})})

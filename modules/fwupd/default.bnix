@@ -7,4 +7,4 @@
     (lib.mkEnableOption "fwupd firmware updater")
    :config
     (lib.mkIf config.myConfig.modules.fwupd.enable
-      {:environment.systemPackages (with pkgs [fwupd])})})
+      {:environment.systemPackages (nix/with pkgs [fwupd])})})

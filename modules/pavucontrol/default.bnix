@@ -7,4 +7,4 @@
     (lib.mkEnableOption "PulseAudio volume control")
    :config
     (lib.mkIf config.myConfig.modules.pavucontrol.enable
-      {:environment.systemPackages (with pkgs [pavucontrol])})})
+      {:environment.systemPackages (nix/with pkgs [pavucontrol])})})

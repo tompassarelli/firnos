@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Enable btop system monitor")
    :config
     (lib.mkIf config.myConfig.modules.btop.enable
-      {:environment.systemPackages (with pkgs [btop])})})
+      {:environment.systemPackages (nix/with pkgs [btop])})})

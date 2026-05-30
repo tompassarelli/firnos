@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Slack messaging")
    :config
     (lib.mkIf config.myConfig.modules.slack.enable
-      {:environment.systemPackages (with pkgs [slack])})})
+      {:environment.systemPackages (nix/with pkgs [slack])})})

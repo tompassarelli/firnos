@@ -7,4 +7,4 @@
     (lib.mkEnableOption "mpv media player")
    :config
     (lib.mkIf config.myConfig.modules.mpv.enable
-      {:environment.systemPackages (with pkgs [mpv])})})
+      {:environment.systemPackages (nix/with pkgs [mpv])})})

@@ -13,7 +13,7 @@
          :boot.kernel.sysctl {"net.ipv4.ip_forward" 1}
          :programs.virt-manager.enable true
          :users.users {username {:extraGroups ["libvirtd"]}}
-         :environment.systemPackages (with pkgs [spice-gtk virtio-win])
+         :environment.systemPackages (nix/with pkgs [spice-gtk virtio-win])
          :services.samba
           {:enable   true
            :settings

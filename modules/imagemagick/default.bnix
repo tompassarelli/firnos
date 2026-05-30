@@ -7,4 +7,4 @@
     (lib.mkEnableOption "ImageMagick image processing")
    :config
     (lib.mkIf config.myConfig.modules.imagemagick.enable
-      {:environment.systemPackages (with pkgs [imagemagick])})})
+      {:environment.systemPackages (nix/with pkgs [imagemagick])})})

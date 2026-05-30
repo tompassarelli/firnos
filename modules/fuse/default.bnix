@@ -7,4 +7,4 @@
     (lib.mkEnableOption "FUSE filesystem support")
    :config
     (lib.mkIf config.myConfig.modules.fuse.enable
-      {:environment.systemPackages (with pkgs [fuse])})})
+      {:environment.systemPackages (nix/with pkgs [fuse])})})

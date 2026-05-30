@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Spotify TUI player")
    :config
     (lib.mkIf config.myConfig.modules.spotify.enable
-      {:environment.systemPackages (with pkgs [spotify])})})
+      {:environment.systemPackages (nix/with pkgs [spotify])})})

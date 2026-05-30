@@ -97,7 +97,7 @@
                      [(s "z /var/lib/sops-nix/key.txt 0400 "
                         config.myConfig.modules.users.username
                         " users -")]
-                    :environment.systemPackages (with pkgs [sops age])
+                    :environment.systemPackages (nix/with pkgs [sops age])
                     :imports
                      (let
                        [moduleDirs
@@ -211,7 +211,7 @@
                                  :version "4.0.0"
                                  :targetPkgs
                                   (fn [p]
-                                    (with p
+                                    (nix/with p
                                       [nyxt-unwrapped
                                        glib
                                        gobject-introspection

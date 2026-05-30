@@ -7,4 +7,4 @@
     (lib.mkEnableOption "GNU Emacs editor")
    :config
     (lib.mkIf config.myConfig.modules.emacs.enable
-      {:environment.systemPackages (with pkgs [emacs-pgtk])})})
+      {:environment.systemPackages (nix/with pkgs [emacs-pgtk])})})

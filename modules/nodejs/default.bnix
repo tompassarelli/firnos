@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Node.js runtime")
    :config
     (lib.mkIf config.myConfig.modules.nodejs.enable
-      {:environment.systemPackages (with pkgs [nodejs])})})
+      {:environment.systemPackages (nix/with pkgs [nodejs])})})

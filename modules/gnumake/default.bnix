@@ -7,4 +7,4 @@
     (lib.mkEnableOption "GNU Make build tool")
    :config
     (lib.mkIf config.myConfig.modules.gnumake.enable
-      {:environment.systemPackages (with pkgs [gnumake])})})
+      {:environment.systemPackages (nix/with pkgs [gnumake])})})

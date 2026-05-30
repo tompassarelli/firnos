@@ -7,4 +7,4 @@
     (lib.mkEnableOption "Blender 3D editor")
    :config
     (lib.mkIf config.myConfig.modules.blender.enable
-      {:environment.systemPackages (with pkgs [blender])})})
+      {:environment.systemPackages (nix/with pkgs [blender])})})

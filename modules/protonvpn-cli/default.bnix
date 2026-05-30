@@ -7,4 +7,4 @@
     (lib.mkEnableOption "ProtonVPN CLI client")
    :config
     (lib.mkIf config.myConfig.modules.protonvpn-cli.enable
-      {:environment.systemPackages (with pkgs [protonvpn-cli])})})
+      {:environment.systemPackages (nix/with pkgs [protonvpn-cli])})})

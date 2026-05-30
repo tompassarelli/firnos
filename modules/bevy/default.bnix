@@ -5,7 +5,7 @@
 (module [config lib pkgs ...]
   (let
     [bevyLibs
-      (with pkgs
+      (nix/with pkgs
         [alsa-lib        vulkan-loader
          vulkan-tools    wayland
          libxkbcommon    xorg.libX11
