@@ -6,11 +6,12 @@ in
 {
   config = lib.mkIf cfg.enable {
     hardware.uinput.enable = true;
-    services.udev.extraRules = ''
-      KERNEL=="uinput", MODE="0660", GROUP="uinput", OPTIONS+="static_node=uinput"
-
-    '';
-    users.groups.uinput = { };
+    services.udev.extraRules = ~;
+    "''KERNEL==" = "uinput";
+    ${unquote MODE=} = "0660";
+    ${unquote GROUP=} = "uinput";
+    ${unquote OPTIONS+=} = "static_node=uinput";
+    "'':users.groups.uinput" = { };
     users.users.kanata = {
       isSystemUser = true;
       group = "kanata";

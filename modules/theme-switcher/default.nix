@@ -35,7 +35,7 @@ let
     CURRENT_THEME=$(${pkgs.gnugrep}/bin/grep -Po '(?<=myConfig\.modules\.stylix\.chosenTheme = ")[^"]+' "$HOST_CONFIG" | ${pkgs.coreutils}/bin/head -1)
 
     # Show themes in walker dmenu
-    SELECTED=$(printf '%s\n' "${THEMES[@]}" | ${pkgs.walker}/bin/walker --dmenu -p "Select theme:")
+    SELECTED=$(printf '%s\n' "''${THEMES[@]}" | ${pkgs.walker}/bin/walker --dmenu -p "Select theme:")
 
     # Exit if no selection
     if [ -z "$SELECTED" ]; then
