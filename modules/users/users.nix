@@ -17,10 +17,12 @@ in
       home = "/home/${username}";
       extraGroups = [ "wheel" "networkmanager" "plugdev" ];
     };
-    security.sudo.extraConfig = ~;
-    "''Defaults" = timestamp_timeout=30;
-    ${Defaults} = timestamp_type=global;
-    "'':systemd.tmpfiles.rules" = [
+    security.sudo.extraConfig = ''
+      Defaults timestamp_timeout=30
+      Defaults timestamp_type=global
+
+    '';
+    systemd.tmpfiles.rules = [
       "d /home/${username}/Documents 0755 ${username} users -"
       "d /home/${username}/Pictures/Screenshots 0755 ${username} users -"
       "d /home/${username}/code 0755 ${username} users -"
