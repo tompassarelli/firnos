@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.bundles.creative
     {:enable (lib.mkEnableOption "creative tools and content creation")
      :godot.enable

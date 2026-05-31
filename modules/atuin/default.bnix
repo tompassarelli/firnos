@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.atuin.enable
       (lib.mkEnableOption "atuin shell history sync")
@@ -10,7 +10,7 @@
       (lib.mkIf config.myConfig.modules.atuin.enable
         {:home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:programs.atuin
                 {:enable true
                  :enableFishIntegration true

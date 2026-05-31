@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.gjoa.enable
     (lib.mkEnableOption
       "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")

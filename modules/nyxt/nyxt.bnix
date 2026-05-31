@@ -2,7 +2,7 @@
 
 (ns nyxt)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:config
       (lib.mkIf config.myConfig.modules.nyxt.enable
@@ -18,7 +18,7 @@
              "x-scheme-handler/unknown" "nyxt.desktop"})
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:xdg.configFile
                 {"nyxt/config.lisp"
                   {:source

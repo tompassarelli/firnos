@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs inputs ...]
+(nix/module [config lib pkgs inputs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.walker.enable
       (lib.mkEnableOption "Walker modern wayland app launcher")
@@ -17,7 +17,7 @@
              '')]
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:imports         [inputs.walker.homeManagerModules.default]
                :home.file
                 {".config/elephant/desktopapplications.toml"

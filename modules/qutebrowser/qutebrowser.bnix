@@ -2,7 +2,7 @@
 
 (ns qutebrowser)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:config
     (lib.mkIf config.myConfig.modules.qutebrowser.enable
       {:environment.systemPackages (nix/with pkgs [qutebrowser])

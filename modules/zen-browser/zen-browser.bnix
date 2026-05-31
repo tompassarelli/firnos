@@ -2,7 +2,7 @@
 
 (ns zen-browser)
 
-(module [config lib pkgs inputs ...]
+(nix/module [config lib pkgs inputs ...]
   {:config
     (lib.mkIf config.myConfig.modules.zen-browser.enable
       {:environment.systemPackages

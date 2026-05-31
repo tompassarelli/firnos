@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [postgresPackage pkgs.unstable.postgresql_18]
     {:options.myConfig.modules.postgresql.enable
       (lib.mkEnableOption "PostgreSQL database server for local development")

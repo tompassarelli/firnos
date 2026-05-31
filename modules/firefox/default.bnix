@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.firefox.enable
     (lib.mkEnableOption "Enable Firefox browser")
    :options.myConfig.modules.firefox.palefox.enable

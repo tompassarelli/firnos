@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.glide.enable
     (lib.mkEnableOption "Glide touchpad motion detection daemon")
    :options.myConfig.modules.glide.device

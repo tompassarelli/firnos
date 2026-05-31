@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.claude.enable
       (lib.mkEnableOption "Claude Code CLI configuration")
@@ -11,7 +11,7 @@
         {:environment.systemPackages [pkgs.master.claude-code]
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:home.file
                 {".claude/settings.json"
                   {:source

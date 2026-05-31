@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs flakeRoot ...]
+(nix/module [config lib pkgs flakeRoot ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.bash.enable
       (lib.mkEnableOption "Bash shell configuration")
@@ -12,7 +12,7 @@
          :environment.systemPackages (nix/with pkgs [fzf])
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:home.file
                 {".local/bin"
                   {:source

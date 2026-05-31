@@ -1,7 +1,7 @@
 #lang beagle/nix
 (ns modules.unknown-path-test)
 
-(module (config lib pkgs)
+(nix/module (config lib pkgs)
   {:options.myConfig.modules.unknown-path-test.enable
      (lib/mkEnableOption "intentional unknown option")
 

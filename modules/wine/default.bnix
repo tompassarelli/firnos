@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.wine.enable
     (lib.mkEnableOption "Wine (unstable, 32+64-bit)")
    :config

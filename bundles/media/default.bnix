@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.bundles.media
     {:enable (lib.mkEnableOption "media consumption and viewing")
      :spotify.enable

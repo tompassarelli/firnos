@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.ironbar.enable
       (lib.mkEnableOption "Ironbar status bar for Wayland")
@@ -11,7 +11,7 @@
         {:environment.systemPackages [pkgs.unstable.ironbar]
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:systemd.user.services.ironbar
                 {:Unit
                   {:Description "Customizable GTK4 status bar for Wayland"

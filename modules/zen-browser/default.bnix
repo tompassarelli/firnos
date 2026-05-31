@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.zen-browser.enable
     (lib.mkEnableOption "Enable Zen Browser")
    :options.myConfig.modules.zen-browser.default

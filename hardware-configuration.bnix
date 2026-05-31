@@ -2,7 +2,7 @@
 
 (ns hardware-configuration)
 
-(module [config lib pkgs modulesPath ...]
+(nix/module [config lib pkgs modulesPath ...]
   {:imports [(s modulesPath "/installer/scan/not-detected.nix")]
    :boot.initrd.availableKernelModules
     ["nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod"]

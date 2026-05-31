@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.bundles.rust
     {:enable (lib.mkEnableOption "Rust development toolchain")
      :rustc.enable

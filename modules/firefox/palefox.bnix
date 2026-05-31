@@ -2,7 +2,7 @@
 
 (ns palefox)
 
-(module [config lib pkgs inputs ...]
+(nix/module [config lib pkgs inputs ...]
   (let
     [username       config.myConfig.modules.users.username
      palefoxRoot    inputs.palefox
@@ -25,7 +25,7 @@
          :programs.firefox {:enable true :package palefoxFirefox}
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:programs.firefox
                 {:enable   true
                  :package  palefoxFirefox

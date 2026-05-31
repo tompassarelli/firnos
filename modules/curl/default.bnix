@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.curl.enable
     (lib.mkEnableOption "curl HTTP client")
    :config

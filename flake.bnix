@@ -32,7 +32,7 @@
    :palefox {:url "github:tompassarelli/palefox"}
    :gjoa {:url "github:tompassarelli/gjoa"}}
  :outputs
-  (module
+  (nix/module
     [self
      nixpkgs
      nixpkgs-unstable
@@ -57,7 +57,7 @@
        firnBundles (p "./bundles")
        firnBundlesDarwin (p "./bundles-darwin")]
       {:lib.mkSystem
-        (module
+        (nix/module
           [hostname
            hostConfig
            hardwareConfig
@@ -88,7 +88,7 @@
                  home-manager.nixosModules.home-manager
                  sops-nix.nixosModules.sops
                  hostConfig
-                 (module [config pkgs ...]
+                 (nix/module [config pkgs ...]
                    {:networking.hostName hostname
                     :sops.age.keyFile "/var/lib/sops-nix/key.txt"
                     :environment.sessionVariables.SOPS_AGE_KEY_FILE
@@ -282,7 +282,7 @@
                      extraOverlays)}]
                 extraModules)}))
        :lib.mkDarwinSystem
-        (module
+        (nix/module
           [hostname
            hostConfig
            (system "aarch64-darwin")
@@ -301,7 +301,7 @@
               (++
                 [home-manager.darwinModules.home-manager
                  hostConfig
-                 (module [config lib pkgs ...]
+                 (nix/module [config lib pkgs ...]
                    {:imports
                      (++
                        (builtins.map (fn [m] (s firnModules "/" m))

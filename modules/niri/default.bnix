@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let
     [username config.myConfig.modules.users.username
      niri-viewport-nav
@@ -142,7 +142,7 @@
          :security.chromiumSuidSandbox.enable true
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:xdg.configFile
                 {"niri/config.kdl"
                   {:source

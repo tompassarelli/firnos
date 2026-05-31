@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.wl-gammarelay.enable
       (lib.mkEnableOption "Wayland gamma/temperature control")
@@ -11,7 +11,7 @@
         {:environment.systemPackages (nix/with pkgs [wl-gammarelay-rs])
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:xdg.configFile
                 {"wl-gammarelay/temperature-control"
                   {:source

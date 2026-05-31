@@ -2,7 +2,7 @@
 
 (ns gjoa)
 
-(module [config lib pkgs inputs ...]
+(nix/module [config lib pkgs inputs ...]
   {:config
     (lib.mkIf config.myConfig.modules.gjoa.enable
       {:environment.systemPackages

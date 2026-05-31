@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let
     [username config.myConfig.modules.users.username
      firn-mic
@@ -47,7 +47,7 @@
             ''}
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:systemd.user.services.firn-mic-ensure
                 {:Unit
                   {:Description

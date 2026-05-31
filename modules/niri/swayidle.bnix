@@ -2,13 +2,13 @@
 
 (ns swayidle)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:config
       (lib.mkIf config.myConfig.modules.niri.enable
         {:home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:systemd.user.services.swayidle
                 {:Unit
                   {:Description "Idle manager for Wayland"

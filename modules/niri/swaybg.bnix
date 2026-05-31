@@ -2,7 +2,7 @@
 
 (ns swaybg)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let
     [username    config.myConfig.modules.users.username
      chosenTheme config.myConfig.modules.stylix.chosenTheme]
@@ -10,7 +10,7 @@
       (lib.mkIf config.myConfig.modules.niri.enable
         {:home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:systemd.user.services.swaybg
                 {:Unit
                   {:Description "Wayland wallpaper tool"

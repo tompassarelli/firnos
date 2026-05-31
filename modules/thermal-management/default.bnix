@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.thermal-management.enable
     (lib.mkEnableOption "CPU thermal management for sustained builds")
    :config

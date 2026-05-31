@@ -2,7 +2,7 @@
 
 (ns users)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.users.enable
       (lib.mkEnableOption "Enable user configuration")

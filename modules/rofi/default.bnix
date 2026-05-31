@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
     {:options.myConfig.modules.rofi.enable
       (lib.mkEnableOption "Rofi application launcher")
@@ -33,7 +33,7 @@
                '')])
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:xdg.configFile
                 {"rofi/config.rasi"
                   {:source

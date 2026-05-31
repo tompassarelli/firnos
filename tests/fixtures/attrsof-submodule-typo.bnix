@@ -1,7 +1,7 @@
 #lang beagle/nix
 (ns modules.attrsof-submodule-typo-test)
 
-(module (config lib pkgs)
+(nix/module (config lib pkgs)
   {:options.myConfig.modules.attrsof-submodule-typo-test.enable
      (lib/mkEnableOption "typo inside attrsOf submodule via wildcard match (users.users.<name>.X)")
 

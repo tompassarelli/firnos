@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.modules.blender.enable
     (lib.mkEnableOption "Blender 3D editor")
    :config

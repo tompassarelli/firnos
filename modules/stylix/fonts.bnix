@@ -2,7 +2,7 @@
 
 (ns fonts)
 
-(module [config lib ...]
+(nix/module [config lib ...]
   {:config
     (lib.mkIf config.myConfig.modules.stylix.enable
       {:fonts.fontconfig.enable true})})

@@ -2,7 +2,7 @@
 
 (ns configuration)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:myConfig.modules.system.stateVersion "25.05"
    :myConfig.modules.users.username "yourname"
    :myConfig.modules.nix-settings.enable true

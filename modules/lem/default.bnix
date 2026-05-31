@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs inputs ...]
+(nix/module [config lib pkgs inputs ...]
   (let
     [username    config.myConfig.modules.users.username
      lem-ncurses
@@ -21,7 +21,7 @@
         {:environment.systemPackages [lem-ncurses]
          :home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               {:xdg.desktopEntries.lem
                 {:name       "Lem"
                  :comment    "Common Lisp Editor"

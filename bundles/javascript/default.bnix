@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:options.myConfig.bundles.javascript
     {:enable        (lib.mkEnableOption "JavaScript / Node.js development")
      :nodejs.enable

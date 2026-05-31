@@ -2,7 +2,7 @@
 
 (ns chrome)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   {:config
     (lib.mkIf config.myConfig.modules.chrome.enable
       {:environment.systemPackages (nix/with pkgs [google-chrome])

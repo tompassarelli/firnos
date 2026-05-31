@@ -2,7 +2,7 @@
 
 (ns default)
 
-(module [config lib pkgs ...]
+(nix/module [config lib pkgs ...]
   (let
     [username config.myConfig.modules.users.username
      isDark   (== config.stylix.polarity "dark")]
@@ -12,7 +12,7 @@
       (lib.mkIf config.myConfig.modules.gtk.enable
         {:home-manager.users
           {username
-            (module [config ...]
+            (nix/module [config ...]
               (let
                 [stylixGtkFont
                   (s (s config.gtk.font.name " ")
