@@ -3,66 +3,31 @@
 (require racket/string
          racket/list
          racket/path
-         "util.rkt")
+         "util.rkt"
+         "tag-resolve.rkt")
 
-(provide host-of-path bundle-of-path node-edges
-         direct-references-by host-bundles host-modules bundle-modules
-         live-modules live-bundles)
+(provide host-of-path node-edges
+         host-modules
+         live-modules)
 
 ;; ---------- AST-based reference extraction ----------
 ;;
-;; A module/bundle is "referenced by" a file if any path mentioned in
-;; that file starts with `myConfig.modules.<name>` or
-;; `myConfig.bundles.<name>`. This catches every shape the regex-based
-;; predecessor missed:
+;; A module is "referenced by" a file if any path mentioned in that
+;; file starts with `myConfig.modules.<name>`. This catches every
+;; shape the regex-based predecessor missed:
 ;;   (set myConfig.modules.X.enable #t)             — direct enable
 ;;   (set myConfig.modules.X (att (enable #t) …))   — attrset form
 ;;   (set myConfig.modules.X.someOption val)        — config-only
 ;;   (enable myConfig.modules.X)                    — bare enable
-;;   (sub-modules X …) inside a bundle              — bundle membership
 ;;
-;; All of those go through util.rkt's `paths-referenced-in`, which
-;; handles bare-id paths, quoted paths, shortcut macros, and
-;; (sub-modules …) expansion.
+;; All of those go through util.rkt's `paths-referenced-in`.
 
 (define (host-of-path p)
   (define m (regexp-match #rx"/hosts/([^/]+)/" p))
   (and m (cadr m)))
 
-(define (bundle-of-path p)
-  (define m (regexp-match #rx"/bundles/([^/]+)/" p))
-  (and m (cadr m)))
-
-(define (rkt-files-in dir-rel)
-  ;; All .rkt files under <repo>/<dir-rel>, recursively.
-  (define dir (in-repo dir-rel))
-  (cond
-    [(directory-exists? dir)
-     (for/list ([f (in-directory dir)]
-                #:when (regexp-match? #rx"\\.rkt$" (path->string f)))
-       f)]
-    [else '()]))
-
-(define (direct-references-by file-prefix kind name)
-  ;; kind ∈ '(modules bundles). Returns list of "owner names" (host or
-  ;; bundle names depending on file-prefix) whose .rkt source mentions
-  ;; myConfig.<kind>.<name> at any depth.
-  (define needle (format "myConfig.~a.~a" kind name))
-  (define needle. (string-append needle "."))
-  (define owner-of (case file-prefix [("hosts") host-of-path] [("bundles") bundle-of-path]))
-  (sort
-   (remove-duplicates
-    (filter values
-            (for/list ([f (in-list (rkt-files-in file-prefix))]
-                       #:when (let ([paths (paths-referenced-in f)])
-                                (or (member needle paths)
-                                    (for/or ([p (in-list paths)])
-                                      (string-prefix? p needle.)))))
-              (owner-of (path->string f)))))
-   string<?))
-
 (define (host-modules host)
-  ;; Direct module references in this host's configuration.rkt.
+  ;; Direct module references in this host's configuration.bnix.
   (define f (host-config-rkt host))
   (cond
     [(file-exists? f)
@@ -76,81 +41,25 @@
       string<?)]
     [else '()]))
 
-(define (host-bundles host)
-  ;; Direct bundle references in this host's configuration.rkt.
-  (define f (host-config-rkt host))
-  (cond
-    [(file-exists? f)
-     (define paths (paths-referenced-in f))
-     (sort
-      (remove-duplicates
-       (filter values
-               (for/list ([p (in-list paths)])
-                 (define m (regexp-match #rx"^myConfig\\.bundles\\.([^.]+)" p))
-                 (and m (cadr m)))))
-      string<?)]
-    [else '()]))
-
-(define (bundle-rkt-files bundle)
-  ;; Look in both bundles/ (NixOS) and bundles-darwin/ (parallel
-  ;; darwin variants). A module reachable via either is live.
-  (filter file-exists?
-          (list (in-repo "bundles" bundle "default.rkt")
-                (in-repo "bundles-darwin" bundle "default.rkt"))))
-
-(define (bundle-modules bundle)
-  (define paths
-    (apply append (map paths-referenced-in (bundle-rkt-files bundle))))
-  (sort
-   (remove-duplicates
-    (filter values
-            (for/list ([p (in-list paths)])
-              (define m (regexp-match #rx"^myConfig\\.modules\\.([^.]+)" p))
-              (and m (cadr m)))))
-   string<?))
+(define (host-tag-modules host)
+  ;; Modules that resolve to "enabled" via the tag system for this host.
+  (with-handlers ([exn:fail? (λ (_) '())])
+    (define res (resolve-host host))
+    (resolution-active res)))
 
 ;; ---------- live closure ----------
 
-(define (live-bundles)
-  ;; Bundles enabled by any host (transitively — bundles can include
-  ;; other bundles). Computed via fixed-point.
-  (define seed
-    (apply append (map host-bundles (hosts))))
-  (let loop ([acc (list->set seed)])
-    (define added
-      (for*/fold ([new '()]) ([b (in-set acc)])
-        (define f (in-repo "bundles" b "default.rkt"))
-        (cond
-          [(file-exists? f)
-           (define paths (paths-referenced-in f))
-           (define refs
-             (filter-map
-              (λ (p)
-                (define m (regexp-match #rx"^myConfig\\.bundles\\.([^.]+)" p))
-                (and m (cadr m)))
-              paths))
-           (append refs new)]
-          [else new])))
-    (define next (set-union acc (list->set added)))
-    (cond [(equal? next acc) (sort (set->list acc) string<?)]
-          [else (loop next)])))
-
 (define (live-modules)
-  ;; Modules enabled by any host directly OR via a live bundle.
-  (define from-hosts (apply append (map host-modules (hosts))))
-  (define from-bundles
-    (apply append (map bundle-modules (live-bundles))))
-  (sort (remove-duplicates (append from-hosts from-bundles)) string<?))
+  ;; Modules referenced directly by any host's configuration.bnix OR
+  ;; activated via tag resolution against that host's enabled-tags.bnix.
+  (define hs (hosts))
+  (define from-hosts (apply append (map host-modules hs)))
+  (define from-tags  (apply append (map host-tag-modules hs)))
+  (sort (remove-duplicates (append from-hosts from-tags)) string<?))
 
 ;; ---------- set helpers (avoid pulling in racket/set fully) ----------
 
 (define (list->set xs) (let ([h (make-hash)]) (for ([x (in-list xs)]) (hash-set! h x #t)) h))
-(define (set->list s) (hash-keys s))
-(define (set-union a b) (let ([h (make-hash)])
-                          (for ([k (in-hash-keys a)]) (hash-set! h k #t))
-                          (for ([k (in-hash-keys b)]) (hash-set! h k #t))
-                          h))
-(define (in-set s) (in-hash-keys s))
 
 ;; ---------- handlers ----------
 
@@ -159,34 +68,19 @@
   (printf "Used modules (~a):\n" (length live-mods))
   (for ([m (in-list live-mods)])
     (define direct-h (filter (λ (host) (member m (host-modules host))) (hosts)))
-    (define via-b (filter (λ (b) (member m (bundle-modules b))) (live-bundles)))
+    (define via-tag-h (filter (λ (host) (member m (host-tag-modules host))) (hosts)))
     (define sources
-      (append direct-h (map (λ (b) (string-append "via " b)) via-b)))
+      (append direct-h
+              (map (λ (h) (string-append "via tag@" h)) via-tag-h)))
     (printf "  ~a  (~a)\n" m
-            (cond [(pair? sources) (string-join sources ", ")]
+            (cond [(pair? sources) (string-join (remove-duplicates sources) ", ")]
                   [else "—"]))))
-
-(define (print-used-bundles)
-  (define live-bs (live-bundles))
-  (printf "Used bundles (~a):\n" (length live-bs))
-  (for ([b (in-list live-bs)])
-    (define h (sort (filter (λ (host) (member b (host-bundles host))) (hosts))
-                    string<?))
-    (printf "  ~a  (~a)\n" b
-            (cond [(pair? h) (string-join h ", ")]
-                  [else "via another bundle"]))))
 
 (define (print-unused-modules)
   (define live (list->set (live-modules)))
   (define dead (sort (filter (λ (m) (not (hash-has-key? live m))) (modules)) string<?))
   (printf "Unreferenced modules (~a):\n" (length dead))
   (for ([m (in-list dead)]) (printf "  ~a\n" m)))
-
-(define (print-unused-bundles)
-  (define live (list->set (live-bundles)))
-  (define dead (sort (filter (λ (b) (not (hash-has-key? live b))) (bundles)) string<?))
-  (printf "Unreferenced bundles (~a):\n" (length dead))
-  (for ([b (in-list dead)]) (printf "  ~a\n" b)))
 
 (define (handle-module-list leaf)
   (case (string->symbol leaf)
@@ -200,46 +94,31 @@
      (eprintf "firn module list: expected one of all|used|unused, got '~a'\n" leaf)
      (exit 1)]))
 
-(define (handle-bundle-list leaf)
-  (case (string->symbol leaf)
-    [(all)
-     (define bs (bundles))
-     (printf "Bundles (~a):\n" (length bs))
-     (for ([b (in-list bs)]) (printf "  myConfig.bundles.~a\n" b))]
-    [(used)   (print-used-bundles)]
-    [(unused) (print-unused-bundles)]
-    [else
-     (eprintf "firn bundle list: expected one of all|used|unused, got '~a'\n" leaf)
-     (exit 1)]))
-
 (define (handle-host-list _leaf)
   (define hs (hosts))
   (printf "Hosts (~a):\n" (length hs))
   (for ([h (in-list hs)]) (printf "  ~a\n" h)))
 
 (define (print-refs name)
-  (printf "Bundles:\n")
-  (for ([b (in-list (sort (remove-duplicates
-                           (append
-                            (map bundle-of-path
-                                 (grep-files "bundles"
-                                             (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
-                            (map bundle-of-path
-                                 (grep-files "bundles"
-                                             (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
-                          string<?))])
-    (when b (printf "  ~a\n" b)))
-  (printf "\nHosts:\n")
-  (for ([h (in-list (sort (remove-duplicates
-                           (append
-                            (map host-of-path
-                                 (grep-files "hosts"
-                                             (regexp (format "myConfig\\.modules\\.~a\\.enable" name))))
-                            (map host-of-path
-                                 (grep-files "hosts"
-                                             (regexp (format "myConfig\\.bundles\\.~a\\.enable" name))))))
-                          string<?))])
-    (when h (printf "  ~a\n" h))))
+  ;; Direct = referenced in the host's hand-authored configuration.bnix.
+  ;; Via tags = activated by tag resolution (reads enabled-tags.bnix,
+  ;; does not depend on the .nix output). _generated-enables.bnix is
+  ;; intentionally excluded — it's just the materialised tag result.
+  (printf "Hosts (direct, from configuration.bnix):\n")
+  (define direct-hs
+    (sort (filter (λ (h) (member name (host-modules h))) (hosts))
+          string<?))
+  (cond
+    [(null? direct-hs) (printf "  (none)\n")]
+    [else (for ([h (in-list direct-hs)]) (printf "  ~a\n" h))])
+  (newline)
+  (printf "Hosts (via tag resolution):\n")
+  (define tag-hs
+    (sort (filter (λ (h) (member name (host-tag-modules h))) (hosts))
+          string<?))
+  (cond
+    [(null? tag-hs) (printf "  (none)\n")]
+    [else (for ([h (in-list tag-hs)]) (printf "  ~a\n" h))]))
 
 (define node-edges
   (list
@@ -248,13 +127,7 @@
               "list modules (all, used = enabled somewhere, unused = orphan)")
    (walk-edge "module" "refs" "<name>" #f
               print-refs
-              "show which hosts and bundles reference a module")
-   (walk-edge "bundle" "list" "all|used|unused" 'all
-              handle-bundle-list
-              "list bundles (all, used, unused)")
-   (walk-edge "bundle" "refs" "<name>" #f
-              print-refs
-              "show which hosts and bundles reference a bundle")
+              "show which hosts reference a module (direct + via tags)")
    (walk-edge "host"   "list" "all" 'all
               handle-host-list
               "list every host directory under hosts/")))

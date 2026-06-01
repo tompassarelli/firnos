@@ -1,30 +1,25 @@
 #lang racket/base
 
-;; firn-cmds/tags — module/bundle tag index.
+;; firn-cmds/tags — module tag index.
 ;;
 ;; Tags answer "which modules are gpu-required / gui-only / network /
-;; proprietary / etc." — orthogonal facets that don't form coherent
-;; bundles. Two sources, unioned per module:
+;; proprietary / etc." — orthogonal facets that compose into hosts via
+;; enabled-tags.bnix. Tags are sourced from the module's own .bnix:
 ;;
-;;   1. Derived from bundle membership. A module appearing in
-;;      bundles/gaming/default.rkt's (sub-modules …) gets the
-;;      `bundle:gaming` tag. Cheap, no authoring needed; covers ~60-70%
-;;      of the discovery problem (per the user's framing).
+;;   :tags         [terminal cli-tools …]    — module belongs to these
+;;                                             tags by default
+;;   :tags-opt-in  [browsers experimental …] — module can be added under
+;;                                             these tags via +<mod>
 ;;
-;;   2. Explicit (tags …) clauses inside (module-file …). The DSL
-;;      extension landed in nisp v0.11.0; the clause is recorded
-;;      in source but never emitted into Nix. Read directly from the
-;;      .rkt source by this command.
-;;
-;; Source-of-truth lives in the .rkt files; the index (jsonl by
-;; default; sqlite or HTML on demand) is regenerated, never authored.
+;; Source-of-truth lives in the .bnix files; the index (jsonl by
+;; default; to stdout on demand) is regenerated, never authored.
 ;;
 ;; Usage:
-;;   firn tags                      tag universe with module counts
-;;   firn tags <module>             tags for one module
-;;   firn tags --filter <tag>       modules carrying a tag
-;;   firn tags --index              write .beagle-cache/tags.jsonl
-;;   firn tags --index --stdout     emit jsonl to stdout
+;;   firn tag list                    tag universe with module counts
+;;   firn tag show <module>           tags for one module
+;;   firn tag filter <tag>            modules carrying a tag
+;;   firn tag index                   write .beagle-cache/tags.jsonl
+;;   firn tag index stdout            emit jsonl to stdout
 
 (require racket/file
          racket/list
@@ -33,109 +28,35 @@
          racket/format
          json
          "util.rkt"
-         "list.rkt") ; for bundle-modules
+         "tag-resolve.rkt")
 
 (provide node-edges)
 
 (define INDEX-PATH (build-path ROOT ".beagle-cache" "tags.jsonl"))
 
-;; ---------- explicit-tag extraction from .rkt ----------
-;;
-;; Walks a module's .rkt source(s) looking for (tags name1 name2 …)
-;; clauses inside (module-file …). Returns a list of tag strings.
-;; Tolerant — read errors, files without #lang nisp, files without a
-;; tags clause all return '().
+;; ---------- helpers ----------
 
-(define (extract-tags-from-datum datum)
-  (cond
-    [(not (pair? datum)) '()]
-    [else
-     (define head (and (symbol? (car datum)) (car datum)))
-     (cond
-       [(eq? head 'tags)
-        (filter string?
-                (for/list ([t (in-list (cdr datum))])
-                  (cond
-                    [(symbol? t) (symbol->string t)]
-                    [(string? t) t]
-                    [else #f])))]
-       [else
-        (apply append
-               (for/list ([d (in-list datum)])
-                 (extract-tags-from-datum d)))])]))
-
-(define (count-char c s)
-  (for/sum ([ch (in-string s)] #:when (char=? ch c)) 1))
-
-(define (read-rkt-data rkt-path)
-  ;; Read all top-level forms from a .rkt file (skipping #lang line),
-  ;; return as a list of datums.
-  (with-handlers ([exn:fail? (λ (_) '())])
-    (define raw (file->string rkt-path))
-    (define-values (lp rest)
-      (let ([m (regexp-match-positions #rx"^#lang [^\n]*\n" raw)])
-        (cond [m (values (substring raw 0 (cdr (car m)))
-                         (substring raw (cdr (car m))))]
-              [else (values "" raw)])))
-    (define padded (string-append (make-string (count-char #\newline lp) #\newline) rest))
-    (define port (open-input-string padded))
-    (let loop ([acc '()])
-      (define d (read port))
-      (cond [(eof-object? d) (reverse acc)]
-            [else (loop (cons d acc))]))))
-
-(define (explicit-tags-for-module name)
-  (define dir (in-repo "modules" name))
-  (cond
-    [(directory-exists? dir)
-     (define files
-       (for/list ([p (directory-list dir)]
-                  #:when (regexp-match? #rx"\\.rkt$" (path->string p)))
-         (build-path dir p)))
-     (sort
-      (remove-duplicates
-       (apply append
-              (for/list ([f (in-list files)])
-                (define data (read-rkt-data f))
-                (apply append (map extract-tags-from-datum data)))))
-      string<?)]
-    [else '()]))
-
-;; ---------- derived tags from bundle membership ----------
-
-(define (derived-tags-for-module name)
-  ;; bundle:<name> for each bundle (NixOS or darwin variant) that
-  ;; references this module via (sub-modules …) or an explicit
-  ;; (set myConfig.modules.<X>.enable …).
-  (define bundle-names
-    (for/list ([b (in-list (bundles))]
-               #:when (member name (bundle-modules b)))
-      (string-append "bundle:" b)))
-  (sort bundle-names string<?))
-
-;; ---------- merged tag index ----------
-
-(define (tags-for-module name)
-  ;; Union of explicit + derived. Sorted, deduplicated.
-  (sort
-   (remove-duplicates
-    (append (explicit-tags-for-module name)
-            (derived-tags-for-module name)))
-   string<?))
+(define (tag-record-for name)
+  ;; Returns (list of (tag . kind)) where kind ∈ '(default opt-in).
+  (define mt (extract-module-tags name))
+  (append
+   (for/list ([t (in-list (module-tags-tags mt))]) (cons t 'default))
+   (for/list ([t (in-list (module-tags-opt-in mt))]) (cons t 'opt-in))))
 
 (define (build-index)
-  ;; Returns hash: module-name → (list of tag strings)
+  ;; Returns hash: module-name → (list of (cons tag-string kind-sym))
   (define h (make-hash))
   (for ([m (in-list (modules))])
-    (hash-set! h m (tags-for-module m)))
+    (hash-set! h m (tag-record-for m)))
   h)
 
 (define (tag-universe index)
-  ;; Returns hash: tag → (list of module names carrying that tag)
+  ;; Returns hash: tag → (list of (cons modname kind))
   (define u (make-hash))
-  (for* ([(mod tags) (in-hash index)]
-         [t (in-list tags)])
-    (hash-set! u t (cons mod (hash-ref u t '()))))
+  (for* ([(mod records) (in-hash index)]
+         [r (in-list records)])
+    (define t (car r))
+    (hash-set! u t (cons (cons mod (cdr r)) (hash-ref u t '()))))
   u)
 
 ;; ---------- handlers ----------
@@ -144,25 +65,24 @@
   (define index (build-index))
   (define universe (tag-universe index))
   (define keys (sort (hash-keys universe) string<?))
-  (define explicit-tags (filter (λ (t) (not (string-prefix? t "bundle:"))) keys))
-  (define bundle-tags  (filter (λ (t) (string-prefix? t "bundle:")) keys))
   (cond
-    [(pair? explicit-tags)
-     (printf "Explicit tags (~a):\n" (length explicit-tags))
-     (for ([t (in-list explicit-tags)])
-       (printf "  ~a  (~a)\n" (~a t #:min-width 18)
-               (length (hash-ref universe t))))]
+    [(null? keys)
+     (printf "No tags found. Add :tags / :tags-opt-in clauses to modules' default.bnix.\n")]
     [else
-     (printf "Explicit tags: (none authored — add (tags …) clauses to module .rkt files)\n")])
-  (newline)
-  (printf "Bundle-derived tags (~a):\n" (length bundle-tags))
-  (for ([t (in-list bundle-tags)])
-    (printf "  ~a  (~a)\n" (~a t #:min-width 18)
-            (length (hash-ref universe t))))
+     (printf "Tags (~a):\n" (length keys))
+     (for ([t (in-list keys)])
+       (define mods (hash-ref universe t))
+       (define defaults (filter (λ (p) (eq? (cdr p) 'default)) mods))
+       (define opt-ins  (filter (λ (p) (eq? (cdr p) 'opt-in)) mods))
+       (printf "  ~a  (~a default~a)\n"
+               (~a t #:min-width 18)
+               (length defaults)
+               (cond [(null? opt-ins) ""]
+                     [else (format ", ~a opt-in" (length opt-ins))])))])
   (newline)
   (define total-modules (hash-count index))
   (define tagged-modules
-    (for/sum ([(_ tags) (in-hash index)] #:when (pair? tags)) 1))
+    (for/sum ([(_ records) (in-hash index)] #:when (pair? records)) 1))
   (printf "Coverage: ~a / ~a modules carry at least one tag.\n"
           tagged-modules total-modules))
 
@@ -171,39 +91,53 @@
     [(not (member m (modules)))
      (eprintf "firn tag show: no module named '~a'\n" m) (exit 1)]
     [else
-     (define explicit (explicit-tags-for-module m))
-     (define derived (derived-tags-for-module m))
+     (define mt (extract-module-tags m))
+     (define defaults (module-tags-tags mt))
+     (define opt-in (module-tags-opt-in mt))
      (printf "module: ~a\n" m)
      (cond
-       [(pair? explicit)
-        (printf "explicit tags: ~a\n" (string-join explicit ", "))]
+       [(pair? defaults)
+        (printf ":tags         ~a\n" (string-join defaults ", "))]
        [else
-        (printf "explicit tags: (none — add a (tags …) clause to modules/~a/default.rkt)\n" m)])
+        (printf ":tags         (none — add a :tags clause to modules/~a/default.bnix)\n" m)])
      (cond
-       [(pair? derived)
-        (printf "derived tags:  ~a\n" (string-join derived ", "))]
+       [(pair? opt-in)
+        (printf ":tags-opt-in  ~a\n" (string-join opt-in ", "))]
        [else
-        (printf "derived tags:  (not in any bundle)\n")])]))
+        (printf ":tags-opt-in  (none)\n")])]))
 
 (define (handle-tag-filter tag)
   (define index (build-index))
-  (define mods (sort (filter (λ (m) (member tag (hash-ref index m '())))
+  (define mods (sort (filter (λ (m)
+                               (findf (λ (r) (equal? (car r) tag))
+                                      (hash-ref index m '())))
                              (hash-keys index))
                      string<?))
   (cond
     [(null? mods) (printf "no modules tagged '~a'\n" tag)]
     [else
      (printf "modules tagged '~a' (~a):\n" tag (length mods))
-     (for ([m (in-list mods)]) (printf "  ~a\n" m))]))
+     (for ([m (in-list mods)])
+       (define records (hash-ref index m '()))
+       (define kind (cdr (findf (λ (r) (equal? (car r) tag)) records)))
+       (printf "  ~a  (~a)\n" m kind))]))
 
 (define (handle-tag-index leaf)
   (define stdout? (equal? leaf "stdout"))
   (define index (build-index))
   (define lines
     (for/list ([m (in-list (sort (hash-keys index) string<?))])
+      (define records (hash-ref index m '()))
+      (define defaults
+        (for/list ([r (in-list records)] #:when (eq? (cdr r) 'default))
+          (car r)))
+      (define opt-in
+        (for/list ([r (in-list records)] #:when (eq? (cdr r) 'opt-in))
+          (car r)))
       (jsexpr->string
        (hash 'name m
-             'tags (hash-ref index m '())))))
+             'tags defaults
+             'tags_opt_in opt-in))))
   (cond
     [stdout?
      (for ([line (in-list lines)]) (displayln line))]
@@ -217,9 +151,9 @@
 (define node-edges
   (list
    (walk-edge "tag" "list"   "all"        'all    handle-tag-list
-              "tag universe (explicit + bundle-derived) with module counts")
+              "tag universe (sourced from modules' :tags / :tags-opt-in)")
    (walk-edge "tag" "show"   "<module>"   #f      handle-tag-show
-              "tags for one module")
+              "show a module's :tags and :tags-opt-in")
    (walk-edge "tag" "filter" "<tag>"      #f      handle-tag-filter
               "list modules carrying a tag")
    (walk-edge "tag" "index"  "repo|stdout" 'repo  handle-tag-index

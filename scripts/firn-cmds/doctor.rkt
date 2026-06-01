@@ -7,7 +7,7 @@
 ;;   1. Untracked .rkt/.nix files (invisible to Nix's flake reader)
 ;;   2. Stale .nix files (sibling .rkt newer)
 ;;   3. Schema cache freshness (vs flake.lock mtime)
-;;   4. Orphaned modules (not enabled by any host or bundle)
+;;   4. Orphaned modules (not enabled directly by any host or via tags)
 ;;   5. Validator clean
 ;;   6. Flake inputs use no absolute paths (pure-eval safe)
 ;;
@@ -19,7 +19,7 @@
          racket/string
          racket/system
          "util.rkt"
-         "list.rkt")  ; for host-of-path / bundle-of-path / cmd-list machinery
+         (only-in "list.rkt" live-modules))
 
 (provide node-edges)
 
@@ -62,15 +62,14 @@
                            (map (λ (f) (string-append "  " f)) files)))]))
 
 (define (check-stale-nix)
-  ;; For every .rkt under modules/bundles/hosts/flake.rkt, check that its
-  ;; .nix sibling exists AND is at least as new as the .rkt.
+  ;; For every .bnix under modules/hosts/flake.bnix, check that its
+  ;; .nix sibling exists AND is at least as new as the .bnix.
   (define stale '())
   (define missing '())
   (for ([f (in-directory ROOT)])
     (define s (path->string f))
     (when (and (regexp-match? #rx"\\.bnix$" s)
                (or (regexp-match? #rx"/modules/" s)
-                   (regexp-match? #rx"/bundles/" s)
                    (regexp-match? #rx"/hosts/" s)
                    (regexp-match? #rx"/flake\\.bnix$" s)))
       (let ()
@@ -129,21 +128,38 @@
            (values #f (list "darwin schema cache older than flake.lock — re-run firn-extract-schema --darwin"))]
           [else (values #t '())])])]))
 
-(define (module-referenced? m)
-  ;; A module is "referenced" if any host or bundle config mentions it via:
-  ;;   - myConfig.modules.<name>.enable / .default / .<anything>
-  ;;   - bare name inside a (sub-modules ...) form
-  (define dotted-re (pregexp (format "modules\\.~a[.\\s)]" (regexp-quote m))))
-  (define sub-mod-re (pregexp (format "sub-modules[^)]*\\b~a\\b" (regexp-quote m))))
-  (or (pair? (grep-files "hosts" dotted-re))
-      (pair? (grep-files "bundles" dotted-re))
-      (pair? (grep-files "hosts" sub-mod-re))
-      (pair? (grep-files "bundles" sub-mod-re))))
+(define (module-referenced? m live)
+  ;; A module is "referenced" if either:
+  ;;   - it's in the live set computed by list.rkt's live-modules
+  ;;     (tag-resolved active modules across all hosts), OR
+  ;;   - some host's configuration.bnix or enabled-tags.bnix mentions
+  ;;     myConfig.modules.<m>.enable / -m / +m directly. The grep is a
+  ;;     safety net for direct references that the AST-based path
+  ;;     extractor in util.rkt can't see (it reads via Racket's reader,
+  ;;     which stumbles on bnix-specific syntax in some files).
+  ;; Excludes _generated-enables.bnix — that's just the resolver output.
+  (cond
+    [(hash-has-key? live m) #t]
+    [else
+     (define dotted-re (pregexp (format "modules\\.~a[.\\s)]" (regexp-quote m))))
+     (define tag-edit-re
+       (pregexp (format "[+\\-]~a[\\s\\]]" (regexp-quote m))))
+     ;; grep-files walks both .rkt and .nix; we want host source only.
+     (or (pair? (filter (λ (p) (not (regexp-match? #rx"_generated-enables\\." p)))
+                        (grep-files "hosts" dotted-re)))
+         (pair? (filter (λ (p) (regexp-match? #rx"enabled-tags\\.bnix$" p))
+                        (grep-files "hosts" tag-edit-re))))]))
+
+(define (list->hash xs)
+  (define h (make-hash))
+  (for ([x (in-list xs)]) (hash-set! h x #t))
+  h)
 
 (define (check-orphaned-modules)
+  (define live (list->hash (live-modules)))
   (define orphans
     (for/list ([m (in-list (modules))]
-               #:when (not (module-referenced? m)))
+               #:when (not (module-referenced? m live)))
       m))
   (cond
     [(null? orphans) (values #t '())]

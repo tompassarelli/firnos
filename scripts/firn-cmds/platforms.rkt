@@ -1,26 +1,21 @@
 #lang racket/base
 
-;; firn-cmds/platforms — answer "which modules/bundles work on darwin?"
+;; firn-cmds/platforms — answer "which modules work on darwin?"
 ;;
 ;; The mechanism: every (set X.Y val) and (enable X.Y) form in a module
-;; references an option path. nisp/validate already walks the AST and
-;; extracts these. We cross-check each module's paths against both the
-;; NixOS schema and the darwin schema; a module whose paths all exist
-;; in darwin is darwin-compatible. Bundles aggregate their sub-modules:
-;; a bundle is darwin-compatible iff every sub-module it references is
-;; darwin-compatible AND any options it sets directly are also in the
-;; darwin schema.
+;; references an option path. We cross-check each module's paths against
+;; both the NixOS schema and the darwin schema; a module whose paths all
+;; exist in darwin is darwin-compatible.
 ;;
 ;; Pre-req: both schemas extracted.
 ;;   ./scripts/firn-extract-schema           → .beagle-cache/schema.json
 ;;   ./scripts/firn-extract-schema --darwin  → .beagle-cache/schema-darwin.json
 ;;
 ;; Usage:
-;;   firn platforms                  full matrix (modules + bundles)
+;;   firn platforms                  full matrix
 ;;   firn platforms darwin           list darwin-compatible only
 ;;   firn platforms linux            list NixOS-only
-;;   firn platforms <name>           single module/bundle, with reason
-;;   firn platforms --bundles        bundle compat with blocking modules
+;;   firn platforms <name>           single module, with reason
 ;;   firn platforms --safelist       suggested safelist for flake.rkt
 
 (require racket/file
@@ -107,7 +102,7 @@
 
 ;; (paths-referenced-in lives in util.rkt for shared use)
 
-;; ---------- module / bundle resolution ----------
+;; ---------- module resolution ----------
 
 (define (module-rkt-files name)
   ;; Returns all .rkt files in modules/<name>/ (default + any siblings)
@@ -118,9 +113,6 @@
                 #:when (regexp-match? #rx"\\.rkt$" (path->string p)))
        (build-path dir p))]
     [else '()]))
-
-(define (bundle-rkt-file name)
-  (in-repo "bundles" name "default.rkt"))
 
 ;; ---------- compatibility check ----------
 
@@ -170,32 +162,6 @@
           [darwin-ok? (values 'darwin-only linux-blockers)]
           [else (values 'no-data
                         (append linux-blockers darwin-blockers))])])]))
-
-(define (bundle-compat name nixos-schema darwin-schema all-module-verdicts)
-  ;; A bundle is darwin-compatible iff:
-  ;;   1. Every option path it sets directly exists in darwin schema, AND
-  ;;   2. Every sub-module it references is darwin-compatible
-  ;; Returns (values verdict blocking-modules)
-  (define f (bundle-rkt-file name))
-  (cond
-    [(not (file-exists? f)) (values 'no-data '())]
-    [else
-     (define all-paths (paths-referenced-in f))
-     ;; Sub-module references look like myConfig.modules.<X>.enable
-     (define sub-modules
-       (remove-duplicates
-        (for/list ([p (in-list all-paths)]
-                   #:when (regexp-match? #rx"^myConfig\\.modules\\." p))
-          (define m (regexp-match #rx"^myConfig\\.modules\\.([^.]+)" p))
-          (cadr m))))
-     (define blocking
-       (for/list ([m (in-list sub-modules)]
-                  #:when (memq (hash-ref all-module-verdicts m 'no-data)
-                               '(linux-only no-data)))
-         m))
-     (cond
-       [(null? blocking) (values 'both '())]
-       [else (values 'linux-only blocking)])]))
 
 ;; ---------- output ----------
 
@@ -261,22 +227,9 @@
      (when (pair? no-data)
        (newline)
        (print-list "modules with no detectable paths (skipped)" no-data))]
-    [(bundles)
-     (define bundles-list (bundles))
-     (printf "bundle              compatible?  blocking modules\n")
-     (printf "------              -----------  ----------------\n")
-     (for ([b (in-list bundles-list)])
-       (define-values (v blocking) (bundle-compat b nixos-schema darwin-schema verdicts))
-       (cond
-         [(eq? v 'both)
-          (printf "~a  ✓\n" (~a b #:min-width 18))]
-         [else
-          (printf "~a  NixOS-only  ~a\n"
-                  (~a b #:min-width 18)
-                  (string-join blocking ", "))]))]
     [(all)
-     (printf "Platform compatibility matrix (~a modules, ~a bundles)\n"
-             (length (modules)) (length (bundles)))
+     (printf "Platform compatibility matrix (~a modules)\n"
+             (length (modules)))
      (printf "Sources: NixOS schema (~a paths), darwin schema (~a paths)\n\n"
              (hash-count (schema-direct nixos-schema))
              (hash-count (schema-direct darwin-schema)))
@@ -293,7 +246,7 @@
      (printf "environment.systemPackages will pass even if the package itself\n")
      (printf "has no darwin build. Try `darwin-rebuild build` to confirm.\n")]
     [else
-     (eprintf "firn platform list: expected one of all|darwin|linux|bundles, got '~a'\n" leaf)
+     (eprintf "firn platform list: expected one of all|darwin|linux, got '~a'\n" leaf)
      (exit 1)]))
 
 (define (handle-platform-show name)
@@ -307,19 +260,8 @@
      (when (pair? bs)
        (printf "blocking paths:\n")
        (for ([p (in-list bs)]) (printf "  ~a\n" p)))]
-    [(member name (bundles))
-     (define-values (v blocking) (bundle-compat name nixos-schema darwin-schema verdicts))
-     (printf "bundle:  ~a\n" name)
-     (printf "verdict: ~a\n" v)
-     (when (pair? blocking)
-       (printf "blocking sub-modules:\n")
-       (for ([m (in-list blocking)])
-         (define mv (hash-ref verdicts m 'no-data))
-         (define mbs (hash-ref blockers m '()))
-         (printf "  ~a (~a)\n" m mv)
-         (for ([p (in-list mbs)]) (printf "    ~a\n" p))))]
     [else
-     (eprintf "firn platform show: no module or bundle named '~a'\n" name)
+     (eprintf "firn platform show: no module named '~a'\n" name)
      (exit 1)]))
 
 (define (handle-platform-safelist _leaf)
@@ -334,12 +276,12 @@
 
 (define node-edges
   (list
-   (walk-edge "platform" "list"     "all|darwin|linux|bundles" 'all
+   (walk-edge "platform" "list"     "all|darwin|linux" 'all
               handle-platform-list
               "platform compat overview (all = full matrix; others = filtered)")
    (walk-edge "platform" "show"     "<name>" #f
               handle-platform-show
-              "compat report for one module or bundle")
+              "compat report for one module")
    (walk-edge "platform" "safelist" "all" 'all
               handle-platform-safelist
               "emit a darwin-safelist (lst …) snippet for flake.rkt")))

@@ -1,12 +1,13 @@
 # Tags — composition model
 
-Tags are the composition primitive in firnos. A module joins zero or more tags
-by declaring them in its `.bnix` source; a host enables a list of tags; the
-resolver computes the active module set by union-then-subtract.
+Tags are the **only** composition primitive in firnos. A module joins zero or
+more tags by declaring them in its `.bnix` source; a host enables a list of
+tags; the resolver computes the active module set by union-then-subtract.
 
-This replaces the legacy `myConfig.bundles.*` pattern (per-bundle sub-options +
-`mkDefault` proxies). The audit that locked the schema in place lives at the
-bottom of this document.
+The legacy `myConfig.bundles.*` pattern (per-bundle sub-options + `mkDefault`
+proxies) has been removed — both the `bundles/` directory and the `bundle` CLI
+node are gone. The audit that drove the schema decisions still lives at the
+bottom of this document for historical context.
 
 ---
 
@@ -297,9 +298,10 @@ default-on memberships only.
 
 ---
 
-## Migration from bundles
+## Historical: bundle audit
 
-The bundle audit (Phase A) counted every `mkDefault` in `bundles/*/default.bnix`:
+The pre-migration bundle audit (Phase A) counted every `mkDefault` in the now-
+deleted `bundles/*/default.bnix`:
 
 | metric                              | count |
 |-------------------------------------|------:|
@@ -307,25 +309,34 @@ The bundle audit (Phase A) counted every `mkDefault` in `bundles/*/default.bnix`
 | Pure enable-wiring                  |   132 |
 | Value-overrides (non-`enable`)      |     9 |
 
-All 9 value-overrides cluster in two bundles (`browsers` x 8, `theming` x 1).
-The other 20 bundles are pure enable-wiring and collapse into tag membership
+All 9 value-overrides clustered in two bundles (`browsers` x 8, `theming` x 1).
+The other 20 bundles were pure enable-wiring and collapsed into tag membership
 with zero overrides. The 9 surviving cases are the reason `:tag-overrides`
 exists in the schema rather than being deferred.
 
-Migration recipe per bundle (handled by a forthcoming `firn tag migrate-bundle`
-helper):
+The migration is complete: `bundles/` no longer exists, `firn bundle …` prints
+a pointed error pointing at the equivalent `firn tag …` form, and the
+underlying graph (`firn` with no args) has no `bundle` node.
 
-1. For each `:<sub>.enable (lib.mkOption ...)` in the bundle's options that
-   proxies `myConfig.modules.<sub>.enable`, add the bundle's name as a tag in
-   `modules/<sub>/default.bnix` under `:tags`.
-2. For each non-`enable` proxy (the 9 value-overrides), add an entry to that
-   module's `:tag-overrides`.
-3. Add the bundle name to the host's `enabled-tags.bnix :enabled` vector.
-4. For each `bundles.X.Y.enable = false` the host previously wrote, translate
-   into either `[X -Y]` (per-tag subtract) or `:disabled [Y]` (global) depending
-   on whether Y appears in other enabled tags.
-5. Once all bundles are migrated and `firn tag resolve <host>` matches the old
-   active set, delete the bundle's directory.
+---
+
+## Editing host tags from the CLI
+
+```bash
+firn tag enable  <tag>            # add <tag> to :enabled (no flags)
+firn tag disable <tag>            # remove <tag> from :enabled entirely
+firn tag opt-in  <tag> <module>   # add +<module> under <tag>
+firn tag opt-out <tag> <module>   # add -<module> under <tag>
+firn tag status                   # show :enabled / :disabled + resolved active set
+
+firn module enable  <module>      # remove <module> from :disabled (un-blacklist)
+firn module disable <module>      # append <module> to :disabled (hard off)
+```
+
+`firn enable <name>` / `firn disable <name>` is the daily shortcut: targets a
+tag by default; routes to `firn module enable/disable` when `<name>` matches a
+known module. All edits mutate `hosts/<current-host>/enabled-tags.bnix` in
+place via the tag-edit parser (AST-aware, idempotent round-trip).
 
 ---
 

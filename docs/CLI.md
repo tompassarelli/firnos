@@ -14,17 +14,23 @@ firn build             regenerate .nix from .bnix
 firn validate          lint + type / path check
 firn impact            what will rebuild, estimated time
 firn doctor            repo health check
-firn status            enabled modules / bundles
-firn enable <name>     toggle a module or bundle on
-firn disable <name>    toggle off
+firn status            modules enabled directly in configuration.bnix
+firn tag status        enabled-tags.bnix + resolved active modules
+firn enable <name>     enable a tag (or un-blacklist a module if <name> is a module)
+firn disable <name>    disable a tag (or hard-off a module)
 firn diff              re-emit and diff vs committed .nix
 firn diff --semantic   option-level changelog
 ```
 
-These are first-class, not deprecated. `scripts/firn.rkt:316` lists
-them in the help output as "Common shortcuts (default host is
+These are first-class, not deprecated. `scripts/firn.rkt` lists them
+in the help output as "Common shortcuts (default host is
 auto-detected)". The dispatcher silently rewrites each to its
 entity-first form; nothing is printed about it.
+
+`firn enable <name>` / `firn disable <name>` route based on what `<name>`
+is: a tag (the default) mutates the host's `enabled-tags.bnix :enabled`
+vector; a known module routes to `firn module enable/disable`, which
+removes from / appends to `:disabled`.
 
 Run `firn` with no args to see the full grid; `firn <node>` for one
 entity's edges.
@@ -33,29 +39,33 @@ entity's edges.
 
 Every command is ultimately a `<node> <edge> [<leaf>]` triple. Use this
 form when you need to override defaults — rebuild a different host,
-target a specific bundle, etc.
+target a specific tag, etc.
 
 ```
 host    rebuild  [<host>]          firn-build → validate → nixos-rebuild → tag
-host    status   [<host>]          enabled modules + bundles for a host
+host    status   [<host>]          enabled modules from configuration.bnix
 host    doctor   [<host>]          repo health check (untracked, stale, validator)
 host    impact   [<host>]          dry-run preview: what will build, est. time
 host    gen      [<host>]          current/next generation numbers
 host    list     all               every host directory under hosts/
 
-module  enable   <name>            toggle on in the default host
-module  disable  <name>            toggle off
+module  enable   <name>            remove <name> from :disabled in enabled-tags.bnix
+module  disable  <name>            append <name> to :disabled (hard off)
 module  status   all               flat list of enabled modules
 module  list     all|used|unused   list modules with optional usage filter
 module  refs     <name>            show what references this module
 module  add      <name>            scaffold a minimal module
 
-bundle  enable   <name>            toggle bundle on in the default host
-bundle  disable  <name>
-bundle  status   <name>|all        per-bundle sub-toggle tree
-bundle  list     all|used|unused
-bundle  refs     <name>
-bundle  add      <name>            scaffold a new (empty) bundle
+tag     enable   <name>            add <name> to :enabled (no flags)
+tag     disable  <name>            remove <name> from :enabled
+tag     opt-in   <tag> <module>    add +<module> under <tag> in :enabled
+tag     opt-out  <tag> <module>    add -<module> under <tag> in :enabled
+tag     status   [<host>]          dump :enabled / :disabled + resolved active set
+tag     list     all               tag universe + module counts
+tag     show     <module>          tags / opt-in tags / overrides for one module
+tag     filter   <tag>             modules carrying that tag
+tag     resolve  <host>            per-tag contributions + unions + final set
+tag     index    repo|stdout       jsonl tag index
 
 repo    diff     [<target>]        re-emit Nix and diff vs committed .nix
 repo    doctor   all               full repo health (5 checks)
@@ -65,13 +75,15 @@ repo    watch    all               re-run validator on .bnix save
 schema  explain  <path|err-line>   schema entry + repo references for an option
 schema  extract  [<host>]          regenerate options schema cache
 secret  list|show|edit <name>      sops list / decrypt / edit
-tag     list|show|filter|index     module tag index
 platform list|show|safelist        NixOS vs darwin compatibility report
 template service|submodule|home|host <name>   scaffolded skeletons
 ```
 
-Walks chain — `firn module list bundle list` runs both with default
-leaves.
+**Note:** the `bundle` node was removed — composition is tag-driven now.
+`firn bundle …` prints a pointed error directing you to the equivalent
+`firn tag …` form.
+
+Walks chain — `firn module list tag list` runs both with default leaves.
 
 ## Bulk auto-fix
 
@@ -89,4 +101,4 @@ Rewrites unambiguous Levenshtein-distance typos across the whole tree.
 ```
 
 The wrapper exec's `racket` on bytecode, so Racket must be on `PATH`
-(already provided by `bundles/racket`).
+(already provided by `modules/racket`, pulled in by the `lisp` tag).

@@ -18,9 +18,8 @@
 
 (define (resolve-rkt-source name)
   ;; Resolve a user-facing name to a .rkt path. Accepts:
-  ;;   - bare name       → modules/<name>/default.rkt or bundles/<name>/default.rkt
+  ;;   - bare name       → modules/<name>/default.rkt
   ;;   - module/<name>   → modules/<name>/default.rkt
-  ;;   - bundle/<name>   → bundles/<name>/default.rkt
   ;;   - host/<name>     → hosts/<name>/configuration.rkt
   ;;   - flake           → flake.rkt
   ;;   - relative path   → as-is
@@ -28,8 +27,6 @@
     [(equal? name "flake") (in-repo "flake.rkt")]
     [(regexp-match #rx"^module[s]?/(.+)$" name)
      => (λ (m) (in-repo "modules" (cadr m) "default.rkt"))]
-    [(regexp-match #rx"^bundle[s]?/(.+)$" name)
-     => (λ (m) (in-repo "bundles" (cadr m) "default.rkt"))]
     [(regexp-match #rx"^host[s]?/(.+)$" name)
      => (λ (m) (in-repo "hosts" (cadr m) "configuration.rkt"))]
     [(regexp-match #rx"\\.rkt$" name)
@@ -39,7 +36,6 @@
     [else
      (define candidates
        (list (in-repo "modules" name "default.rkt")
-             (in-repo "bundles" name "default.rkt")
              (in-repo "hosts" name "configuration.rkt")))
      (or (findf file-exists? candidates) #f)]))
 

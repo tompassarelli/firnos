@@ -10,7 +10,7 @@
 ;;
 ;;   firn <node> <edge> <leaf> [<node> <edge> <leaf>]*
 ;;
-;; e.g. `firn bundle status all`, `firn module enable swap`,
+;; e.g. `firn tag enable terminal`, `firn module status all`,
 ;;      `firn host rebuild whiterabbit`, `firn schema explain X`.
 ;;
 ;; If the final leaf is omitted, the edge's `default-leaf` fills in:
@@ -43,6 +43,7 @@
          (prefix-in p:  "firn-cmds/platforms.rkt")
          (prefix-in tg: "firn-cmds/tags.rkt")
          (prefix-in tr: "firn-cmds/tag-resolve.rkt")
+         (prefix-in te: "firn-cmds/tag-edit.rkt")
          (prefix-in pl: "firn-cmds/pipeline.rkt")
          (prefix-in fl: "firn-cmds/flake.rkt"))
 
@@ -60,6 +61,7 @@
           p:node-edges
           tg:node-edges
           tr:node-edges
+          te:node-edges
           pl:node-edges
           fl:node-edges))
 
@@ -159,17 +161,19 @@
 
 (define LEGACY-ALIASES
   (list
-    ;; firn status [host] [--bundles]
+    ;; firn status [host]
     (cons "status"
           (λ (args)
-            (define bundles? (member "--bundles" args))
-            (define rest (filter (λ (a) (not (equal? a "--bundles"))) args))
-            (define host (and (pair? rest) (car rest)))
+            (define host (and (pair? args) (car args)))
             (cond
-              [bundles? (list "bundle" "status" "all")]
-              [host     (list "host" "status" host)]
-              [else     (list "host" "status")])))
-    ;; firn enable <name> [host]
+              [host (list "host" "status" host)]
+              [else (list "host" "status")])))
+    ;; firn enable <name>:
+    ;;   - tag-shaped name (the simple case): firn tag enable <name>
+    ;;   - module name that's currently in :disabled: firn module enable <name>
+    ;;     (un-blacklist) — picks this when the bare name is a known module.
+    ;;   - otherwise: tag enable (auto-creates the tag entry — tag-resolve
+    ;;     will validate against the universe).
     (cons "enable"
           (λ (args)
             (cond
@@ -179,8 +183,7 @@
                (define kind (find-name-kind name))
                (case kind
                  [(module) (list "module" "enable" name)]
-                 [(bundle) (list "bundle" "enable" name)]
-                 [else #f])])))
+                 [else (list "tag" "enable" name)])])))
     (cons "disable"
           (λ (args)
             (cond
@@ -190,8 +193,18 @@
                (define kind (find-name-kind name))
                (case kind
                  [(module) (list "module" "disable" name)]
-                 [(bundle) (list "bundle" "disable" name)]
-                 [else #f])])))
+                 [else (list "tag" "disable" name)])])))
+    ;; firn bundle ... — bundle node was removed (zero users); emit a
+    ;; pointed error so anyone with muscle memory gets the right hint.
+    (cons "bundle"
+          (λ (_)
+            (eprintf "firn: the 'bundle' node was removed (zero users).\n")
+            (eprintf "  Use the tag system instead:\n")
+            (eprintf "    firn tag enable  <tag>\n")
+            (eprintf "    firn tag disable <tag>\n")
+            (eprintf "    firn tag opt-in  <tag>+<module>\n")
+            (eprintf "    firn tag status\n")
+            (exit 1)))
     ;; firn rebuild [host] [--skip-checks]
     (cons "rebuild"
           (λ (args)
@@ -218,12 +231,9 @@
     (cons "watch"   (λ (_) (list "repo" "watch")))
     (cons "list"    (λ (args)
                       (cond
-                        [(member "--used" args)   (list "module" "list" "used"
-                                                        "bundle" "list" "used")]
-                        [(member "--unused" args) (list "module" "list" "unused"
-                                                        "bundle" "list" "unused")]
-                        [else                     (list "module" "list" "all"
-                                                        "bundle" "list" "all")])))
+                        [(member "--used" args)   (list "module" "list" "used")]
+                        [(member "--unused" args) (list "module" "list" "unused")]
+                        [else                     (list "module" "list" "all")])))
     (cons "refs"    (λ (args)
                       (cond
                         [(null? args) #f]
@@ -231,20 +241,6 @@
     (cons "mod"     (λ (args)
                       (cond [(null? args) #f]
                             [else (list "module" "add" (car args))])))
-    ;; old `firn bundle <name> <mod1> <mod2> ...` → `firn bundle add <name>+<mods>`.
-    ;; Requires ≥ 2 args; the single-arg case is ambiguous with an
-    ;; unknown-edge typo and is left to dispatch to error on.
-    (cons "bundle"  (λ (args)
-                      (cond
-                        [(< (length args) 2) #f]
-                        [(member (cadr args)
-                                 '("add" "enable" "disable" "status" "refs" "list"))
-                         #f]
-                        [else
-                         (define name (car args))
-                         (define mods (cdr args))
-                         (list "bundle" "add"
-                               (string-append name "+" (string-join mods ",")))])))
     (cons "scaffold" (λ (args)
                        (cond [(< (length args) 2) #f]
                              [else (list "template" (car args) (cadr args))])))
@@ -274,7 +270,6 @@
                           [(null? args) (list "platform" "list" "all")]
                           [(equal? (car args) "darwin")     (list "platform" "list" "darwin")]
                           [(equal? (car args) "linux")      (list "platform" "list" "linux")]
-                          [(equal? (car args) "--bundles")  (list "platform" "list" "bundles")]
                           [(equal? (car args) "--safelist") (list "platform" "safelist" "all")]
                           [else (list "platform" "show" (car args))])))
     (cons "build"    (λ (_) (list "repo" "build")))
@@ -319,13 +314,15 @@
   (printf "Usage:\n  firn <node> <edge> [<leaf>]  [<node> <edge> [<leaf>] ...]\n\n")
   (printf "Common shortcuts (default host is auto-detected):\n")
   (printf "  firn rebuild          build + validate + switch (current host)\n")
-  (printf "  firn build            regenerate .nix from .rkt\n")
+  (printf "  firn build            regenerate .nix from .bnix\n")
   (printf "  firn validate         lint + type/package/path check\n")
   (printf "  firn impact           what will rebuild, estimated time\n")
   (printf "  firn doctor           repo health check\n")
-  (printf "  firn status           enabled modules/bundles\n")
-  (printf "  firn enable <name>    toggle a module or bundle on\n")
-  (printf "  firn disable <name>   toggle off\n")
+  (printf "  firn status           modules enabled directly in configuration.bnix\n")
+  (printf "  firn tag status       enabled-tags.bnix + resolved active modules\n")
+  (printf "  firn tag enable <t>   add a tag to the current host\n")
+  (printf "  firn tag opt-in <t>+<m>   add +<module> under tag <t>\n")
+  (printf "  firn module disable <m>   add <m> to :disabled (hard off)\n")
   (printf "  firn diff             re-emit and diff vs committed .nix\n")
   (printf "  firn diff --semantic  option-level changelog\n")
   (printf "\nFull graph:\n\n")

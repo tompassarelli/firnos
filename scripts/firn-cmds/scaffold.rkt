@@ -36,33 +36,6 @@
   (sh "git" "-C" ROOT "add" (path->string dir))
   (printf "Created modules/~a/default.bnix (git added)\n" name))
 
-(define (handle-bundle-add leaf)
-  (define-values (name mods)
-    (cond
-      [(regexp-match #rx"^([^+]+)\\+(.+)$" leaf)
-       => (λ (m) (values (cadr m) (regexp-split #rx"," (caddr m))))]
-      [else (values leaf '())]))
-  (define dir (in-repo "bundles" name))
-  (when (directory-exists? dir)
-    (eprintf "Bundle ~a already exists\n" name) (exit 1))
-  (make-directory* dir)
-  (define f (build-path dir "default.bnix"))
-  (with-output-to-file f
-    (λ ()
-      (printf "#lang beagle/nix~n(ns bundles.~a)~n~n" name)
-      (printf "(module [config lib pkgs]~n")
-      (printf "  {:options.myConfig.bundles.~a.enable (lib/mkEnableOption ~s)~n" name (format "Enable ~a bundle" name))
-      (printf "   :config~n")
-      (printf "     (lib/mkIf config.myConfig.bundles.~a.enable~n" name)
-      (printf "       {~a})})~n"
-              (string-join
-                (for/list ([m (in-list mods)])
-                  (format ":myConfig.modules.~a.enable (lib/mkDefault true)" m))
-                "~n        "))))
-  (sh "git" "-C" ROOT "add" (path->string dir))
-  (printf "Created bundles/~a/default.bnix with ~a modules (git added)\n"
-          name (length mods)))
-
 ;; ---------- template scaffolds ----------
 
 (define SCHEMA-PATH (build-path ROOT ".beagle-cache" "schema.json"))
@@ -171,6 +144,7 @@
 (define (handle-template-host name)
   (define dir (in-repo "hosts" name))
   (define f (build-path dir "configuration.bnix"))
+  (define tags-f (build-path dir "enabled-tags.bnix"))
   (define body
     (string-append
      "#lang beagle/nix\n"
@@ -180,12 +154,18 @@
      "   :myConfig.modules.users.username \"you\"\n"
      "   :myConfig.modules.users.enable true\n"
      "   :myConfig.modules.boot.enable true\n"
-     "   :myConfig.modules.networking.enable true\n"
-     "   ;; REQUIRED for the firn-build pipeline\n"
-     "   :myConfig.bundles.racket.enable true\n"
-     "   :myConfig.bundles.terminal.enable true\n"
-     "   :myConfig.bundles.development.enable true})\n"))
+     "   :myConfig.modules.networking.enable true})\n"))
   (write-and-add f body)
+  (define tags-body
+    (string-append
+     "#lang beagle/nix\n\n"
+     "(ns enabled-tags)\n\n"
+     "{:enabled\n"
+     "  [terminal\n"
+     "   cli-tools\n"
+     "   development]\n"
+     "}\n"))
+  (write-and-add tags-f tags-body)
   (printf "Don't forget to add ~a to flake.bnix's nixosConfigurations.\n" name))
 
 (define node-edges
@@ -193,9 +173,6 @@
    (walk-edge "module" "add" "<name>" #f
               handle-module-add
               "scaffold a minimal module (.bnix + .nix)")
-   (walk-edge "bundle" "add" "<name>[+<mod1>,<mod2>,...]" #f
-              handle-bundle-add
-              "scaffold a new bundle; optional +sub-module list")
    (walk-edge "template" "service"   "<name>" #f handle-template-service
               "scaffold a NixOS service-wrapping module from schema")
    (walk-edge "template" "submodule" "<name>" #f handle-template-submodule

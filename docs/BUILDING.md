@@ -8,7 +8,7 @@ full validation toolchain as a single dispatcher (`nisp validate`,
 toolchain.
 
 - **nisp** ([repo](https://github.com/tompassarelli/nisp)) — language + library + CLI
-- **firnos** (this repo) — modules, bundles, hosts, scaffolding, the `firn` CLI for daily workflow
+- **firnos** (this repo) — modules, tags, hosts, scaffolding, the `firn` CLI for daily workflow
 
 `scripts/firn-validate` and `scripts/firn-extract-schema` in this repo
 are thin wrappers — they invoke `nisp validate` / `nisp extract-schema`
@@ -58,14 +58,15 @@ for host-scoped commands), and walks can be chained for batches.
 Command implementations live in `scripts/firn-cmds/*.rkt`; `firn.rkt`
 itself is dispatcher + legacy-alias rewriter. Highlights:
 
-- `firn module enable <name>` / `firn module disable <name>` / `firn bundle enable <name>` / `firn bundle disable <name>` — syntax-aware host-config edits via `nisp edit`
-- `firn host status` / `firn bundle status all` — flat enabled list, or per-bundle sub-toggle tree
+- `firn module enable <name>` / `firn module disable <name>` — syntax-aware host-config edits to `enabled-tags.bnix` (`:disabled` list). `enable` un-blacklists a module; `disable` appends to the hard-off list.
+- `firn tag enable <tag>` / `firn tag disable <tag>` / `firn tag opt-in <tag> <module>` / `firn tag opt-out <tag> <module>` / `firn tag status` — mutate `hosts/<host>/enabled-tags.bnix` directly. `enable`/`disable` add/remove tags from the `:enabled` vector; `opt-in`/`opt-out` add `+<module>` / `-<module>` flags under a tag.
+- `firn host status` — flat enabled-modules list (modules pulled in directly or via tag resolution)
 - `firn schema explain <path | validator-error-line>` — show the schema entry, declarations, and every `.rkt` that references the path. Accepts pasted validator errors directly (extracts the path)
-- `firn repo doctor` — six-check repo health report (untracked .rkt/.nix, stale .nix, schema cache, orphaned modules, flake-input purity, validator)
+- `firn repo doctor` — five-check repo health report (untracked .bnix/.nix, stale .nix, schema cache, orphaned modules, validator)
 - `firn repo upgrade now` / `firn repo upgrade dry-run` — bump flake inputs, re-extract schema, diff vs the previous snapshot, and surface deprecated/type-changed paths that this repo references
-- `firn repo diff` — re-emit Nix from `.rkt` and unified-diff against committed `.nix` (drift sentinel)
-- `firn module list <all|used|unused>` / `firn bundle list <…>` / `firn module refs <name>` / `firn bundle refs <name>` / `firn module add <name>` / `firn bundle add <name>` / `firn template <service|submodule|home|host> <name>` — module/bundle introspection and scaffolding (`template service` queries the schema cache and pre-fills commented stubs). `firn module list unused` finds dead modules — modules not enabled by any host directly or transitively via a bundle.
-- `firn tag list` / `firn tag show <module>` / `firn tag filter <tag>` / `firn tag index` — module tag index. Bundles capture purpose-based grouping (gaming, dev); tags capture cross-cutting facets (gpu-required, gui-only, proprietary, …). Sources: derived from bundle membership + explicit `(tags …)` clauses in the module source. `tag index` writes a regenerable jsonl to `.beagle-cache/tags.jsonl`; pass leaf `stdout` to pipe instead.
+- `firn repo diff` — re-emit Nix from `.bnix` and unified-diff against committed `.nix` (drift sentinel)
+- `firn module list <all|used|unused>` / `firn module refs <name>` / `firn module add <name>` / `firn template <service|submodule|home|host> <name>` — module introspection and scaffolding (`template service` queries the schema cache and pre-fills commented stubs). `firn module list unused` finds dead modules — modules not enabled by any host directly or transitively via a tag.
+- `firn tag list` / `firn tag show <module>` / `firn tag filter <tag>` / `firn tag resolve <host>` / `firn tag index` — tag-driven composition. Tags are the only composition mechanism (the legacy `bundle` node has been removed). Sources: explicit `:tags` and `:tags-opt-in` clauses in the module source. `tag index` writes a regenerable jsonl to `.beagle-cache/tags.jsonl`; pass leaf `stdout` to pipe instead.
 - `firn platform list` / `firn platform show <name>` / `firn platform safelist` — schema-driven cross-platform compatibility report (NixOS vs darwin). See `docs/MACOS.md`.
 - `firn secret list|show|edit` / `firn host gen` — sops wrapper and generation numbers
 
@@ -84,7 +85,7 @@ firn help                          # ~80ms cold start
 ```
 
 The wrapper exec's `racket` on the bytecode, so the system needs Racket
-on PATH (already provided by `bundles/racket`). Add `~/.local/bin` to
+on PATH (already provided by `modules/racket`). Add `~/.local/bin` to
 PATH if it isn't already.
 
 ## `firn host rebuild` and `nh`
@@ -128,29 +129,24 @@ common HM/submodule roots (`programs`, `home`, `xdg`, etc.). This trades
 some false negatives for zero false positives — real typos in *those*
 namespaces still surface at Nix-eval time.
 
-## Required modules and bundles
+## Required modules
 
-The pipeline runs `racket` on every `.rkt` source, so racket must be on the
-system that does the rebuild. Three things are load-bearing:
+The pipeline runs `racket` on every `.bnix` source, so racket must be on the
+system that does the rebuild. Two things are load-bearing:
 
 | Path                   | Why it's required                                              |
 | ---------------------- | -------------------------------------------------------------- |
-| `modules/racket`       | Installs `pkgs.racket-minimal` — the interpreter `firn-build` invokes. |
-| `bundles/racket`       | Top-level toggle that pulls `modules/racket` (and optionally `modules/drracket`) into the host config. |
-| `../nisp` (sibling)    | The DSL implementation. `firn-build` registers it via `raco pkg install --link` against `$NISP_PATH` (default `../nisp`). |
+| `modules/racket`       | Installs `pkgs.racket-minimal` — the interpreter `firn-build` invokes. Pulled in via the `lisp` tag (or by enabling the module directly). |
+| `../beagle` (sibling)  | The DSL implementation. `firn-build` registers it via `raco pkg install --link` against `$BEAGLE_PATH` (default `../beagle`). |
 
-In every host configuration, set:
+Make sure `modules/racket` ends up in the active set on every host that runs
+`firn-build`. Either enable a tag whose membership includes `racket`
+(e.g. `lisp`), or `firn module enable racket` (un-blacklists it if needed).
 
-```racket
-(enable myConfig.bundles.racket)
-;; or, if you don't want DrRacket:
-(set myConfig.bundles.racket (att (enable #t) (drracket.enable #f)))
-```
-
-Without `bundles/racket` enabled, the *system* will lack `racket`, and the
+Without `modules/racket` active, the *system* will lack `racket`, and the
 next `firn-build` invocation will fail with `racket: command not found`.
 
-`modules/drracket` is optional — useful if you want to author `.rkt` sources
+`modules/drracket` is optional — useful if you want to author `.bnix` sources
 in the IDE, but `firn-build` itself only needs the `racket` interpreter from
 `modules/racket`.
 
@@ -178,29 +174,27 @@ The flake's dynamic `imports = ...` (in `flake.rkt`'s inline module) picks up
 every directory under `modules/`, so no flake change is required when you add
 a new module.
 
-## Authoring a new bundle
+## Authoring a new tag
 
-A bundle that just toggles a list of child modules:
+Tags are not authored as files — they emerge from `:tags` / `:tags-opt-in`
+clauses in module sources. To introduce a new tag, add it to the `:tags`
+list of every module that should join it by default, and to `:tags-opt-in`
+on modules that should be opt-in-only:
 
-```racket
-#lang nisp
-
-(bundle-file <name>
-  (desc "<one-liner>")
-  (sub-modules a b c d))
+```clojure
+:tags [terminal lisp]                  ;; default-on memberships
+:tags-opt-in [headless-ok]             ;; only when host explicitly opts in
 ```
 
-Or with mixed defaults:
+For per-tag value overrides (non-enable proxies), add `:tag-overrides`:
 
-```racket
-(bundle-file <name>
-  (desc "<one-liner>")
-  (sub-modules* (a #t) (b #t) (c #f)))
+```clojure
+:tag-overrides
+  {browsers {:myConfig.modules.firefox.default true}}
 ```
 
-For non-bool options or non-`myConfig.modules.X.enable` targets, use the
-manual form (`option-attrs` + `config-body`); see `bundles/lisp/default.rkt`
-or `bundles/theming/default.rkt`.
+See `docs/TAGS.md` for the full model, the resolution algorithm, and worked
+examples (kitchen-sink, edited tag, opt-in plus, hard disable).
 
 ## Authoring a new host
 
@@ -212,11 +206,14 @@ or `bundles/theming/default.rkt`.
   (set myConfig.modules.users.username "you")
   (enable myConfig.modules.users
           myConfig.modules.boot
-          myConfig.modules.networking)
+          myConfig.modules.networking))
+```
 
-  (enable myConfig.bundles.racket   ; REQUIRED
-          myConfig.bundles.terminal
-          myConfig.bundles.development))
+Then author `hosts/<host>/enabled-tags.bnix` with the tag selection:
+
+```clojure
+{:enabled [lisp terminal development]   ;; lisp pulls in modules/racket (REQUIRED)
+ :disabled []}
 ```
 
 Then add the entry to `flake.rkt`'s `nixosConfigurations`:
@@ -250,9 +247,9 @@ yet be on the system. Bootstrap order:
 
 1. `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
    (uses the *currently committed* `*.nix` files — no `firn-build` needed).
-2. `sudo nixos-rebuild switch --flake .#<host>` — installs racket via the
-   `bundles/racket` toggle.
-3. From now on, edit `.rkt` sources and run `./scripts/firn-build` before
+2. `sudo nixos-rebuild switch --flake .#<host>` — installs racket via
+   `modules/racket` (active because the `lisp` tag is enabled).
+3. From now on, edit `.bnix` sources and run `./scripts/firn-build` before
    `nixos-rebuild`.
 
 ## Editing the DSL itself
@@ -268,7 +265,6 @@ The DSL lives in the [tompassarelli/nisp](https://github.com/tompassarelli/nisp)
 | nisp form | Generated Nix |
 | --- | --- |
 | `(module-file modules vim ...)` | `{ config, lib, pkgs, ... }: let cfg = ...; in { options... ; config = mkIf cfg.enable {...}; }` |
-| `(bundle-file auth ...)`        | same shape under `myConfig.bundles.auth` |
 | `(host-file ...)`               | `{ lib, ... }: { ... }` (just option setters) |
 | `(flake-file ...)`              | full `flake.nix` |
 | `(pkg vim "Vim text editor")`   | full module-file installing `pkgs.vim` (shortcut) |

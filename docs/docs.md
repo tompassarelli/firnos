@@ -73,36 +73,45 @@ When a module has complex options (multiple `mkOption` declarations beyond `enab
 
 When a module spans many lines, split into `default.rkt` (options) and `<name>.rkt` (implementation). Currently `chrome`, `firefox`, `glide`, `kanata`, `nyxt`, `stylix`, `system`, and `users` use this split.
 
-**`myConfig.bundles.*`** = molecules. Pure composition — groups modules under one toggle. Never installs packages directly. Each module in a bundle can be individually disabled at the host:
+**Tags = composition.** A module joins zero or more tags via `:tags` (default-on) or `:tags-opt-in` (opt-in) clauses in its `.bnix`. Hosts declare a tag selection in `hosts/<host>/enabled-tags.bnix`; the resolver unions per-tag memberships and subtracts `:disabled`. Per-tag edits let a host opt-out (`-name`) or opt-in (`+name`) selectively:
 
-```racket
-;; in hosts/<your-host>/configuration.rkt
-(enable myConfig.bundles.media)
-(set myConfig.modules.lutris.enable #f)   ; opt out of one bundle member
+```clojure
+;; hosts/<your-host>/enabled-tags.bnix
+{:enabled  [media [browsers -gjoa]]
+ :disabled [lutris]}                          ;; hard-off, wins over every tag
 ```
 
-This works through NixOS priorities: bundles propagate enables with `mkDefault` (priority 1000), so a direct `false` (priority 100) always wins.
+See [TAGS.md](TAGS.md) for the full model. The legacy `myConfig.bundles.*` namespace has been removed; `firn bundle …` prints a pointed error directing you to `firn tag …`.
 
-**Auto-import**: the flake discovers all modules and bundles from directory listings. Adding a new module = create the directory + `.rkt`, run `firn-build`, `git add` both files. No flake edits.
+**Auto-import**: the flake discovers all modules from directory listings. Adding a new module = create the directory + `.bnix`, run `firn-build`, `git add` both files. No flake edits.
 
 See [`template/`](../template/) for a complete starting config to copy.
 
 ## Adding a New Host
 
-1. Create `hosts/new-hostname/configuration.rkt`:
-   ```racket
-   #lang nisp
-   (host-file
-     (set myConfig.modules.system.stateVersion "25.11")
-     (set myConfig.modules.users.username "yourname")
-     (enable myConfig.modules.users
-             myConfig.modules.boot
-             myConfig.modules.networking
-             myConfig.bundles.racket           ; required for the firn-build pipeline
-             myConfig.bundles.development))
+1. Create `hosts/new-hostname/configuration.bnix`:
+   ```clojure
+   #lang beagle/nix
+   (ns hosts.new-hostname)
+
+   (module [config lib pkgs]
+     {:myConfig.modules.system.stateVersion "25.11"
+      :myConfig.modules.users.username "yourname"
+      :myConfig.modules.users.enable true
+      :myConfig.modules.boot.enable true
+      :myConfig.modules.networking.enable true})
    ```
 
-2. Add a `nixosConfigurations` entry in `flake.rkt` (regenerates into `flake.nix`):
+2. Create `hosts/new-hostname/enabled-tags.bnix` (tag selection — `lisp` pulls in `modules/racket`, required for the firn-build pipeline):
+   ```clojure
+   #lang beagle/nix
+   (ns enabled-tags)
+
+   {:enabled  [lisp development]
+    :disabled []}
+   ```
+
+3. Add a `nixosConfigurations` entry in `flake.rkt` (regenerates into `flake.nix`):
    ```racket
    (new-hostname
      (call self.lib.mkSystem
@@ -112,7 +121,7 @@ See [`template/`](../template/) for a complete starting config to copy.
          (hardwareConfig (p "./hardware-configuration.nix")))))
    ```
 
-3. `firn-build && git add hosts/new-hostname flake.nix` — the flake's dynamic auto-discovery picks up the rest. Modules and bundles are auto-imported; only the host entry needs adding.
+4. `firn-build && git add hosts/new-hostname flake.nix` — the flake's dynamic auto-discovery picks up the rest. Modules are auto-imported; only the host entry needs adding.
 
 For a macOS machine, see [`MACOS.md`](MACOS.md) — uses `lib.mkDarwinSystem` and a parallel `darwinConfigurations` entry.
 

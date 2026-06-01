@@ -10,7 +10,7 @@
 (provide ROOT
          in-repo
          sh sh-out find-exe
-         list-dirs modules bundles hosts
+         list-dirs modules hosts
          current-hostname host-config-rkt
          grep-files relative-to-repo
          paths-referenced-in
@@ -26,7 +26,7 @@
 ;; exports a `node-edges` list of these structs; firn.rkt aggregates
 ;; them for both dispatch and help-text generation.
 ;;
-;;   node          the entity (module, bundle, host, repo, ...)
+;;   node          the entity (module, host, tag, repo, ...)
 ;;   edge          the verb (status, enable, add, ...)
 ;;   leaf-shape    user-facing string shown in help: "<name>", "all", ...
 ;;   default-leaf  what to use if the user omits the leaf token:
@@ -49,10 +49,10 @@
     [else #f]))
 
 (define (find-name-kind name)
-  ;; Return 'module, 'bundle, or #f
+  ;; Return 'module, or #f. Bundles are gone (zero users) — kept the
+  ;; function so legacy callsites keep compiling.
   (cond
     [(directory-exists? (in-repo "modules" name)) 'module]
-    [(directory-exists? (in-repo "bundles" name)) 'bundle]
     [else #f]))
 
 ;; ---------- repo discovery ----------
@@ -124,7 +124,6 @@
     [else '()]))
 
 (define (modules)  (list-dirs "modules"))
-(define (bundles)  (list-dirs "bundles"))
 (define (hosts)
   (define hd (in-repo "hosts"))
   (cond

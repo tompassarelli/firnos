@@ -14,21 +14,20 @@ FirnOS targets NixOS but supports macOS via [nix-darwin](https://github.com/LnL7
 - sops-nix (skipped in the darwin build for v1 — encrypted secrets need a separate pass).
 - Stylix theming (its darwin support is incomplete).
 
-The mechanism: `mkIf cfg.enable` defers a module's *value* but not its option *path*. `boot.kernel.sysctl` is rejected by nix-darwin even when wrapped in `mkIf` with `enable=false`. So FirnOS uses curated darwin compositions:
+The mechanism: `mkIf cfg.enable` defers a module's *value* but not its option *path*. `boot.kernel.sysctl` is rejected by nix-darwin even when wrapped in `mkIf` with `enable=false`. So FirnOS uses a curated darwin safelist:
 
-- **`bundles-darwin/`** — parallel to `bundles/`. Same `myConfig.bundles.<name>` namespace, so `(enable myConfig.bundles.terminal)` works on either platform and gets the right per-platform composition. Initial bundles: `terminal` (kitty default-on, ghostty dropped — nixpkgs build is Linux-only), `cli-tools`, `development` (NixOS bundle minus `containers`).
-- **Module safelist in `flake.rkt`** — every module referenced by a `bundles-darwin/` bundle plus extras a darwin host might want directly.
+- **Module safelist in `flake.rkt`** — every module that a darwin host might want, cross-checked against the darwin schema. Darwin hosts pick from this set directly (no parallel bundle/tag tree on darwin).
+- **Tag membership still applies on darwin** when every module in a tag's default-on set is darwin-compatible — but the linux-only modules in a mixed tag won't load, so prefer enabling individual modules until cross-platform tag membership matures.
 
 ## Discovering what works on darwin
 
-Use `firn platform list` to answer "is this module/bundle compatible?" without trial-and-error builds:
+Use `firn platform list` to answer "is this module compatible?" without trial-and-error builds:
 
 ```
 $ firn platform list all         # full matrix
 $ firn platform list darwin      # only darwin-compatible modules
 $ firn platform list linux       # NixOS-only modules
-$ firn platform show <name>      # single module/bundle, with reasons
-$ firn platform list bundles     # bundle compat with blocking sub-modules
+$ firn platform show <name>      # single module, with reasons
 $ firn platform safelist         # printable safelist for flake.rkt
 ```
 
@@ -125,7 +124,7 @@ firn host rebuild $(hostname)
 ./scripts/firn-build-bin   # installs ~/.local/bin/firn
 ```
 
-Add `~/.local/bin` to your `$PATH`. Requires Racket on the system; the cross-platform safelist enables `bundles/racket` only on hosts that need it. For the minimal ashashi setup we install Racket via `brew install racket-minimal` or `nix-env -iA nixpkgs.racket-minimal` instead.
+Add `~/.local/bin` to your `$PATH`. Requires Racket on the system; the cross-platform safelist enables `modules/racket` only on hosts that need it (via the `lisp` tag). For the minimal ashashi setup we install Racket via `brew install racket-minimal` or `nix-env -iA nixpkgs.racket-minimal` instead.
 
 ## Schema cache
 
@@ -148,18 +147,9 @@ If you want a module from `modules/` that isn't in the safelist:
 
 Generally safe candidates: any module whose `(config-body …)` only assigns to `programs.*`, `environment.systemPackages`, or `home-manager.*`. `firn platform list` does this check automatically by cross-referencing the darwin schema.
 
-## Adding a bundle to `bundles-darwin/`
-
-For an out-of-the-box composition rather than a single module:
-
-1. `firn platform show <existing-bundle>` to see what blocks it on darwin (e.g. `bundles/development` is blocked by `containers`).
-2. Create `bundles-darwin/<name>/default.rkt` mirroring the NixOS bundle minus the blocking sub-modules, plus any darwin-specific defaults (e.g. kitty default-on).
-3. Append any net-new sub-modules to the safelist in `mkDarwinSystem`.
-4. The bundle is auto-discovered on next `firn-build` — no flake edit needed.
-
 ## What you give up vs full FirnOS
 
-- **No bundles.** Bundles reference NixOS-only modules; on darwin you enable individual modules instead. (You can still write your own darwin-only bundles with the `bundle-file` form, just don't reuse the existing ones.)
+- **No cross-platform tags by default.** Some tags (e.g. `desktop`, `gaming`) pull in NixOS-only modules. On darwin, enable individual modules from the safelist instead of enabling a tag wholesale. Tags whose membership is fully darwin-compatible (`terminal`, `cli-tools` with adjustments, `lisp`) can still be enabled if every member passes `firn platform show`.
 - **No sops-nix v1.** Encrypted secrets require additional plumbing for darwin; out of scope for the initial bootstrap. Use `~/.config/op-cli` or similar in the meantime.
 - **No theming via stylix.** Stylix's darwin support is partial; v1 of `mkDarwinSystem` skips it.
 - **System-level options narrower.** nix-darwin exposes `services.*` for a curated list (skhd, yabai, nix-daemon, etc.) — much smaller than NixOS's set. Check `man darwin-configuration` or run `firn schema explain services.X.enable` to see what's available.

@@ -19,26 +19,31 @@ matching its path. Three shapes show up repeatedly.
        {:environment.systemPackages (with-do pkgs [vim])})})
 ```
 
-## A bundle (pure composition with per-child opt-out)
+## A module with tag membership (the composition primitive)
+
+Tags replace the old `bundles/` namespace. A module joins a tag by listing
+it in `:tags` (default-on) or `:tags-opt-in` (opt-in-only) — there is no
+separate bundle file.
 
 ```racket
-;; bundles/terminal/default.bnix
+;; modules/starship/default.bnix
 #lang beagle/nix
-(ns bundles.terminal)
+(ns modules.starship)
 
 (module [config lib pkgs]
-  {:options.myConfig.bundles.terminal
-     {:enable (lib/mkEnableOption "terminal-centric tools")
-      :starship.enable (lib/mkOption {:type lib/types.bool :default true :description "Enable starship"})
-      :atuin.enable    (lib/mkOption {:type lib/types.bool :default true :description "Enable atuin"})
-      :zoxide.enable   (lib/mkOption {:type lib/types.bool :default true :description "Enable zoxide"})}
+  {:options.myConfig.modules.starship.enable
+     (lib/mkEnableOption "Starship prompt")
+
+   :tags [terminal]                    ;; auto-enabled when host enables `terminal`
 
    :config
-     (lib/mkIf config.myConfig.bundles.terminal.enable
-       {:myConfig.modules.starship.enable (lib/mkDefault config.myConfig.bundles.terminal.starship.enable)
-        :myConfig.modules.atuin.enable    (lib/mkDefault config.myConfig.bundles.terminal.atuin.enable)
-        :myConfig.modules.zoxide.enable   (lib/mkDefault config.myConfig.bundles.terminal.zoxide.enable)})})
+     (lib/mkIf config.myConfig.modules.starship.enable
+       {:programs.starship.enable true})})
 ```
+
+See [TAGS.md](TAGS.md) for the full tag model — including `:tags-opt-in`
+(only activates under `+name` host flags) and `:tag-overrides` (per-tag
+value overrides like `firefox.default = true` under `browsers`).
 
 ## A host
 
@@ -50,10 +55,18 @@ matching its path. Three shapes show up repeatedly.
 (module [config lib pkgs]
   {:myConfig.modules.system.stateVersion "25.05"
    :myConfig.modules.users.username "yourname"
-   :myConfig.modules.users.enable true
-   :myConfig.bundles.terminal.enable true
-   :myConfig.bundles.development.enable true
-   :myConfig.bundles.browsers.enable true})
+   :myConfig.modules.users.enable true})
+```
+
+Tag selection goes in a sibling file:
+
+```racket
+;; hosts/my-machine/enabled-tags.bnix
+#lang beagle/nix
+(ns enabled-tags)
+
+{:enabled  [terminal development browsers]
+ :disabled []}
 ```
 
 ## Pipeline
@@ -94,8 +107,8 @@ Nix or legacy `#lang nisp` sources to `.bnix`:
 beagle-import-nix path/to/configuration.rkt
 ```
 
-It handles `pkg`/`svc`/`hm-module`/`module-file`/`bundle-file`/`host-file`
-forms. It refuses `flake-file` — flakes have to be hand-converted (or
-left as-is — `.nix` and `.bnix` coexist).
+It handles `pkg`/`svc`/`hm-module`/`module-file`/`host-file` forms. It
+refuses `flake-file` — flakes have to be hand-converted (or left as-is
+— `.nix` and `.bnix` coexist).
 
 See [BUILDING.md](BUILDING.md) for the full DSL reference.

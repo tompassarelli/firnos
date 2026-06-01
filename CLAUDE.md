@@ -56,10 +56,10 @@ Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users)
 
 Custom command scripts live in `dotfiles/bin/` as plain executable shell scripts (one file per command). The `modules/bash/` module puts that directory on `PATH`. Previously these were fish functions under `dotfiles/fish/functions/`; the migration to bash + bin scripts is complete and fish has been removed from this repo.
 
-`firn` is the CLI for managing this NixOS config (modules, bundles, secrets, rebuilds). It has two surfaces:
+`firn` is the CLI for managing this NixOS config (modules, tags, secrets, rebuilds). It has two surfaces:
 
-- **Daily shortcuts** (what to suggest to the user). Single bare commands with auto-detected defaults: `firn rebuild`, `firn validate`, `firn build`, `firn status`, `firn doctor`, `firn impact`, `firn enable <name>`, `firn disable <name>`, `firn diff`. These are first-class, not deprecated — `scripts/firn.rkt:316` lists them in the help output as "Common shortcuts (default host is auto-detected)". `maybe-legacy-rewrite` rewrites them silently to the entity-first form; no deprecation pointer is ever printed.
-- **Underlying graph**. Every command is ultimately a `<node> <edge> [<leaf>]` triple (`firn host rebuild`, `firn bundle status all`, `firn module enable swap`, `firn schema explain X`). Useful when you need to disambiguate or scope to a non-default host. Leaves default to `all` for aggregate views and current-hostname for host-scoped commands.
+- **Daily shortcuts** (what to suggest to the user). Single bare commands with auto-detected defaults: `firn rebuild`, `firn validate`, `firn build`, `firn status`, `firn doctor`, `firn impact`, `firn enable <tag>`, `firn disable <tag>`, `firn diff`. These are first-class, not deprecated — `scripts/firn.rkt` lists them in the help output as "Common shortcuts (default host is auto-detected)". `maybe-legacy-rewrite` rewrites them silently to the entity-first form; no deprecation pointer is ever printed. `firn enable <name>` / `firn disable <name>` target **tags** by default (mutating the current host's `enabled-tags.bnix`); when the name matches a known module, they route to `firn module enable/disable` instead (un-blacklisting / appending to `:disabled`).
+- **Underlying graph**. Every command is ultimately a `<node> <edge> [<leaf>]` triple (`firn host rebuild`, `firn tag enable terminal`, `firn tag opt-in browsers qutebrowser`, `firn tag status`, `firn module enable swap`, `firn module disable piper`, `firn schema explain X`). Useful when you need to disambiguate or scope to a non-default host. Leaves default to `all` for aggregate views and current-hostname for host-scoped commands. **The `bundle` node was removed** — composition is tag-driven now; `firn bundle …` prints a pointed error directing you to the equivalent `firn tag …` form.
 
 **When telling the user what to run, prefer the bare daily shortcut.** Say `firn rebuild`, not `firn host rebuild`, unless there's a specific reason to scope (e.g. rebuilding `thinkpad-x1e` from `whiterabbit`).
 
@@ -155,7 +155,7 @@ Output: type, declarations (links to upstream NixOS module sources), and every `
 
 ## Repo health
 
-`firn repo doctor` runs five checks: untracked `.bnix`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.bnix` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host/bundle enables them), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
+`firn repo doctor` runs five checks: untracked `.bnix`/`.nix` (invisible to flake), stale `.nix` outputs (sibling `.bnix` newer), schema cache freshness vs `flake.lock`, orphaned modules (no host enables them directly or via a tag, ignoring `_generated-enables.bnix`), and validator clean. Exits 0 if all pass. Use this before committing if anything feels off.
 
 ## Tags (composition model)
 
@@ -233,14 +233,13 @@ firn tag index stdout               # jsonl to stdout (pipe into jq/fzf)
 
 ## Discovering platform compatibility
 
-`firn platform list` answers "which modules / bundles work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
+`firn platform list` answers "which modules work on darwin?" by cross-referencing each module's referenced option paths against both the NixOS and darwin schema caches:
 
 ```bash
 firn platform list all          # full matrix
 firn platform list darwin       # only darwin-compatible modules
 firn platform list linux        # NixOS-only
-firn platform show <name>       # single module/bundle, with blocking paths
-firn platform list bundles      # bundle compat report (which sub-modules block)
+firn platform show <name>       # single module, with blocking paths
 firn platform safelist          # safelist snippet for flake.rkt
 ```
 
@@ -288,7 +287,7 @@ There's a tiered loop — pick the right rung for the change.
 ./scripts/firn-validate    # schema-driven path + type check
 ```
 
-`firn-validate` catches unknown option paths, type mismatches (bool/str/int/listOf/nullOr/enum/attrsOf-leaf), enum violations with did-you-mean — at file:line:col precision on the value. Almost every typo/wrong-type bug surfaces here in seconds. This is the right verification for module/bundle/host edits where the change is "set X to Y" or "enable Z".
+`firn-validate` catches unknown option paths, type mismatches (bool/str/int/listOf/nullOr/enum/attrsOf-leaf), enum violations with did-you-mean — at file:line:col precision on the value. Almost every typo/wrong-type bug surfaces here in seconds. This is the right verification for module/tag/host edits where the change is "set X to Y" or "enable Z".
 
 **Rung 2 — drift check (when refactoring beagle/nix itself, or sanity-checking that hand-edited `.nix` matches what beagle would emit):**
 
