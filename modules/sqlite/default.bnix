@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.sqlite.enable
+  {:tags [database]
+   :options.myConfig.modules.sqlite.enable
     (lib.mkEnableOption "SQLite database")
    :config
     (lib.mkIf config.myConfig.modules.sqlite.enable

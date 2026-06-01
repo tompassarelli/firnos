@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.fastfetch.enable
+    {:tags [cli-tools]
+     :options.myConfig.modules.fastfetch.enable
       (lib.mkEnableOption "Enable fastfetch system info display")
      :config
       (lib.mkIf config.myConfig.modules.fastfetch.enable

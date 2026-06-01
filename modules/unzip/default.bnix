@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.unzip.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.unzip.enable
     (lib.mkEnableOption "unzip archive tool")
    :config
     (lib.mkIf config.myConfig.modules.unzip.enable

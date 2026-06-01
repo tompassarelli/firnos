@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.emacs.enable
+  {:tags [doom-emacs]
+   :options.myConfig.modules.emacs.enable
     (lib.mkEnableOption "GNU Emacs editor")
    :config
     (lib.mkIf config.myConfig.modules.emacs.enable

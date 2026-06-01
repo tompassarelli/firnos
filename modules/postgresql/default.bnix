@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [postgresPackage pkgs.unstable.postgresql_18]
-    {:options.myConfig.modules.postgresql.enable
+    {:tags [database]
+     :options.myConfig.modules.postgresql.enable
       (lib.mkEnableOption "PostgreSQL database server for local development")
      :config
       (lib.mkIf config.myConfig.modules.postgresql.enable

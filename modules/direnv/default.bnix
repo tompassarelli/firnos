@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.direnv.enable
+    {:tags [development]
+     :options.myConfig.modules.direnv.enable
       (lib.mkEnableOption "direnv for automatic dev shell activation")
      :config
       (lib.mkIf config.myConfig.modules.direnv.enable

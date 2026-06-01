@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.nyxt.enable
+  {:tags-opt-in [browsers]
+   :options.myConfig.modules.nyxt.enable
     (lib.mkEnableOption "Enable Nyxt browser")
    :options.myConfig.modules.nyxt.default
     (lib.mkOption

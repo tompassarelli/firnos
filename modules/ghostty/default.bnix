@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.ghostty.enable
+    {:tags [terminal]
+     :options.myConfig.modules.ghostty.enable
       (lib.mkEnableOption "Ghostty terminal")
      :config
       (lib.mkIf config.myConfig.modules.ghostty.enable

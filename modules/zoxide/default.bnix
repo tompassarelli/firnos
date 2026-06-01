@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.zoxide.enable
+    {:tags [terminal]
+     :options.myConfig.modules.zoxide.enable
       (lib.mkEnableOption "zoxide smart directory jumper")
      :config
       (lib.mkIf config.myConfig.modules.zoxide.enable

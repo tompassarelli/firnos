@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.forgejo-cli.enable
+  {:tags [development]
+   :options.myConfig.modules.forgejo-cli.enable
     (lib.mkEnableOption
       "Forgejo CLI for repo / issue / CI ops against codeberg + other Forgejo instances")
    :config

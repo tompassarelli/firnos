@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.gjoa.enable
+  {:tags-opt-in [browsers]
+   :options.myConfig.modules.gjoa.enable
     (lib.mkEnableOption
       "Gjoa — a Firefox fork. Wrapped via wrapFirefox; appears in launchers/drun.")
    :options.myConfig.modules.gjoa.default

@@ -53,9 +53,7 @@
      gjoa
      ...]
     (let
-      [firnModules (p "./modules")
-       firnBundles (p "./bundles")
-       firnBundlesDarwin (p "./bundles-darwin")]
+      [firnModules (p "./modules")]
       {:lib.mkSystem
         (nix/module
           [hostname
@@ -104,17 +102,10 @@
                          (builtins.attrNames
                            (nixpkgs.lib.filterAttrs
                              (fn [n] (fn [v] (== v "directory")))
-                             (builtins.readDir (p "./modules"))))
-                        bundleDirs
-                         (builtins.attrNames
-                           (nixpkgs.lib.filterAttrs
-                             (fn [n] (fn [v] (== v "directory")))
-                             (builtins.readDir (p "./bundles"))))]
+                             (builtins.readDir (p "./modules"))))]
                        (++
                          (builtins.map (fn [m] (s firnModules "/" m))
-                           moduleDirs)
-                         (builtins.map (fn [b] (s firnBundles "/" b))
-                           bundleDirs)))
+                           moduleDirs)))
                     :home-manager.backupFileExtension "backup"
                     :home-manager.extraSpecialArgs
                      (//
@@ -331,12 +322,7 @@
                           "claude"
                           "direnv"
                           "ripgrep"
-                          "fd"])
-                       (builtins.map (fn [b] (s firnBundlesDarwin "/" b))
-                         (builtins.attrNames
-                           (nixpkgs.lib.filterAttrs
-                             (fn [n] (fn [v] (== v "directory")))
-                             (builtins.readDir (p "./bundles-darwin"))))))
+                          "fd"]))
                     :options.myConfig.modules.users.username
                      (lib.mkOption
                        {:type        lib.types.str

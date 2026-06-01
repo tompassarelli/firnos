@@ -6,7 +6,8 @@
   (let
     [username    config.myConfig.modules.users.username
      chosenTheme config.myConfig.modules.stylix.chosenTheme]
-    {:options.myConfig.modules.doom-emacs.enable
+    {:tags [doom-emacs lisp]
+     :options.myConfig.modules.doom-emacs.enable
       (lib.mkEnableOption
         "Doom Emacs configuration (dotfiles, daemon, secrets)")
      :config

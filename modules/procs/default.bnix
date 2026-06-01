@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.procs.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.procs.enable
     (lib.mkEnableOption "Enable procs (modern ps replacement)")
    :config
     (lib.mkIf config.myConfig.modules.procs.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.btop.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.btop.enable
     (lib.mkEnableOption "Enable btop system monitor")
    :config
     (lib.mkIf config.myConfig.modules.btop.enable

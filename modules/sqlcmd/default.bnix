@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.sqlcmd.enable
+  {:tags [csharp]
+   :options.myConfig.modules.sqlcmd.enable
     (lib.mkEnableOption "sqlcmd for Microsoft SQL Server")
    :config
     (lib.mkIf config.myConfig.modules.sqlcmd.enable

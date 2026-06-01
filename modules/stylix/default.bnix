@@ -3,7 +3,9 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.stylix.enable
+  {:tags [theming]
+   :tag-overrides {theming {:myConfig.modules.stylix.chosenTheme "tokyo-night-dark"}}
+   :options.myConfig.modules.stylix.enable
     (lib.mkEnableOption "Stylix base16 theming")
    :options.myConfig.modules.stylix.chosenTheme
     (lib.mkOption

@@ -11,7 +11,8 @@
          libxkbcommon    xorg.libX11
          xorg.libXcursor xorg.libXrandr
          xorg.libXi      libudev-zero])]
-    {:options.myConfig.modules.bevy.enable
+    {:tags-opt-in [rust]
+     :options.myConfig.modules.bevy.enable
       (lib.mkEnableOption "Bevy game engine development libraries")
      :config
       (lib.mkIf config.myConfig.modules.bevy.enable

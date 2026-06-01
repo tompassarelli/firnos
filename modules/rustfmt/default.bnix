@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.rustfmt.enable
+  {:tags [rust]
+   :options.myConfig.modules.rustfmt.enable
     (lib.mkEnableOption "Rust formatter")
    :config
     (lib.mkIf config.myConfig.modules.rustfmt.enable

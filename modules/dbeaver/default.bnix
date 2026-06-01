@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.dbeaver.enable
+  {:tags [database]
+   :options.myConfig.modules.dbeaver.enable
     (lib.mkEnableOption "DBeaver database GUI")
    :config
     (lib.mkIf config.myConfig.modules.dbeaver.enable

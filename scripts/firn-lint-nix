@@ -12,6 +12,8 @@ mapfile -d '' -t FILES < <(
     -not -path "*/result/*" \
     -not -path "*/.direnv/*" \
     -not -path "*/.beagle-cache/*" \
+    -not -path "*/docs/fixtures/*" \
+    -not -path "*/tests/fixtures/*" \
     -not -name "hardware-configuration.nix" \
     -print0
 )

@@ -32,45 +32,6 @@
        "/dev/input/by-id/usb-Kingsis_Peripherals_ZOWIE_Gaming_mouse-event-mouse"
        "/dev/input/by-id/usb-Logitech_G102_LIGHTSYNC_Gaming_Mouse_2072387E5847-event-mouse"]}
    :myConfig.modules.glide.enable true
-   :myConfig.bundles.terminal.enable true
-   :myConfig.bundles.cli-tools.enable true
-   :myConfig.bundles.desktop {:enable true :mako.enable false}
-   :myConfig.bundles.theming
-    {:enable true :stylix.chosenTheme "everforest-dark-hard"}
-   :myConfig.bundles.auth.enable true
-   :myConfig.bundles.development.enable true
-   :myConfig.bundles.javascript.enable true
-   :myConfig.bundles.python.enable true
-   :myConfig.bundles.database {:enable true :postgresql.enable false}
-   :myConfig.bundles.rust {:enable true :bevy.enable false}
-   :myConfig.bundles.csharp.enable false
-   :myConfig.bundles.lisp {:enable true :lem.enable true}
-   :myConfig.bundles.racket.enable true
-   :myConfig.bundles.doom-emacs.enable true
-   :myConfig.bundles.browsers
-    {:enable true
-     :chrome.enable true
-     :zen-browser.enable true
-     :qutebrowser.enable true
-     :gjoa.enable false}
-   :myConfig.bundles.gaming
-    {:enable true :lutris.enable true :wowup.enable true}
-   :myConfig.bundles.creative
-    {:enable         true
-     :blender.enable false
-     :gimp.enable    false
-     :godot.enable   false}
-   :myConfig.bundles.media {:enable true :youtube-music.enable false}
-   :myConfig.bundles.communication.enable true
-   :myConfig.bundles.productivity
-    {:enable true
-     :obsidian.enable true
-     :anytype.enable true
-     :todoist.enable false
-     :pomodoro.enable false
-     :libreoffice.enable false}
-   :myConfig.bundles.printing.enable false
-   :myConfig.bundles.vpn {:enable true :protonvpn-cli.enable false}
    :myConfig.modules.guix.enable false
    :myConfig.modules.neovim.enable true
    :myConfig.modules.password.enable true
@@ -85,4 +46,6 @@
    :myConfig.modules.vscode.enable true
    :myConfig.modules.windows-vm.enable true
    :myConfig.modules.nh.enable true
-   :myConfig.modules.babashka.enable true})
+   :myConfig.modules.babashka.enable true
+   :myConfig.modules.stylix.chosenTheme "everforest-dark-hard"
+   :imports [(p "./_generated-enables.nix")]})

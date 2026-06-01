@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.ripgrep.enable
+  {:tags [development doom-emacs]
+   :options.myConfig.modules.ripgrep.enable
     (lib.mkEnableOption "ripgrep search tool")
    :config
     (lib.mkIf config.myConfig.modules.ripgrep.enable

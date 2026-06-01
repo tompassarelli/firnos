@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.libreoffice.enable
+  {:tags [productivity]
+   :options.myConfig.modules.libreoffice.enable
     (lib.mkEnableOption "Enable LibreOffice office suite")
    :config
     (lib.mkIf config.myConfig.modules.libreoffice.enable

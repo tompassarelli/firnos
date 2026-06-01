@@ -3,7 +3,9 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.firefox.enable
+  {:tags [browsers]
+   :tag-overrides {browsers {:myConfig.modules.firefox.palefox.enable false :myConfig.modules.firefox.default true}}
+   :options.myConfig.modules.firefox.enable
     (lib.mkEnableOption "Enable Firefox browser")
    :options.myConfig.modules.firefox.palefox.enable
     (lib.mkEnableOption "Enable Palefox (Firefox with custom UI styling)")

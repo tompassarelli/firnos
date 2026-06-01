@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.wowup.enable
+  {:tags [gaming]
+   :options.myConfig.modules.wowup.enable
     (lib.mkEnableOption "WowUp-CF addon manager")
    :config
     (lib.mkIf config.myConfig.modules.wowup.enable

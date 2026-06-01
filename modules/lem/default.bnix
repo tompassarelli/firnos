@@ -8,7 +8,8 @@
      lem-ncurses
       (inputs.lem.packages.x86_64-linux.lem-ncurses.overrideLispAttrs
         (fn [o]
-          {:postPatch
+          {:tags [lisp]
+           :postPatch
             (s (get-or o postPatch "")
               ~''
                 sed -i 's/#-os-windows "lem-terminal"//' lem.asd

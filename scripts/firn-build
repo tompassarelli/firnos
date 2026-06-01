@@ -24,14 +24,48 @@ if [ ! -x "$BEAGLE_BUILD_ALL" ]; then
   exit 1
 fi
 
+# Tag resolution: regenerate hosts/<host>/_generated-enables.bnix for
+# any host with an enabled-tags.bnix source. Runs before the build loop
+# so the .nix regeneration below picks up freshly-written .bnix.
+# Skip silently when no host opts into tag-driven composition yet
+# (legacy hosts can keep their bundle/module enables in configuration.bnix).
+if [ "${FIRN_SKIP_TAG_RESOLVE:-}" != "1" ]; then
+  shopt -s nullglob
+  any_tag_host=""
+  for et in hosts/*/enabled-tags.bnix; do
+    any_tag_host="yes"
+    break
+  done
+  shopt -u nullglob
+  if [ -n "$any_tag_host" ]; then
+    # Always invoke via the .rkt source: firn-build is run from inside
+    # the repo where the source is authoritative, and the compiled
+    # `firn` binary on PATH may lag behind new edges (e.g. `tag resolve`
+    # itself, before `firn-build-bin` is re-run after a CLI change).
+    # The ~500ms overhead vs the compiled binary is a one-shot cost
+    # per firn-build invocation and stays below the beagle-build-all
+    # cold-start anyway.
+    racket ./scripts/firn.rkt tag resolve all+emit || {
+      echo "firn-build: tag resolution failed; aborting before .nix regeneration" >&2
+      exit 1
+    }
+  fi
+fi
+
 # Collect stale .bnix files (missing .nix or .nix older than .bnix).
 # One Racket process then builds them all (beagle-build-all --in-place),
 # avoiding the per-file cold-start that dominated the old loop.
+#
+# Skip enabled-tags.bnix files — they are resolver inputs (authoring
+# metadata), not NixOS modules. The .nix emission would produce invalid
+# Nix because tag names are bare symbols, not strings.
 stale=()
 while IFS= read -r -d '' src; do
   case "$src" in
     ./scripts/*) continue ;;
     ./tests/*) continue ;;
+    ./docs/fixtures/*) continue ;;
+    */enabled-tags.bnix) continue ;;
   esac
 
   nix="${src%.bnix}.nix"
@@ -43,7 +77,58 @@ done < <(find . -name '*.bnix' -not -path './result*' -not -path './.direnv/*' -
 
 if [ "${#stale[@]}" -eq 0 ]; then
   echo "firn-build: nothing to rebuild."
+  # Always run the tag-strip post-processor so freshly-touched .nix files
+  # produced by direct beagle-build (or the next time the .bnix changes)
+  # get cleaned up. Cheap (regex over a handful of generated files).
   exit 0
 fi
 
 "$BEAGLE_BUILD_ALL" --in-place "${stale[@]}"
+
+# Post-process: strip the authoring-only `tags`, `tags-opt-in`, and
+# `tag-overrides` attrs that beagle emits from the :tags / :tags-opt-in /
+# :tag-overrides bnix clauses. These are resolver-only metadata and must
+# never appear in NixOS modules (Nix would treat them as unknown options
+# and bare tag names would be undefined identifiers).
+python3 - "${stale[@]/%.bnix/.nix}" <<'PYEOF'
+import sys, re
+
+def strip(path):
+    try:
+        with open(path) as f:
+            text = f.read()
+    except FileNotFoundError:
+        return
+    # Remove single-line: `  tags = [ ... ];` and similar.
+    text = re.sub(r"^[ \t]*tags[ \t]*=[ \t]*\[[^\]]*\];[ \t]*\n", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^[ \t]*tags-opt-in[ \t]*=[ \t]*\[[^\]]*\];[ \t]*\n", "", text, flags=re.MULTILINE)
+    # Remove multi-line: `  tag-overrides = { ... };` — balance braces.
+    out = []
+    lines = text.splitlines(keepends=True)
+    i = 0
+    while i < len(lines):
+        if re.match(r"^[ \t]*tag-overrides[ \t]*=[ \t]*\{[ \t]*$", lines[i]):
+            depth = 1
+            i += 1
+            while i < len(lines) and depth > 0:
+                depth += lines[i].count("{") - lines[i].count("}")
+                i += 1
+            continue
+        # Also handle single-line tag-overrides = {...};
+        if re.match(r"^[ \t]*tag-overrides[ \t]*=[ \t]*\{[^\n]*\};[ \t]*$", lines[i].rstrip("\n")):
+            i += 1
+            continue
+        out.append(lines[i])
+        i += 1
+    with open(path, "w") as f:
+        f.write("".join(out))
+
+for p in sys.argv[1:]:
+    if p.endswith("/enabled-tags.nix"):
+        continue
+    strip(p)
+PYEOF
+
+# Delete stale enabled-tags.nix files left over from a previous build
+# (before this script learned to skip them).
+find . -name 'enabled-tags.nix' -not -path './result*' -not -path './.direnv/*' -delete 2>/dev/null || true

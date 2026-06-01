@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.kitty.enable
+    {:tags-opt-in [terminal]
+     :options.myConfig.modules.kitty.enable
       (lib.mkEnableOption "Kitty terminal configuration")
      :config
       (lib.mkIf config.myConfig.modules.kitty.enable

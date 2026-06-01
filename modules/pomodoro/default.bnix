@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.pomodoro.enable
+  {:tags [productivity]
+   :options.myConfig.modules.pomodoro.enable
     (lib.mkEnableOption "Pomodoro timer")
    :config
     (lib.mkIf config.myConfig.modules.pomodoro.enable

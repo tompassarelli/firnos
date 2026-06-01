@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.gnumake.enable
+  {:tags [doom-emacs]
+   :options.myConfig.modules.gnumake.enable
     (lib.mkEnableOption "GNU Make build tool")
    :config
     (lib.mkIf config.myConfig.modules.gnumake.enable

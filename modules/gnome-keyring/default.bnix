@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.gnome-keyring.enable
+  {:tags [auth]
+   :options.myConfig.modules.gnome-keyring.enable
     (lib.mkEnableOption "GNOME Keyring (secrets storage + Seahorse GUI)")
    :config
     (lib.mkIf config.myConfig.modules.gnome-keyring.enable

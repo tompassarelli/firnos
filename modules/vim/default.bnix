@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.vim.enable (lib.mkEnableOption "Vim text editor")
+  {:tags [development]
+   :options.myConfig.modules.vim.enable (lib.mkEnableOption "Vim text editor")
    :config
     (lib.mkIf config.myConfig.modules.vim.enable
       {:environment.systemPackages (nix/with pkgs [vim])})})

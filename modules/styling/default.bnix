@@ -15,7 +15,8 @@
           (lib.findFirst (fn [line] (lib.hasPrefix "variant:" line)) "" lines)
          match       (builtins.match ".*variant: \"([^\"]+)\".*" variantLine)]
         (if (!= match nil) (builtins.head match) "dark"))]
-    {:options.myConfig.modules.styling.enable
+    {:tags [theming]
+     :options.myConfig.modules.styling.enable
       (lib.mkEnableOption "system-wide theming and styling")
      :config
       (lib.mkIf config.myConfig.modules.styling.enable

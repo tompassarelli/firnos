@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [msodbcsql18 pkgs.unstable.unixodbcDrivers.msodbcsql18]
-    {:options.myConfig.modules.unixodbc.enable
+    {:tags [csharp]
+     :options.myConfig.modules.unixodbc.enable
       (lib.mkEnableOption "unixODBC with MSSQL driver")
      :config
       (lib.mkIf config.myConfig.modules.unixodbc.enable

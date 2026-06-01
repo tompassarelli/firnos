@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.uv.enable
+  {:tags [python]
+   :options.myConfig.modules.uv.enable
     (lib.mkEnableOption "uv Python package manager")
    :config
     (lib.mkIf config.myConfig.modules.uv.enable

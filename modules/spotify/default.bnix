@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.spotify.enable
+  {:tags [media]
+   :options.myConfig.modules.spotify.enable
     (lib.mkEnableOption "Spotify TUI player")
    :config
     (lib.mkIf config.myConfig.modules.spotify.enable

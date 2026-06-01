@@ -15,7 +15,8 @@
           done
 
         '')]
-    {:options.myConfig.modules.drracket.enable
+    {:tags [racket]
+     :options.myConfig.modules.drracket.enable
       (lib.mkEnableOption "DrRacket IDE")
      :config
       (lib.mkIf config.myConfig.modules.drracket.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.fd.enable (lib.mkEnableOption "fd file finder")
+  {:tags [development doom-emacs]
+   :options.myConfig.modules.fd.enable (lib.mkEnableOption "fd file finder")
    :config
     (lib.mkIf config.myConfig.modules.fd.enable
       {:environment.systemPackages (nix/with pkgs [fd])})})

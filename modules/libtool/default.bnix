@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.libtool.enable (lib.mkEnableOption "GNU Libtool")
+  {:tags [doom-emacs]
+   :options.myConfig.modules.libtool.enable (lib.mkEnableOption "GNU Libtool")
    :config
     (lib.mkIf config.myConfig.modules.libtool.enable
       {:environment.systemPackages (nix/with pkgs [libtool])})})

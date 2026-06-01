@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.polkit.enable
+  {:tags [auth]
+   :options.myConfig.modules.polkit.enable
     (lib.mkEnableOption "Polkit security configuration")
    :config
     (lib.mkIf config.myConfig.modules.polkit.enable

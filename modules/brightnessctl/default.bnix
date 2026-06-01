@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.brightnessctl.enable
+  {:tags [desktop]
+   :options.myConfig.modules.brightnessctl.enable
     (lib.mkEnableOption "screen brightness control")
    :config
     (lib.mkIf config.myConfig.modules.brightnessctl.enable

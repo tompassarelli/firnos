@@ -6,7 +6,8 @@
   (let
     [username config.myConfig.modules.users.username
      isDark   (== config.stylix.polarity "dark")]
-    {:options.myConfig.modules.gtk.enable
+    {:tags [theming]
+     :options.myConfig.modules.gtk.enable
       (lib.mkEnableOption "GTK theming configuration")
      :config
       (lib.mkIf config.myConfig.modules.gtk.enable

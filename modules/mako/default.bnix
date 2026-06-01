@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.mako.enable
+    {:tags [desktop]
+     :options.myConfig.modules.mako.enable
       (lib.mkEnableOption "Mako notification daemon")
      :config
       (lib.mkIf config.myConfig.modules.mako.enable

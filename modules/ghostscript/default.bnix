@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.ghostscript.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.ghostscript.enable
     (lib.mkEnableOption "Ghostscript PostScript interpreter")
    :config
     (lib.mkIf config.myConfig.modules.ghostscript.enable

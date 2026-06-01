@@ -6,7 +6,8 @@
   (let
     [username config.myConfig.modules.users.username
      monoFont config.stylix.fonts.monospace.name]
-    {:options.myConfig.modules.quickshell.enable
+    {:tags [desktop]
+     :options.myConfig.modules.quickshell.enable
       (lib.mkEnableOption "Quickshell (Qt6/QML) status bar")
      :config
       (lib.mkIf config.myConfig.modules.quickshell.enable

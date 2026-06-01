@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.claude.enable
+    {:tags [development]
+     :options.myConfig.modules.claude.enable
       (lib.mkEnableOption "Claude Code CLI configuration")
      :config
       (lib.mkIf config.myConfig.modules.claude.enable

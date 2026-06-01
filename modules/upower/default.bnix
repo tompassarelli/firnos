@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.upower.enable
+  {:tags [desktop]
+   :options.myConfig.modules.upower.enable
     (lib.mkEnableOption "UPower power management")
    :config
     (lib.mkIf config.myConfig.modules.upower.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.python.enable
+  {:tags [python]
+   :options.myConfig.modules.python.enable
     (lib.mkEnableOption "Python runtime with uv")
    :config
     (lib.mkIf config.myConfig.modules.python.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.unrar.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.unrar.enable
     (lib.mkEnableOption "unrar archive tool")
    :config
     (lib.mkIf config.myConfig.modules.unrar.enable

@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.tealdeer.enable
+    {:tags [cli-tools]
+     :options.myConfig.modules.tealdeer.enable
       (lib.mkEnableOption "Enable tealdeer (tldr client)")
      :config
       (lib.mkIf config.myConfig.modules.tealdeer.enable

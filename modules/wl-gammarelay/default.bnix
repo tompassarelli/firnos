@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.wl-gammarelay.enable
+    {:tags [desktop]
+     :options.myConfig.modules.wl-gammarelay.enable
       (lib.mkEnableOption "Wayland gamma/temperature control")
      :config
       (lib.mkIf config.myConfig.modules.wl-gammarelay.enable

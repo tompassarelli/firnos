@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.delta.enable
+  {:tags [development]
+   :options.myConfig.modules.delta.enable
     (lib.mkEnableOption "delta git diff viewer")
    :config
     (lib.mkIf config.myConfig.modules.delta.enable

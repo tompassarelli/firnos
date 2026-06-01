@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs flakeRoot ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.bash.enable
+    {:tags [terminal]
+     :options.myConfig.modules.bash.enable
       (lib.mkEnableOption "Bash shell configuration")
      :config
       (lib.mkIf config.myConfig.modules.bash.enable

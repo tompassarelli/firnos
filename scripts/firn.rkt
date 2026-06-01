@@ -42,6 +42,7 @@
          (prefix-in u:  "firn-cmds/upgrade.rkt")
          (prefix-in p:  "firn-cmds/platforms.rkt")
          (prefix-in tg: "firn-cmds/tags.rkt")
+         (prefix-in tr: "firn-cmds/tag-resolve.rkt")
          (prefix-in pl: "firn-cmds/pipeline.rkt")
          (prefix-in fl: "firn-cmds/flake.rkt"))
 
@@ -58,6 +59,7 @@
           u:node-edges
           p:node-edges
           tg:node-edges
+          tr:node-edges
           pl:node-edges
           fl:node-edges))
 

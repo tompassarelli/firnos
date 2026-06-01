@@ -1,0 +1,26 @@
+#lang beagle/nix
+
+(ns enabled-tags)
+
+{:enabled
+  [terminal
+   cli-tools
+   [desktop -mako]
+   theming
+   auth
+   development
+   javascript
+   python
+   [database -postgresql]
+   rust
+   lisp
+   racket
+   doom-emacs
+   [browsers +chrome +qutebrowser +zen-browser]
+   gaming
+   [creative -blender -gimp -godot]
+   [media -youtube-music]
+   communication
+   [productivity -libreoffice -pomodoro -todoist]
+   [vpn -protonvpn-cli]]
+}

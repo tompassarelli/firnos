@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.dotnet.enable
+  {:tags [csharp]
+   :options.myConfig.modules.dotnet.enable
     (lib.mkEnableOption ".NET SDK and CLI tools")
    :config
     (lib.mkIf config.myConfig.modules.dotnet.enable

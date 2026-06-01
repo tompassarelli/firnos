@@ -4,6 +4,4 @@
 
 (nix/module [config lib pkgs ...]
   {:myConfig.modules.users.username "ashashi"
-   :myConfig.bundles.terminal.enable true
-   :myConfig.bundles.cli-tools.enable true
-   :myConfig.bundles.development.enable true})
+   :imports [(p "./_generated-enables.nix")]})

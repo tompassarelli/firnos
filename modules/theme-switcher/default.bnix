@@ -92,7 +92,8 @@
           fi
 
         '')]
-    {:options.myConfig.modules.theme-switcher.enable
+    {:tags [theming]
+     :options.myConfig.modules.theme-switcher.enable
       (lib.mkEnableOption "theme switcher script")
      :config
       (lib.mkIf config.myConfig.modules.theme-switcher.enable

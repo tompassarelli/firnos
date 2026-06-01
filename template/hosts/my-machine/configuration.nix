@@ -13,20 +13,8 @@
   myConfig.modules.bluetooth.enable = true;
   myConfig.modules.input.enable = true;
   myConfig.modules.kanata.enable = true;
-  myConfig.bundles.terminal.enable = true;
-  myConfig.bundles.cli-tools.enable = true;
-  myConfig.bundles.desktop.enable = true;
-  myConfig.bundles.theming = {
-    enable = true;
-    stylix.chosenTheme = "tokyo-night-dark";
-  };
-  myConfig.bundles.auth.enable = true;
-  myConfig.bundles.development.enable = true;
-  myConfig.bundles.browsers.enable = true;
-  myConfig.bundles.media.enable = true;
-  myConfig.bundles.communication.enable = true;
-  myConfig.bundles.productivity.enable = true;
-  myConfig.bundles.racket.enable = true;
   myConfig.modules.neovim.enable = true;
   myConfig.modules.password.enable = true;
+  myConfig.modules.stylix.chosenTheme = "tokyo-night-dark";
+  imports = [ ./_generated-enables.nix ];
 }

@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.wireguard.enable
+    {:tags [vpn]
+     :options.myConfig.modules.wireguard.enable
       (lib.mkEnableOption "WireGuard VPN support")
      :config
       (lib.mkIf config.myConfig.modules.wireguard.enable

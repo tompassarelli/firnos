@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.slack.enable
+  {:tags [communication]
+   :options.myConfig.modules.slack.enable
     (lib.mkEnableOption "Slack messaging")
    :config
     (lib.mkIf config.myConfig.modules.slack.enable

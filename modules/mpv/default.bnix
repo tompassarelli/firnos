@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.mpv.enable
+  {:tags [media]
+   :options.myConfig.modules.mpv.enable
     (lib.mkEnableOption "mpv media player")
    :config
     (lib.mkIf config.myConfig.modules.mpv.enable

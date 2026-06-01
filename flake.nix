@@ -63,8 +63,6 @@
   };
   outputs = ({ self, nixpkgs, nixpkgs-unstable, nixpkgs-master, home-manager, nix-darwin, stylix, sops-nix, nur, lem, elephant, walker, kanata-git, glide, quickshell, zen-browser, palefox, gjoa, ... }: let
     firnModules = ./modules;
-    firnBundles = ./bundles;
-    firnBundlesDarwin = ./bundles-darwin;
   in
   {
     lib.mkSystem = ({ hostname, hostConfig, hardwareConfig, system ? "x86_64-linux", extraModules ? [ ], extraOverlays ? [ ], extraSpecialArgs ? { }, ... }: nixpkgs.lib.nixosSystem {
@@ -98,9 +96,8 @@
           environment.systemPackages = with pkgs; [ sops age ];
           imports = let
             moduleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./modules));
-            bundleDirs = builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles));
           in
-          ((builtins.map (m: "${firnModules}/${m}") moduleDirs) ++ (builtins.map (b: "${firnBundles}/${b}") bundleDirs));
+          ((builtins.map (m: "${firnModules}/${m}") moduleDirs));
           home-manager.backupFileExtension = "backup";
           home-manager.extraSpecialArgs = ({
             inputs = {
@@ -298,7 +295,7 @@
             "direnv"
             "ripgrep"
             "fd"
-          ]) ++ (builtins.map (b: "${firnBundlesDarwin}/${b}") (builtins.attrNames (nixpkgs.lib.filterAttrs (n: v: (v == "directory")) (builtins.readDir ./bundles-darwin)))));
+          ]));
           options.myConfig.modules.users.username = lib.mkOption {
             type = lib.types.str;
             default = "you";

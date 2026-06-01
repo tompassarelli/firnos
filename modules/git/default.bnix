@@ -4,7 +4,8 @@
 
 (nix/module [config lib pkgs ...]
   (let [username config.myConfig.modules.users.username]
-    {:options.myConfig.modules.git.enable
+    {:tags [development]
+     :options.myConfig.modules.git.enable
       (lib.mkEnableOption "Git configuration")
      :config
       (lib.mkIf config.myConfig.modules.git.enable

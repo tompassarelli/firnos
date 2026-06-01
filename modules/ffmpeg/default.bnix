@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.ffmpeg.enable
+  {:tags [desktop]
+   :options.myConfig.modules.ffmpeg.enable
     (lib.mkEnableOption "FFmpeg video processing")
    :config
     (lib.mkIf config.myConfig.modules.ffmpeg.enable

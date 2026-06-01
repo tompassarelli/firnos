@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.mail.enable
+  {:tags [communication]
+   :options.myConfig.modules.mail.enable
     (lib.mkEnableOption "email applications")
    :config
     (lib.mkIf config.myConfig.modules.mail.enable

@@ -7,7 +7,8 @@
     [username config.myConfig.modules.users.username
      niri-viewport-nav
       (pkgs.writers.writePython3Bin "niri-viewport-nav"
-        {:libraries []}
+        {:tags [desktop]
+         :libraries []}
         ~''
           import json
           import subprocess

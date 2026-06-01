@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.wf-recorder.enable
+  {:tags [desktop]
+   :options.myConfig.modules.wf-recorder.enable
     (lib.mkEnableOption "Wayland screen recorder")
    :config
     (lib.mkIf config.myConfig.modules.wf-recorder.enable

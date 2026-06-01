@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.pkg-config.enable
+  {:tags [rust]
+   :options.myConfig.modules.pkg-config.enable
     (lib.mkEnableOption "pkg-config build tool")
    :config
     (lib.mkIf config.myConfig.modules.pkg-config.enable

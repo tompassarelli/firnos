@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.clojure.enable
+  {:tags [lisp]
+   :options.myConfig.modules.clojure.enable
     (lib.mkEnableOption
       "Clojure development (JDK, clj CLI, LSP, linting, formatting)")
    :config

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.qutebrowser.enable
+  {:tags-opt-in [browsers]
+   :options.myConfig.modules.qutebrowser.enable
     (lib.mkEnableOption "Enable Qutebrowser")
    :options.myConfig.modules.qutebrowser.default
     (lib.mkOption

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.clang.enable
+  {:tags [doom-emacs]
+   :options.myConfig.modules.clang.enable
     (lib.mkEnableOption "Clang C/C++ compiler")
    :config
     (lib.mkIf config.myConfig.modules.clang.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.protonvpn-gui.enable
+  {:tags [vpn]
+   :options.myConfig.modules.protonvpn-gui.enable
     (lib.mkEnableOption "ProtonVPN GUI client")
    :config
     (lib.mkIf config.myConfig.modules.protonvpn-gui.enable

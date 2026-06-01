@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.cmake.enable
+  {:tags [doom-emacs]
+   :options.myConfig.modules.cmake.enable
     (lib.mkEnableOption "CMake build system")
    :config
     (lib.mkIf config.myConfig.modules.cmake.enable

@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.nodejs.enable
+  {:tags [javascript]
+   :options.myConfig.modules.nodejs.enable
     (lib.mkEnableOption "Node.js runtime")
    :config
     (lib.mkIf config.myConfig.modules.nodejs.enable

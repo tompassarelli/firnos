@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.librewolf.enable
+  {:tags-opt-in [browsers]
+   :options.myConfig.modules.librewolf.enable
     (lib.mkEnableOption "Enable LibreWolf browser")
    :options.myConfig.modules.librewolf.default
     (lib.mkOption

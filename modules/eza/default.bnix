@@ -3,7 +3,8 @@
 (ns default)
 
 (nix/module [config lib pkgs ...]
-  {:options.myConfig.modules.eza.enable
+  {:tags [cli-tools]
+   :options.myConfig.modules.eza.enable
     (lib.mkEnableOption "Enable eza (modern ls replacement)")
    :config
     (lib.mkIf config.myConfig.modules.eza.enable
