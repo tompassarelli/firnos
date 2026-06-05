@@ -22,11 +22,11 @@ Both `.bnix` and `.nix` are committed because the flake reads from the git tree.
 
 **beagle lives in a sibling repo**: `../beagle` — the compiler, validator, schema extractor, and emitters. firn-build / firn-validate / firn-extract-schema expect beagle cloned at `../beagle` by default — override with `BEAGLE_PATH`.
 
-The sole remaining `#lang nisp` source in this repo is `flake.rkt` (the flake itself). `beagle-import-nix` deliberately refuses `flake-file` forms, so the flake stays nisp until either beagle-import-nix learns flake conversion or the flake gets hand-converted.
+The flake itself is `flake.bnix` (`#lang beagle/nix`), hand-authored rather than machine-imported because `beagle-import-nix` deliberately refuses `flake-file` forms. There is no `#lang nisp` source left in this repo — everything is beagle/nix.
 
 **Always run `./scripts/firn-build` before `nix build` / `nixos-rebuild` if any `.bnix` source changed.** Otherwise the rebuild uses stale `.nix`. Editing `.nix` directly is wrong — the next firn-build overwrites it.
 
-References: `docs/BUILDING.md` (pipeline + DSL patterns), `docs/MACOS.md` (cross-platform via nix-darwin).
+Reference: the [beagle repo](https://github.com/tompassarelli/beagle) — DSL forms, the build/validate pipeline, and the schema toolchain. macOS works via nix-darwin (`lib.mkDarwinSystem`, `darwinConfigurations`); `firn rebuild` detects Darwin and dispatches to `darwin-rebuild`.
 
 ## Nix Flakes: New Files Must Be Git-Tracked
 
@@ -40,7 +40,7 @@ One namespace: `myConfig.modules.*` (atoms — one package or service per module
 
 Multi-file modules (chrome, firefox, glide, kanata, nyxt, stylix, system, users) split `default.bnix` (option declarations) and `<name>.bnix` (mkIf config).
 
-**Full reference**: [`docs/BUILDING.md`](docs/BUILDING.md) — every form, every clause, examples per pattern. [`docs/TAGS.md`](docs/TAGS.md) — tag-driven composition model, worked examples, resolution algorithm.
+**Full reference**: the [beagle repo](https://github.com/tompassarelli/beagle) — every DSL form, clause, and emitter. [`docs/TAGS.md`](docs/TAGS.md) — tag-driven composition model, worked examples, resolution algorithm.
 
 ## Rules
 
@@ -240,7 +240,7 @@ firn platform list all          # full matrix
 firn platform list darwin       # only darwin-compatible modules
 firn platform list linux        # NixOS-only
 firn platform show <name>       # single module, with blocking paths
-firn platform safelist          # safelist snippet for flake.rkt
+firn platform safelist          # safelist snippet for flake.bnix
 ```
 
 Pre-req: `./scripts/firn-extract-schema` and `./scripts/firn-extract-schema --darwin` (separate caches: `.beagle-cache/schema.json` and `.beagle-cache/schema-darwin.json`). `firn repo doctor` warns when the darwin cache is stale.

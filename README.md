@@ -15,7 +15,7 @@ the source line — typically cutting edit/validate loops from
 ~30 seconds to ~5 seconds.
 
 ```
-$ firn host rebuild
+$ firn rebuild
 modules/printing/default.bnix:6:7: unknown option services.pipwire.alsa.enable
   did you mean: services.pipewire.alsa.enable or services.pipewire.pulse.enable?
 modules/foo/default.bnix:9:34: type mismatch at services.openssh.enable:
@@ -25,16 +25,16 @@ hosts/laptop/configuration.bnix:11:47: type mismatch at boot.loader.systemd-boot
 ```
 
 `file:line:col` precision on the value, with did-you-mean suggestions,
-before `nixos-rebuild` runs. That's the whole pitch. See
-[docs/VALIDATION.md](docs/VALIDATION.md) for the validator pipeline.
+before `nixos-rebuild` runs. That's the whole pitch — the validator
+lives in [beagle](https://github.com/tompassarelli/beagle).
 
 ## Who is this for?
 
 This repository is two things at once: the FirnOS framework, and the
 author's real NixOS + nix-darwin config built on it. To use FirnOS for
 your own machines, **start from [`template/`](template/)**. The full
-repo (`hosts/whiterabbit/`, ~158 modules, every bundle) is here as a
-study reference, not as something to fork wholesale.
+repo (`hosts/whiterabbit/`, ~166 modules) is here as a study
+reference, not as something to fork wholesale.
 
 ## Quick start
 
@@ -42,12 +42,13 @@ study reference, not as something to fork wholesale.
 nix flake init -t github:tompassarelli/firnos     # drops template/ in cwd
 git clone https://github.com/tompassarelli/beagle ../beagle    # compiler + validator
 cp /etc/nixos/hardware-configuration.nix .
-# edit hosts/my-machine/configuration.bnix — set username, enable bundles
+# edit hosts/my-machine/configuration.bnix and hosts/my-machine/enabled-tags.bnix
 ./scripts/firn-build && nixos-rebuild switch --flake .#my-machine
 ```
 
-`BEAGLE_PATH` overrides the sibling-clone location. On macOS, see
-[docs/MACOS.md](docs/MACOS.md).
+`BEAGLE_PATH` overrides the sibling-clone location. macOS works the
+same way via `lib.mkDarwinSystem` and a `darwinConfigurations` entry —
+`firn rebuild` detects Darwin and dispatches to `darwin-rebuild`.
 
 ## Daily commands
 
@@ -56,54 +57,58 @@ firn rebuild          # build + validate + switch (current host)
 firn validate         # static check the .bnix tree
 firn impact           # preview what would build
 firn diff             # diff regenerated .nix vs committed
-firn enable <name>    # toggle a module or bundle on
+firn enable <name>    # enable a tag (or un-blacklist a module)
+firn disable <name>   # disable a tag (or hard-off a module)
 ```
 
 These are first-class bare shortcuts — defaults are auto-detected
-(current host, `all` for aggregates). Full reference (and the
-underlying `<node> <edge> [<leaf>]` graph for scoping to other hosts):
-[docs/CLI.md](docs/CLI.md).
+(current host, `all` for aggregates). Every command is ultimately a
+`<node> <edge> [<leaf>]` triple (`firn tag enable terminal`,
+`firn host rebuild thinkpad-x1e`); run `firn` with no args for the
+full grid, or `firn <node>` for one entity's edges.
 
 ## Architecture
 
-- **Module** = atom. One package or service.
-- **Bundle** = molecule. Pure composition. Enables modules; never
-  installs packages.
-- **Host** = leaf. Enables modules + bundles.
+- **Module** = atom. One package or service. Lives in
+  `modules/<name>/default.bnix` (with a regenerated `default.nix`
+  sibling).
+- **Tags** = composition. A module joins a tag via `:tags` (default-on)
+  or `:tags-opt-in` (opt-in) in its `.bnix`. Hosts declare a tag
+  selection; the resolver unions per-tag memberships and subtracts a
+  per-host disabled list. See [docs/TAGS.md](docs/TAGS.md).
+- **Host** = leaf. `hosts/<host>/configuration.bnix` sets options;
+  `hosts/<host>/enabled-tags.bnix` picks the tag set.
 
 `firn rebuild` runs `firn-build` → `firn-validate` → `nixos-rebuild` →
-tag. Modules and bundles auto-discover via the flake's dynamic
-`imports`.
+tag. Modules auto-discover via the flake's dynamic `imports` — adding a
+module means creating the directory + `.bnix`, running `firn-build`,
+and `git add`-ing both files. No flake edits.
 
 ```
 .
-├── flake.rkt          source-of-truth flake (#lang nisp — see note below)
+├── flake.bnix         source-of-truth flake (#lang beagle/nix)
 ├── flake.nix          generated
-├── modules/  bundles/  bundles-darwin/  hosts/    .bnix source
+├── modules/  hosts/    .bnix source (+ generated .nix siblings)
 ├── scripts/           firn (CLI), firn-build, firn-validate, firn-extract-schema
 ├── template/          starting point for `nix flake init -t`
 ├── dotfiles/  secrets/  assets/
-├── docs/              AUTHORING / CLI / VALIDATION / USING-AS-INPUT / MACOS / BUILDING
+├── docs/              TAGS.md — composition model
 └── tests/             validator regression fixtures (.bnix)
 ```
 
-> **`flake.rkt` note.** `flake.rkt` is the one remaining `#lang nisp`
-> source — `beagle-import-nix` deliberately refuses `flake-file` forms.
-> Everything else (modules, bundles, hosts, test fixtures) is `.bnix`.
+Both `.bnix` and `.nix` are committed because the flake reads from the
+git tree. **Edit the `.bnix`** — `firn-build` overwrites direct `.nix`
+edits.
 
 ## Documentation
 
-- [docs/AUTHORING.md](docs/AUTHORING.md) — module / bundle / host
-  examples, escape hatch, migrating existing Nix
-- [docs/CLI.md](docs/CLI.md) — full `firn` command reference
-- [docs/VALIDATION.md](docs/VALIDATION.md) — validator pipeline, schema
-  cache, freshness rules
-- [docs/USING-AS-INPUT.md](docs/USING-AS-INPUT.md) — consuming FirnOS
-  as a flake input, `lib.mkSystem` / `lib.mkDarwinSystem` reference
-- [docs/MACOS.md](docs/MACOS.md) — nix-darwin bootstrap walkthrough
-- [docs/BUILDING.md](docs/BUILDING.md) — DSL forms, pipeline internals
+- [docs/TAGS.md](docs/TAGS.md) — tag-driven composition model,
+  resolution algorithm, worked examples
 - [tompassarelli/beagle](https://github.com/tompassarelli/beagle) —
-  the DSL itself, compiler, validator, schema extractor, migration tool
+  the DSL itself: compiler, validator, schema extractor, migration tool
+- The `firn` CLI is self-documenting: `firn` (full grid),
+  `firn <node>` (one entity), `firn schema explain <path>` (schema
+  introspection)
 
 ## Tradeoffs
 

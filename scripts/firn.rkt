@@ -221,11 +221,9 @@
     (cons "doctor"  (λ (_) (list "host"   "doctor")))
     (cons "gen"     (λ (_) (list "host"   "gen")))
     (cons "diff"    (λ (args)
-                      (define semantic? (member "--semantic" args))
-                      (define rest (filter (λ (a) (not (equal? a "--semantic"))) args))
+                      (define rest (filter (λ (a) (not (regexp-match? #rx"^--" a))) args))
                       (define target (if (pair? rest) (car rest) "all"))
-                      (cond [semantic? (list "repo" "sdiff" target)]
-                            [else      (list "repo" "diff" target)])))
+                      (list "repo" "diff" target)))
     (cons "upgrade" (λ (args) (cond [(member "--dry-run" args) (list "repo" "upgrade" "dry-run")]
                                     [else                      (list "repo" "upgrade" "now")])))
     (cons "watch"   (λ (_) (list "repo" "watch")))
@@ -324,7 +322,6 @@
   (printf "  firn tag opt-in <t>+<m>   add +<module> under tag <t>\n")
   (printf "  firn module disable <m>   add <m> to :disabled (hard off)\n")
   (printf "  firn diff             re-emit and diff vs committed .nix\n")
-  (printf "  firn diff --semantic  option-level changelog\n")
   (printf "\nFull graph:\n\n")
   (for ([n (in-list (nodes))])
     (printf "~a\n" n)
