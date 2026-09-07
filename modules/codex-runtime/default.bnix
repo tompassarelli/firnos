@@ -36,7 +36,10 @@
                         "/.local/share/uv/tools/codex-lb/bin/codex-lb --host 127.0.0.1 --port 2455")
                      :Environment
                       ["SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
-                       "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"]
+                       "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
+                       (s "CODEX_LB_COLLABORATION_CAPTURE_DIR=" homeDir
+                         "/.local/state/codex-collaboration-capture")
+                       "CODEX_LB_COLLABORATION_CAPTURE_SESSIONS=[\"*\"]"]
                      :Restart "on-failure"
                      :RestartSec 2
                      :UMask "0077"}
