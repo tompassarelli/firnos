@@ -203,10 +203,10 @@ run_family first env
   || die "compiled output was not published"
 [[ ! -e "$fixture/hosts/test/enabled-tags.nix" ]] \
   || die "obsolete enabled-tags output survived cleanup"
-[[ "$(wc -l <"$compiler_log")" == 1 ]] \
-  || die "compiler did not run exactly once"
+[[ "$(wc -l <"$compiler_log")" == 2 ]] \
+  || die "compiler did not check both sources"
 
-IFS='|' read -r compiled_source compiled_temporary <"$compiler_log"
+IFS='|' read -r compiled_source compiled_temporary < <(tail -n 1 "$compiler_log")
 [[ "$compiled_source" == "$fixture/modules/alpha/default.bnix" ]] \
   || die "compiler source argv changed"
 [[ "$(dirname "$compiled_temporary")" == \
@@ -225,17 +225,36 @@ rg -Fq 'config = { example = true; };' \
   || die "cleanup changed generated configuration"
 [[ ! -s "$scratch/first.err" ]] || die "successful build wrote stderr"
 
+unchanged_mtime="$(stat -c %Y "$fixture/modules/alpha/default.nix")"
 : >"$compiler_log"
 printf 'obsolete again\n' >"$fixture/hosts/test/enabled-tags.nix"
 run_family cached env
 [[ "$(<"$scratch/cached.status")" == 0 ]] \
   || die "cached family build returned $(<"$scratch/cached.status")"
-[[ ! -s "$compiler_log" ]] || die "valid cache reran the compiler"
+[[ "$(wc -l <"$compiler_log")" == 2 ]] || die "content check did not run both sources"
 [[ ! -e "$fixture/hosts/test/enabled-tags.nix" ]] \
   || die "cached build skipped obsolete-output cleanup"
-rg -Fxq 'firn-build: nothing to rebuild.' "$scratch/cached.out" \
-  || die "cached diagnostic changed"
+
 [[ ! -s "$scratch/cached.err" ]] || die "cached build wrote stderr"
+[[ "$(stat -c %Y "$fixture/modules/alpha/default.nix")" == "$unchanged_mtime" ]] \
+  || die "identical output was rewritten"
+printf 'drift newer than source\n' >"$fixture/modules/alpha/default.nix"
+touch -d '2030-01-01 UTC' "$fixture/modules/alpha/default.nix"
+run_family drift env
+[[ "$(<"$scratch/drift.status")" == 0 ]] || die "drift repair failed"
+rg -Fq 'config = { example = true; };' "$fixture/modules/alpha/default.nix" \
+  || die "newer output concealed drift"
+printf 'read-only diff counterexample\n' >"$fixture/modules/alpha/default.nix"
+set +e
+FIRN_REPO="$fixture" BEAGLE_PATH="$fake_beagle" COMPILER_LOG="$compiler_log" \
+  FIRN_REPO_BUILD_MODULE="$scratch/build/firn/repo-build-family.js" \
+  bun "$repo/native/repo_build_host.mjs" repo diff all >"$scratch/diff.out"
+diff_status=$?
+set -e
+[[ "$diff_status" == 1 ]] || die "drift was reported clean"
+rg -Fq -- '-read-only diff counterexample' "$scratch/diff.out" || die "diff omitted changed content"
+[[ "$(<"$fixture/modules/alpha/default.nix")" == 'read-only diff counterexample' ]] \
+  || die "diff mutated its comparison target"
 
 printf 'previous complete output\n' >"$fixture/modules/alpha/default.nix"
 touch -d '2026-08-20 00:00:01 UTC' \
@@ -256,7 +275,7 @@ IFS='|' read -r failed_source failed_temporary <"$compiler_log"
   || die "failed compiler left a temporary sibling"
 cat >"$scratch/failed.expected.err" <<'EOF'
 fake compiler failure
-firn-build: compiler failed for 'modules/alpha/default.bnix' with status 7
+firn-build: compiler failed for 'flake.bnix' with status 7
 firn repo build: failed.
 EOF
 cmp -s "$scratch/failed.expected.err" "$scratch/failed.err" \
@@ -265,4 +284,4 @@ cmp -s "$scratch/failed.expected.err" "$scratch/failed.err" \
     die "compiler failure diagnostic changed"
   }
 
-printf 'ok: Beagle/JS repository build preserves cache and atomic publication contracts\n'
+printf 'ok: Beagle/JS repository build checks content and preserves atomic publication contracts\n'

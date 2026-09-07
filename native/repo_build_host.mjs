@@ -7,7 +7,6 @@ import {
   readFileSync,
   readdirSync,
   renameSync,
-  statSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -33,8 +32,6 @@ const bridge = Object.freeze({
   exitStatus(value) { return value.exitStatus; },
   stdout(value) { return value.stdout; },
   stderr(value) { return value.stderr; },
-  seconds(value) { return value.seconds; },
-  nanoseconds(value) { return value.nanoseconds; },
   listDirectory(path, maximum) {
     try {
       const names = readdirSync(path);
@@ -47,17 +44,6 @@ const bridge = Object.freeze({
     try {
       const stat = lstatSync(path);
       return result(0, stat.isDirectory() ? 2 : stat.isSymbolicLink() ? 3 : 1);
-    } catch (error) {
-      return result(errno(error));
-    }
-  },
-  mtimeNanoseconds(path) {
-    try {
-      const value = statSync(path, { bigint: true }).mtimeNs;
-      return result(0, Object.freeze({
-        seconds: Number(value / 1_000_000_000n),
-        nanoseconds: Number(value % 1_000_000_000n),
-      }));
     } catch (error) {
       return result(errno(error));
     }

@@ -292,10 +292,10 @@
 (def repo-diff FirnCommand
   (->FirnCommand
     "repo" "diff" "<target>|all" "        "
-    "re-emit Nix from .bnix and diff vs committed .nix"
-    "        " "re-emit and diff vs committed .nix"
+    "re-emit Nix from .bnix and diff vs existing .nix"
+    "        " "re-emit and diff vs existing .nix"
     (->RepoDiffCommand false)
-    (->NativeRepoWorkflowFamily false)
+    (->NativeRepoBuildFamily false)
     (->LiteralLeaf "all")))
 
 (def repo-doctor FirnCommand

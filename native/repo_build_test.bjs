@@ -4,23 +4,13 @@
 
 (defn assert!
   [condition Bool
-   message String]
-  Int
+   message String] Int
   (if condition
     0
     1))
 
-(defn source
-  [relative String
-   source-time Int
-   output-time (U Int Nil)]
-  build/SourceState
-  (build/->SourceState
-    (build/->SourceKey relative (build/->ModifiedTime source-time 0))
-    (build/output-relative relative)
-    (if (nil? output-time)
-      nil
-      (build/->ModifiedTime output-time 0))))
+(defn source [relative String] build/SourceState
+  (build/->SourceState relative (build/output-relative relative)))
 
 (defn test-path-contract! [] Int
   (assert!
@@ -39,40 +29,18 @@
          "modules/alpha/default.nix"))
     "source inventory path contract"))
 
-(defn test-cache-contract! [] Int
-  (let [(missing build/SourceState) (source "a.bnix" 10 nil)
-        (equal build/SourceState) (source "b.bnix" 10 10)
-        (older build/SourceState) (source "c.bnix" 10 9)
-        (newer build/SourceState) (source "d.bnix" 10 11)
-        (plan build/RepoBuildPlan)
-        (build/build-plan
-          (build/->SourceInventory
-            [missing equal older newer]
-            ["hosts/a/enabled-tags.nix"]))]
-    (assert!
-      (and
-        (not (build/cache-valid? missing))
-        (not (build/cache-valid? equal))
-        (not (build/cache-valid? older))
-        (build/cache-valid? newer)
-        (= (count (build/repobuildplan-stale-sources plan)) 3)
-        (= (build/sourcekey-relative
-             (build/sourcestate-key
-               (nth (build/repobuildplan-stale-sources plan) 0)))
-           "a.bnix")
-        (= (build/sourcekey-relative
-             (build/sourcestate-key
-               (nth (build/repobuildplan-stale-sources plan) 2)))
-           "c.bnix")
-        (= (build/repobuildplan-obsolete-outputs plan)
-           ["hosts/a/enabled-tags.nix"]))
-      "nanosecond cache validity and stable plan")))
+(defn test-plan-contract! [] Int
+  (let [sources (Vec build/SourceState) [(source "a.bnix") (source "b.bnix")]
+        plan build/RepoBuildPlan (build/build-plan
+          (build/->SourceInventory sources ["hosts/a/enabled-tags.nix"]))]
+    (assert! (and (= (build/repobuildplan-sources plan) sources)
+                  (= (build/repobuildplan-obsolete-outputs plan)
+                     ["hosts/a/enabled-tags.nix"]))
+      "every source is checked against compiler output")))
 
 (defn test-process-contract! [] Int
-  (let [(state build/SourceState)
-        (source "modules/alpha/default.bnix" 10 nil)
-        (process build/CompilerProcess)
-        (build/compiler-process "/beagle/bin/beagle-build" "/repo"
+  (let [state build/SourceState (source "modules/alpha/default.bnix")
+        process build/CompilerProcess (build/compiler-process "/beagle/bin/beagle-build" "/repo"
           state "/repo/modules/alpha/.default.nix.tmp")]
     (assert!
       (and
@@ -87,8 +55,7 @@
       "tokenized compiler process plan")))
 
 (defn test-cleanup-contract! [] Int
-  (let [(generated String)
-        (str
+  (let [generated String (str
           "{\n"
           "  tags = [ desktop terminal ];\n"
           "  tags-opt-in = [ optional ];\n"
@@ -101,8 +68,7 @@
           "  tags-extra = [ keep ];\n"
           "  config = { value = \"{keep}\"; };\n"
           "}\n")
-        (expected String)
-        (str
+        expected String (str
           "{\n"
           "  tags-extra = [ keep ];\n"
           "  config = { value = \"{keep}\"; };\n"
@@ -126,9 +92,8 @@
 
 (js/export
  (defn test [] Int
-  (let [(results (Vec Int))
-        [(test-path-contract!)
-         (test-cache-contract!)
+  (let [results (Vec Int) [(test-path-contract!)
+         (test-plan-contract!)
          (test-process-contract!)
          (test-cleanup-contract!)
          (test-command-contract!)]]

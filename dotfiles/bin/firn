@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-firn_repo="${FIRN_REPO:-$HOME/code/nixos-config/main}" # hardcoded-repo-path:allow
+firn_repo="${FIRN_REPO:-}"
+if [[ -z "$firn_repo" ]]; then
+  checkout="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$checkout" && -f "$checkout/native/firn.bjs" && -f "$checkout/flake.bnix" ]]; then
+    firn_repo="$checkout"
+  else
+    firn_repo="$HOME/code/nixos-config/main" # hardcoded-repo-path:allow
+  fi
+fi
 beagle_path="${BEAGLE_PATH:-$HOME/code/beagle/main}" # hardcoded-repo-path:allow
 runtime_root="${FIRN_RUNTIME_ROOT:-$HOME/.local/lib/firn/cli}"
 runtime_bin="$runtime_root/current/bin"

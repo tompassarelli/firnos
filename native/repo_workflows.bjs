@@ -1115,7 +1115,7 @@
      (->RepoWorkflowPlan
        [(->CaptureProcess
           "repository diff"
-          ["git" "-C" root "diff" "--" target]
+          ["firn-repo-build" "repo" "diff" target]
           ""
           67108864)]
        "")]

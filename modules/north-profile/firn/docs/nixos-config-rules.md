@@ -68,10 +68,12 @@ compatibility links inside the existing `~/.codex/skills` directory, but Firn
 never replaces that directory or its provider-owned `.system` entries. The
 `agents` command delegates directly to `north config agents`; it is not a
 second reader or writer.
-The immutable managed Codex hook directory under `/etc/codex/hooks` is the
-deliberate security exception. Its runtime and requirements are store-pinned,
-enforcement payloads come from the sealed promotion, and provider adapters plus
-their support files link to North's current immutable agent generation.
+Firn owns individual store-pinned runtime links and provider adapters under
+`/etc/codex/hooks`; the adapters point to North's current immutable agent
+generation. The directory also contains externally installed North enforcement
+links targeting `/var/lib/north-enforcement/active/current`. Firn preserves
+those sibling paths and never replaces the shared directory. Their presence
+alone does not establish that the separate enforcement deployment is active.
 
 ## Shared skill dials
 

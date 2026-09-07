@@ -2,48 +2,39 @@
 (ns firn.repo-build)
 
 (js/export
-  (defrecord ModifiedTime
-  [seconds Int
-   nanoseconds Int]))
-
-(js/export
-  (defrecord SourceKey
-  [relative String
-   modified-time ModifiedTime]))
-
-(js/export
   (defrecord SourceState
-  [key SourceKey
-   output-relative String
-   output-modified-time (U ModifiedTime Nil)]))
+    [relative String
+     output-relative String]))
 
 (js/export
   (defrecord SourceInventory
-  [sources (Vec SourceState)
-   obsolete-outputs (Vec String)]))
+    [sources (Vec SourceState)
+     obsolete-outputs (Vec String)]))
 
 (js/export
   (defrecord RepoBuildPlan
-  [stale-sources (Vec SourceState)
-   obsolete-outputs (Vec String)]))
+    [sources (Vec SourceState)
+     obsolete-outputs (Vec String)]))
 
 (js/export
   (defrecord CompilerProcess
-  [source-relative String
-   destination-relative String
-   argv (Vec String)]))
+    [source-relative String
+     destination-relative String
+     argv (Vec String)]))
 
 (js/export
   (defunion RepoBuildArgv
   (ParsedRepoBuild [token Bool])
+  (ParsedRepoDiff [target String])
   (OtherRepoBuildCommand [argv (Vec String)])
   (InvalidRepoBuildArgv [argv (Vec String)])))
 
-(defn starts-with?
-  [text String
-   prefix String] Bool
-  (and (>= (count text) (count prefix))
-       (= (subs text 0 (count prefix)) prefix)))
+(js/export
+  (defn starts-with?
+    [text String
+     prefix String] Bool
+    (and (>= (count text) (count prefix))
+       (= (subs text 0 (count prefix)) prefix))))
 
 (defn ends-with?
   [text String
@@ -88,33 +79,10 @@
   (defn output-relative [source-relative String] String
     (str (subs source-relative 0 (- (count source-relative) 5)) ".nix")))
 
-(defn cache-valid? [state SourceState] Bool
-  (let [output (U ModifiedTime Nil) (sourcestate-output-modified-time state)]
-    (if (nil? output)
-      false
-      (let [source ModifiedTime
-            (sourcekey-modified-time (sourcestate-key state))]
-        (or
-          (> (modifiedtime-seconds output) (modifiedtime-seconds source))
-          (and
-            (= (modifiedtime-seconds output) (modifiedtime-seconds source))
-            (> (modifiedtime-nanoseconds output)
-               (modifiedtime-nanoseconds source))))))))
-
-(defn stale-sources
-  [sources (Vec SourceState)
-   index Int
-   result (Vec SourceState)] (Vec SourceState)
-  (if (>= index (count sources))
-    result
-    (let [state SourceState (nth sources index)]
-      (stale-sources sources (+ index 1)
-        (if (cache-valid? state) result (conj result state))))))
-
 (js/export
   (defn build-plan [inventory SourceInventory] RepoBuildPlan
   (->RepoBuildPlan
-    (stale-sources (sourceinventory-sources inventory) 0 [])
+    (sourceinventory-sources inventory)
     (sourceinventory-obsolete-outputs inventory))))
 
 (defn absolute-path
@@ -124,17 +92,25 @@
 
 (js/export
   (defn compiler-process
-  [compiler String
-   root String
-   state SourceState
-   temporary String] CompilerProcess
-  (let [source-relative String (sourcekey-relative (sourcestate-key state))
-        destination-relative String (sourcestate-output-relative state)]
-    (->CompilerProcess source-relative destination-relative
+    [compiler String
+     root String
+     state SourceState
+     temporary String] CompilerProcess
+    (let [source-relative String (sourcestate-relative state)
+          destination-relative String (sourcestate-output-relative state)]
+      (->CompilerProcess source-relative destination-relative
       [compiler (absolute-path root source-relative) temporary]))))
 
 (js/export
   (defn parse-repo-build-argv [argv (Vec String)] RepoBuildArgv
+  (if (and (>= (count argv) 2)
+           (= (nth argv 0) "repo")
+           (= (nth argv 1) "diff"))
+    (if (and (<= (count argv) 3)
+             (or (= (count argv) 2)
+                 (not (starts-with? (nth argv 2) "-"))))
+      (->ParsedRepoDiff (if (= (count argv) 2) "all" (nth argv 2)))
+      (->InvalidRepoBuildArgv argv))
   (if (and (>= (count argv) 2)
            (= (nth argv 0) "repo")
            (= (nth argv 1) "build"))
@@ -143,7 +119,7 @@
       [(and (= (count argv) 3) (= (nth argv 2) "all"))
        (->ParsedRepoBuild true)]
       [:else (->InvalidRepoBuildArgv argv)])
-    (->OtherRepoBuildCommand argv))))
+    (->OtherRepoBuildCommand argv)))))
 
 (defn horizontal-space? [character String] Bool
   (or (= character " ") (= character "\t")))
@@ -252,21 +228,21 @@
 
 (js/export
   (defn errno-message
-  [operation String
-   relative String
-   errno Int] String
-  (str "firn-build: " operation " '" relative "': errno " errno "\n")))
+    [operation String
+     relative String
+     errno Int] String
+    (str "firn-build: " operation " '" relative "': errno " errno "\n")))
 
 (js/export
   (defn compiler-failure-message
-  [relative String
-   status Int] String
-  (str "firn-build: compiler failed for '" relative
+    [relative String
+     status Int] String
+    (str "firn-build: compiler failed for '" relative
     "' with status " status "\n")))
 
 (js/export
   (defn compiler-spawn-message
-  [relative String
-   errno Int] String
-  (str "firn-build: cannot start compiler for '" relative
+    [relative String
+     errno Int] String
+    (str "firn-build: cannot start compiler for '" relative
     "': errno " errno "\n")))
