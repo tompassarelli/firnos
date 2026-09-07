@@ -1,0 +1,55 @@
+#lang beagle/nix
+
+(ns default)
+
+;; Owns the two pieces of Codex provider infrastructure that the launchers
+;; depend on but deliberately never supervise: the account load balancer, and
+;; the Nix store roots that keep out-of-store Codex runtimes executable.
+
+(nix/module [config lib pkgs ...]
+  (let
+    [username config.myConfig.modules.users.username
+     homeDir config.myConfig.modules.users.homeDir]
+    {:options.myConfig.modules.codex-runtime.enable
+      (lib.mkEnableOption
+        "Codex provider runtime (account load balancer + runtime store roots)")
+     :config
+      (lib.mkIf config.myConfig.modules.codex-runtime.enable
+        {:home-manager.users
+          {username
+            (nix/module [config ...]
+              {:systemd.user.services
+                {;; The pooled launchers require the load balancer but never
+                 ;; start or restart it. This is that owner; without it nothing
+                 ;; restores the balancer across a reboot.
+                 :codex-lb
+                  {:Unit
+                    {:Description "Local Codex account load balancer"
+                     :After ["network.target"]
+                     ;; Fail visibly rather than spin: a persistent fault must
+                     ;; land in "failed", not an endless restart counter.
+                     :StartLimitIntervalSec 300
+                     :StartLimitBurst 5}
+                   :Service
+                    {:ExecStart
+                      (s homeDir
+                        "/.local/share/uv/tools/codex-lb/bin/codex-lb --host 127.0.0.1 --port 2455")
+                     :Environment
+                      ["SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
+                       "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"]
+                     :Restart "on-failure"
+                     :RestartSec 2
+                     :UMask "0077"}
+                   :Install {:WantedBy ["default.target"]}}
+                 ;; Codex runtimes stay out of the store, but a locally built
+                 ;; one still resolves its ELF interpreter and RUNPATH from
+                 ;; /nix/store. Nothing else roots those paths, so a garbage
+                 ;; collection silently breaks every runtime.
+                 :codex-runtime-gcroots
+                  {:Unit
+                    {:Description
+                      "Root the Nix store dependencies of installed Codex runtimes"}
+                   :Service
+                    {:Type "oneshot"
+                     :ExecStart (s homeDir "/.local/bin/codex-runtime-gcroots")}
+                   :Install {:WantedBy ["default.target"]}}}})}})}))
