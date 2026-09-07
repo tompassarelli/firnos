@@ -18,7 +18,7 @@
               "SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
               "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt"
               "CODEX_LB_COLLABORATION_CAPTURE_DIR=${homeDir}/.local/state/codex-collaboration-capture"
-              "CODEX_LB_COLLABORATION_CAPTURE_SESSIONS=[\"*\"]"
+              "'CODEX_LB_COLLABORATION_CAPTURE_SESSIONS=[\"*\"]'"
             ];
             Restart = "on-failure";
             RestartSec = 2;
