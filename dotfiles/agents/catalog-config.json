@@ -732,6 +732,16 @@
         }
       ]
     },
+    "ceremony-budget-distilled": {
+      "distributions": [
+        {
+          "type": "skill",
+          "targets": [
+            "shared"
+          ]
+        }
+      ]
+    },
     "competitive-development-loop-distilled": {
       "distributions": [
         {
