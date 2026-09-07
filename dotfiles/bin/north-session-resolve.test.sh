@@ -124,7 +124,7 @@ for invocation in interactive app-server exec; do
   [ "${launched_env[1]}" = "$pooled/sqlite" ] || fail "$invocation lost SQLite home"
   grep -Fxq 'model_provider="codex-lb"' "$argv_log" || fail "$invocation lost pooled provider"
   grep -Fxq 'model="gpt-6-astra"' "$argv_log" || fail "$invocation lost Astra root default"
-  grep -Fxq 'model_reasoning_effort="high"' "$argv_log" || fail "$invocation lost high root effort"
+  grep -Fxq 'model_reasoning_effort="medium"' "$argv_log" || fail "$invocation lost medium root effort"
   if [[ "$invocation" = interactive ]]; then
     grep -Fxq 'unix:///synthetic/shared/app-server.sock' "$argv_log" ||
       fail "interactive launch did not attach to shared owner"
@@ -155,7 +155,7 @@ run_automatic as acct exec "explicit account"
 mapfile -t launched_env <"$env_log"
 [ "${launched_env[0]}" = "$base/openai/acct" ] || fail "explicit account was replaced"
 grep -Fxq 'model="gpt-6-astra"' "$argv_log" || fail "native root lost Astra default"
-grep -Fxq 'model_reasoning_effort="high"' "$argv_log" || fail "native root lost high effort"
+grep -Fxq 'model_reasoning_effort="medium"' "$argv_log" || fail "native root lost medium effort"
 if grep -Fxq 'model_provider="codex-lb"' "$argv_log"; then
   fail "explicit account received pooled provider"
 fi
