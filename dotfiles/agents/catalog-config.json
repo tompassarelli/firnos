@@ -16,11 +16,8 @@
     "threejs-postprocessing-distilled",
     "threejs-shaders-distilled",
     "threejs-textures-distilled",
-    "beagle-authoring-distilled",
     "clause-authoring-distilled",
     "greywrought-development-distilled",
-    "beagle-system-design-distilled",
-    "fact-modeling-distilled",
     "firn-distilled",
     "nix-development-distilled",
     "repo-safety-distilled",
@@ -35,20 +32,14 @@
     "agent-policy-distilled",
     "agent-runtime-incident-distilled",
     "project-structure-distilled",
-    "store-modeling-distilled",
-    "code-as-facts-distilled",
     "comment-bloat-guard",
     "agent-policy-reference",
     "agent-run-design-reference",
-    "beagle-authoring-reference",
-    "beagle-system-design-reference",
     "build-vs-reuse-reference",
     "cloudflare-deploy-reference",
-    "code-as-facts-reference",
     "convo-reference",
     "estimate-reference",
     "external-code-reference",
-    "fact-modeling-reference",
     "firn-reference",
     "greenfield-reference",
     "guard-authoring-reference",
@@ -62,7 +53,6 @@
     "repo-safety-reference",
     "rust-development-reference",
     "skill-maintenance-reference",
-    "store-modeling-reference",
     "terse-reference",
     "threejs-animation-reference",
     "threejs-fundamentals-reference",
@@ -160,48 +150,6 @@
         "path": "dotfiles/agents/skills/agent-policy-reference/SKILL.md"
       }
     },
-    "beagle-authoring-distilled": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "integrations/north/skills/beagle-authoring-distilled/SKILL.md"
-      }
-    },
-    "beagle-authoring-reference": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "integrations/north/skills/beagle-authoring-reference/SKILL.md"
-      }
-    },
-    "beagle-session-start": {
-      "kind": "hook",
-      "title": "Beagle session context",
-      "triggerDescription": "Inject source-aware Beagle authoring context at session start and context reset.",
-      "category": "context",
-      "owner": {
-        "repo": "beagle",
-        "path": "integrations/north/hooks/beagle-session-start.sh"
-      }
-    },
-    "beagle-system-design-distilled": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "nixos-config",
-        "path": "dotfiles/agents/skills/beagle-system-design-distilled/SKILL.md"
-      }
-    },
-    "beagle-system-design-reference": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "nixos-config",
-        "path": "dotfiles/agents/skills/beagle-system-design-reference/SKILL.md"
-      }
-    },
     "cloudflare-deploy-distilled": {
       "kind": "skill",
       "category": "uncategorized",
@@ -240,32 +188,6 @@
       "owner": {
         "repo": "nixos-config",
         "path": "dotfiles/agents/skills/greywrought-development-distilled/SKILL.md"
-      }
-    },
-    "code-as-facts-distilled": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/code-as-facts-distilled/SKILL.md"
-      }
-    },
-    "code-as-facts-reference": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/code-as-facts-reference/SKILL.md"
-      }
-    },
-    "code-upstream-guard": {
-      "kind": "hook",
-      "title": "Graph-owned source guard",
-      "triggerDescription": "Block direct text edits to explicitly adopted graph-owned source files.",
-      "category": "authoring",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/hooks/code-upstream-guard.sh"
       }
     },
     "comment-bloat-guard": {
@@ -328,22 +250,6 @@
       "owner": {
         "repo": "nixos-config",
         "path": "dotfiles/agents/skills/estimate-reference/SKILL.md"
-      }
-    },
-    "fact-modeling-distilled": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/fact-modeling-distilled/SKILL.md"
-      }
-    },
-    "fact-modeling-reference": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/fact-modeling-reference/SKILL.md"
       }
     },
     "firn-distilled": {
@@ -482,22 +388,6 @@
       "owner": {
         "repo": "nixos-config",
         "path": "dotfiles/agents/hooks/session-kill-guard.sh"
-      }
-    },
-    "store-modeling-distilled": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/store-modeling-distilled/SKILL.md"
-      }
-    },
-    "store-modeling-reference": {
-      "kind": "skill",
-      "category": "uncategorized",
-      "owner": {
-        "repo": "beagle",
-        "path": "store/integrations/north/skills/store-modeling-reference/SKILL.md"
       }
     },
     "todo-distilled": {
@@ -653,65 +543,6 @@
         }
       ]
     },
-    "beagle-authoring-distilled": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "beagle-authoring-reference": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "beagle-session-start": {
-      "supports": [
-        "beagle-authoring-distilled"
-      ],
-      "distributions": [
-        {
-          "type": "hook",
-          "targets": [
-            "shared",
-            "codex",
-            "claude"
-          ],
-          "owner": {
-            "repo": "beagle",
-            "path": "integrations/north/hooks/beagle-session-start.sh"
-          }
-        }
-      ]
-    },
-    "beagle-system-design-distilled": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "beagle-system-design-reference": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
     "build-vs-reuse-distilled": {
       "distributions": [
         {
@@ -789,43 +620,6 @@
           "targets": [
             "shared"
           ]
-        }
-      ]
-    },
-    "code-as-facts-distilled": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "project:beagle"
-          ]
-        }
-      ]
-    },
-    "code-as-facts-reference": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "project:beagle"
-          ]
-        }
-      ]
-    },
-    "code-upstream-guard": {
-      "supports": [
-        "code-as-facts-distilled"
-      ],
-      "distributions": [
-        {
-          "type": "hook",
-          "targets": [
-            "project:beagle"
-          ],
-          "owner": {
-            "repo": "beagle",
-            "path": "store/integrations/north/hooks/code-upstream-guard.sh"
-          }
         }
       ]
     },
@@ -917,26 +711,6 @@
       ]
     },
     "external-code-reference": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "fact-modeling-distilled": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "fact-modeling-reference": {
       "distributions": [
         {
           "type": "skill",
@@ -1303,26 +1077,6 @@
       ]
     },
     "skill-maintenance-reference": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "store-modeling-distilled": {
-      "distributions": [
-        {
-          "type": "skill",
-          "targets": [
-            "shared"
-          ]
-        }
-      ]
-    },
-    "store-modeling-reference": {
       "distributions": [
         {
           "type": "skill",
