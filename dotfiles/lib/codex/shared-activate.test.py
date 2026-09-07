@@ -70,6 +70,9 @@ class ResumeApi:
     def __init__(self, outcome):
         self.outcome = outcome
         self.messages = asyncio.Queue()
+        self.started = []
+        self.commentary_seen = []
+        self.completed_seen = []
 
     async def __aenter__(self):
         return self
@@ -86,6 +89,7 @@ class ResumeApi:
             result = {"thread": {"id": request["params"]["threadId"]}}
         elif request["method"] == "turn/start":
             thread_id = request["params"]["threadId"]
+            self.started.append(thread_id)
             result = {"turn": {"id": "resumed-turn"}}
             params = {"threadId": thread_id, "turnId": "resumed-turn"}
             self.messages.put_nowait({"method": "turn/started", "params": {
@@ -100,13 +104,50 @@ class ResumeApi:
                 self.messages.put_nowait({"method": "turn/completed", "params": {
                     "threadId": thread_id, "turn": {"id": "resumed-turn", "status": "failed",
                     "error": {"message": "injected terminal provider failure"}}}})
-            elif self.outcome == "success":
+            elif self.outcome in ("late-provider400", "late-failed-turn", "commentary-completed"):
                 self.messages.put_nowait({"method": "item/completed", "params": {
-                    **params, "item": {"type": "agentMessage", "text": "Listener resumed."}}})
+                    **params, "item": {"type": "agentMessage", "phase": "commentary",
+                                       "text": "Continuing the task."}}})
+                if self.outcome == "commentary-completed":
+                    self.messages.put_nowait({"method": "turn/completed", "params": {
+                        "threadId": thread_id, "turn": {"id": "resumed-turn", "status": "completed"}}})
+            elif self.outcome in ("success", "message-only"):
+                item = {"type": "agentMessage", "phase": "final_answer", "text": "Listener resumed."}
+                if len(self.started) == 1 or self.outcome == "message-only":
+                    self.messages.put_nowait({"method": "item/completed", "params": {**params, "item": item}})
+                    items = []
+                else:
+                    items = [item]
+                if self.outcome == "success":
+                    self.messages.put_nowait({"method": "turn/completed", "params": {
+                        "threadId": thread_id, "turn": {"id": "resumed-turn", "status": "completed", "items": items}}})
         self.messages.put_nowait({"id": request["id"], "result": result})
+        if request["method"] == "turn/start":
+            if self.outcome == "success" and len(self.started) == 1:
+                self.messages.put_nowait({"method": "turn/started", "params": {
+                    "threadId": thread_id, "turn": {"id": "subsequent-unowned-turn"}}})
+                self.messages.put_nowait({"method": "error", "params": {
+                    "threadId": thread_id, "turnId": "subsequent-unowned-turn", "willRetry": False,
+                    "error": {"message": "unrelated later turn"}}})
+            if self.outcome in ("late-provider400", "late-failed-turn") and len(self.started) == 2:
+                self.messages.put_nowait({"method": "turn/completed", "params": {
+                    "threadId": self.started[0], "turn": {"id": "resumed-turn", "status": "completed",
+                        "items": [{"type": "agentMessage", "phase": "final_answer", "text": "Listener resumed."}]}}})
+                if self.outcome == "late-provider400":
+                    self.messages.put_nowait({"method": "error", "params": {
+                        **params, "willRetry": False, "error": {"message": "HTTP 400: late provider failure"}}})
+                self.messages.put_nowait({"method": "turn/completed", "params": {
+                    "threadId": thread_id, "turn": {"id": "resumed-turn", "status": "failed",
+                        "error": {"message": "injected late terminal provider failure"}}}})
 
     async def recv(self):
-        return json.dumps(await self.messages.get())
+        message = await self.messages.get()
+        params = message.get("params", {})
+        if message.get("method") == "item/completed" and params["item"].get("phase") == "commentary":
+            self.commentary_seen.append(params["threadId"])
+        if message.get("method") == "turn/completed" and params["turn"]["status"] == "completed":
+            self.completed_seen.append(params["threadId"])
+        return json.dumps(message)
 
 
 with tempfile.TemporaryDirectory(prefix="codex-shared-recovery-") as temporary:
@@ -257,18 +298,29 @@ with tempfile.TemporaryDirectory(prefix="codex-shared-recovery-") as temporary:
         candidate.parent.mkdir(parents=True)
         shutil.copy2(runtime, candidate)
         activation.CONFIG.update(candidate=str(candidate),
-            candidate_sha256=hashlib.sha256(candidate.read_bytes()).hexdigest(), resume_timeout_seconds=0.15)
+            candidate_sha256=hashlib.sha256(candidate.read_bytes()).hexdigest(), resume_timeout_seconds=0.15,
+            resume=[{"id": name, "message": "no model call"} for name in ("listener-one", "listener-two")])
         original_resume = activation.resume_threads
         for outcome, diagnostic in (("provider400", "HTTP 400"), ("timeout", "listener recovery exceeded"),
-                                    ("failed-turn", "injected terminal provider failure")):
+                                    ("failed-turn", "injected terminal provider failure"),
+                                    ("late-provider400", "HTTP 400: late provider failure"),
+                                    ("late-failed-turn", "injected late terminal provider failure"),
+                                    ("message-only", "listener recovery exceeded"),
+                                    ("commentary-completed", "listener recovery exceeded")):
             observed = []
+            apis = []
+            receipt_start = len((root / "activation-receipt.jsonl").read_text().splitlines())
 
             async def injected_resume(started_turns=None):
                 current = str(Path(f"/proc/{command('systemctl', '--user', 'show', unit, '-p', 'MainPID', '--value')}/exe").resolve())
                 observed.append(current)
                 api = ResumeApi(outcome if current == str(candidate) else "success")
+                apis.append(api)
+                owned_turns = started_turns if started_turns is not None else []
                 with patch.object(activation, "unix_connect", return_value=api):
-                    await original_resume(started_turns)
+                    await original_resume(owned_turns)
+                assert owned_turns == [{"id": name, "turn_id": "resumed-turn"}
+                                       for name in ("listener-one", "listener-two")], owned_turns
 
             with patch.object(activation, "provider_preflight"), \
                     patch.object(activation, "resume_threads", side_effect=injected_resume):
@@ -281,8 +333,21 @@ with tempfile.TemporaryDirectory(prefix="codex-shared-recovery-") as temporary:
                     raise AssertionError(f"{outcome} activation incorrectly succeeded")
             assert observed == [str(candidate), str(runtime)], observed
             assert selector.resolve() == runtime.parent.parent
+            if outcome.startswith("late-"):
+                assert apis[0].commentary_seen == ["listener-one", "listener-two"]
+            assert apis[1].completed_seen == ["listener-one", "listener-two"]
+            receipts = [json.loads(line) for line in
+                        (root / "activation-receipt.jsonl").read_text().splitlines()[receipt_start:]]
+            restored = next(index for index, entry in enumerate(receipts)
+                            if entry["stage"] == "previous-runtime-restored")
+            recovered = [entry for entry in receipts[restored + 1:]
+                         if entry["stage"] == "original-thread-model-activity-observed"]
+            assert {entry["thread_id"] for entry in recovered} == {"listener-one", "listener-two"}
+            assert all(entry["turn_id"] == "resumed-turn" and entry["turn_status"] == "completed"
+                       for entry in recovered)
+            assert receipts[-1]["outcome"] == "previous-runtime-restored"
             asyncio.run(activation.quiesce_threads())
-            print(f"PASS: {outcome} after candidate startup restores actual old executable and completed listener response")
+            print(f"PASS: {outcome} after candidate startup restores actual old executable and both completed listener responses")
     finally:
         subprocess.run(["systemctl", "--user", "stop", unit], capture_output=True)
         lock = Path(os.environ["XDG_RUNTIME_DIR"]) / f"codex-shared-{home_key}.lock"

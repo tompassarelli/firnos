@@ -147,7 +147,8 @@ async def resume_threads(started_turns=None):
     async with unix_connect(CONFIG["socket"], uri="ws://localhost/", compression=None,
                             user_agent_header=None, proxy=None, max_size=8 * 1024 * 1024) as ws:
         sequence = 0
-        observed_activity = set()
+        assistant_results = set()
+        completed_turns = set()
         errors = {}
         started = set()
         requested = set()
@@ -164,11 +165,16 @@ async def resume_threads(started_turns=None):
             for key in started & errors.keys():
                 raise RuntimeError(f"resumed turn failed {key}: {errors[key]}")
 
+        def is_assistant_result(item):
+            return (item.get("type") == "agentMessage" and item.get("text", "").strip()
+                    and item.get("phase") in (None, "final_answer"))
+
         def observe(message):
             params = message.get("params", {})
             method = message.get("method")
             key = (params.get("threadId"), params.get("turnId"))
-            if method == "turn/started" and params.get("threadId") in requested:
+            if (method == "turn/started" and params.get("threadId") in requested
+                    and not any(thread_id == params["threadId"] for thread_id, _ in started)):
                 remember(params["threadId"], params["turn"]["id"])
             elif method == "error":
                 if key[0] in requested:
@@ -181,13 +187,14 @@ async def resume_threads(started_turns=None):
                 key = (params.get("threadId"), turn["id"])
                 if turn["status"] != "completed":
                     errors[key] = turn.get("error") or f"turn ended with status {turn['status']}"
-                elif any(item.get("type") == "agentMessage" and item.get("text")
-                         for item in turn.get("items", [])):
-                    observed_activity.add(key)
+                else:
+                    completed_turns.add(key)
+                    if any(is_assistant_result(item) for item in turn.get("items", [])):
+                        assistant_results.add(key)
             elif method == "item/completed":
                 item = params.get("item", {})
-                if item.get("type") == "agentMessage" and item.get("text"):
-                    observed_activity.add(key)
+                if is_assistant_result(item):
+                    assistant_results.add(key)
 
         async def receive(context):
             remaining = deadline - asyncio.get_running_loop().time()
@@ -197,7 +204,8 @@ async def resume_threads(started_turns=None):
                 message = json.loads(await asyncio.wait_for(ws.recv(), timeout=remaining))
             except TimeoutError as exc:
                 raise TimeoutError(f"listener recovery exceeded {timeout}s while {context}; "
-                                   f"awaiting model response for {sorted(started - observed_activity)}") from exc
+                                   f"awaiting successful assistant completion for "
+                                   f"{sorted(started - (assistant_results & completed_turns))}") from exc
             observe(message)
             check_errors()
             return message
@@ -232,12 +240,13 @@ async def resume_threads(started_turns=None):
         pending = set(started)
         while pending:
             check_errors()
-            for thread_id, turn_id in pending & observed_activity:
+            recovered = assistant_results & completed_turns
+            for thread_id, turn_id in pending & recovered:
                 record("original-thread-model-activity-observed", thread_id=thread_id,
-                       turn_id=turn_id, autonomousReactivation=True)
-            pending -= observed_activity
+                       turn_id=turn_id, autonomousReactivation=True, turn_status="completed")
+            pending -= recovered
             if pending:
-                await receive("waiting for completed assistant messages")
+                await receive("waiting for successful assistant turn completion")
 
 
 def activate(mode):
