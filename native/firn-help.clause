@@ -1,0 +1,2 @@
+export missing-leaf(?node: Text, ?edge: Text, ?leaf: Text, ?summary: Text): Text
+  "firn: '{?node} {?edge}' requires a leaf node\nUsage: firn {?node} {?edge} {?leaf}\n  {?summary}\n"
