@@ -190,16 +190,16 @@
       "kind": "skill",
       "category": "uncategorized",
       "owner": {
-        "repo": "nixos-config",
-        "path": "dotfiles/agents/skills/beagle-system-design-distilled/SKILL.md"
+        "repo": "beagle",
+        "path": "integrations/north/skills/beagle-system-design-distilled/SKILL.md"
       }
     },
     "beagle-system-design-reference": {
       "kind": "skill",
       "category": "uncategorized",
       "owner": {
-        "repo": "nixos-config",
-        "path": "dotfiles/agents/skills/beagle-system-design-reference/SKILL.md"
+        "repo": "beagle",
+        "path": "integrations/north/skills/beagle-system-design-reference/SKILL.md"
       }
     },
     "cloudflare-deploy-distilled": {

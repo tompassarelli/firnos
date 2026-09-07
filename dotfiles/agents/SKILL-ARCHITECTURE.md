@@ -1,6 +1,6 @@
 # Skills and hooks architecture
 
-Snapshot: 2026-09-05. This is an operator map, not an always-loaded instruction
+Snapshot: 2026-09-07. This is an operator map, not an always-loaded instruction
 file. The live catalog remains authoritative: `agents status --json`,
 `agents inspect <id>`, and `agents path <id>`.
 
@@ -8,20 +8,20 @@ file. The live catalog remains authoritative: `agents status --json`,
 
 | Source owner | Distilled guides | Full-note entrypoints | Total |
 | --- | ---: | ---: | ---: |
-| North | 28 | 25 | 53 |
-| NixOS configuration / Firn | 17 | 10 | 27 |
-| Beagle | 4 | 4 | 8 |
-| **Total** | **49** | **39** | **88** |
+| North | 29 | 25 | 54 |
+| NixOS configuration / Firn | 16 | 9 | 25 |
+| Beagle | 5 | 5 | 10 |
+| **Total** | **50** | **39** | **89** |
 
-There are 49 families, not 88 independent workflows. Of the 49 distilled guides,
-41 are active and 8 are off. All 39 full-note entrypoints are off in normal
-discovery but remain available from source through `agents path`. The 56
+There are 50 families, not 89 independent workflows. Of the 50 distilled guides,
+42 are active and 8 are off. All 39 full-note entrypoints are off in normal
+discovery but remain available from source through `agents path`. The 57
 topic-note files are supporting resources, not additional skills.
 
-The same catalog also contains 3 modules and 11 hooks: 102 units total.
+The same catalog also contains 3 modules and 11 hooks: 103 units total.
 Bootstrap instructions and provider support files are separate from that count.
 Provider-bundled system skills and historical session catalogs are not part of
-these 88 entries.
+these 89 entries.
 
 ## Source to use
 
@@ -72,14 +72,15 @@ entrypoints are inactive. Subject groups below aid navigation; they are not
 new directories or activation modules.
 
 ```text
-88 skill entries / 49 families
-├── north-v2:agent-machinery/skills/ — 53 entries
+89 skill entries / 50 families
+├── north-v2:agent-machinery/skills/ — 54 entries
 │   ├── Run design
 │   │   ├── agent-run-design-{distilled,reference}
 │   │   └── work-ownership-distilled
 │   ├── Engineering and authoring
 │   │   ├── babashka-development-distilled
 │   │   ├── build-vs-reuse-{distilled,reference} ○
+│   │   ├── ceremony-budget-distilled
 │   │   ├── competitive-development-loop-distilled
 │   │   ├── external-code-{distilled,reference}
 │   │   ├── greenfield-{distilled,reference} ○
@@ -105,11 +106,10 @@ new directories or activation modules.
 │       ├── threejs-postprocessing-{distilled,reference}
 │       ├── threejs-shaders-{distilled,reference}
 │       └── threejs-textures-{distilled,reference}
-├── nixos-config — 27 entries
-│   ├── nixos-config:dotfiles/agents/skills/ — 25
+├── nixos-config — 25 entries
+│   ├── nixos-config:dotfiles/agents/skills/ — 23
 │   │   ├── agent-policy-{distilled,reference}
 │   │   ├── agent-runtime-incident-distilled
-│   │   ├── beagle-system-design-{distilled,reference}
 │   │   ├── clause-authoring-distilled
 │   │   ├── cloudflare-deploy-{distilled,reference}
 │   │   ├── convo-{distilled,reference}
@@ -125,9 +125,10 @@ new directories or activation modules.
 │   │   └── todo-{distilled,reference}
 │   └── nixos-config:modules/north-profile/firn/skills/ — 2
 │       └── firn-{distilled,reference}
-└── beagle — 8 entries
-    ├── beagle:integrations/north/skills/ — 2
-    │   └── beagle-authoring-{distilled,reference}
+└── beagle — 10 entries
+    ├── beagle:integrations/north/skills/ — 4
+    │   ├── beagle-authoring-{distilled,reference}
+    │   └── beagle-system-design-{distilled,reference}
     └── beagle:store/integrations/north/skills/ — 6
         ├── code-as-facts-{distilled,reference} ○
         ├── fact-modeling-{distilled,reference} ○
