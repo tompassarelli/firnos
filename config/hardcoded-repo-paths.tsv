@@ -4,25 +4,10 @@
 # this file is the entire inventory — there is no separate total to drift.
 # `hardcoded-repo-path-check --write-allow` re-counts and prunes listed paths.
 # It never adds a path: a brand-new coupling is declared by hand, on purpose.
-beagle/beagle-test/tests/levenshtein-benchmark.rkt	1
-beagle/bin/_beagle-racket	2
-beagle/bin/beagle-ci	1
-beagle/store/bin/beagle-store-code-on	1
-beagle/store/bin/beagle-store-defcheck	1
-beagle/store/codegraph/bin/emit-corpus	1
-beagle/store/codegraph/bin/rename-demo	1
-beagle/store/codegraph/bin/safe-rename	1
-beagle/store/codegraph/test/comment-falsifier.sh	1
-beagle/store/scripts/native-core-reingest.sh	2
-beagle/store/tests/code_editpath_defect_test.clj	1
-beagle/store/tests/codegraph_exec_test.sh	1
-beagle/store/tests/store_anchor_disambig_test.clj	1
 nixos-config/dotfiles/agents/hooks/concrete-model-identity-guard.test.sh	1
 nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.py	55
-nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.sh	7
-nixos-config/dotfiles/agents/hooks/tripwire-guard.test.sh	1
-nixos-config/dotfiles/bin/beagle	1
+nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.sh	16
+nixos-config/dotfiles/agents/hooks/tripwire-guard.test.sh	2
 nixos-config/dotfiles/codex/config.toml	4
 nixos-config/dotfiles/niri/config.kdl	7
-nixos-config/modules/beagle/default.bnix	1
 nixos-config/modules/theme-switcher/default.bnix	1

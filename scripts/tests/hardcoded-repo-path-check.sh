@@ -50,7 +50,7 @@ chmod +x "$scratch/canary/main/violation"
 git -C "$scratch/canary/main" add violation
 git -C "$scratch/canary/main" commit -qm fixture
 
-roots="$REPO_ROOT:$HOME/code/north-v2/main:$HOME/code/beagle/main:$scratch/canary/main" # hardcoded-repo-path:allow
+roots="$REPO_ROOT:$HOME/code/north-v2/main:$HOME/code/clause/main:$scratch/canary/main" # hardcoded-repo-path:allow
 set +e
 output="$(
   GIT_DIR="$caller_git_dir" \
