@@ -19,20 +19,31 @@ runtime="$(realpath -e "${CODEX_RUNTIME:-$HOME/.local/lib/codex/current/bin/code
 home_key="$(printf '%s\n%s' "$pooled_home" "$sqlite_home" | sha256sum)"
 home_key="${home_key:0:16}"
 directory="$XDG_RUNTIME_DIR/codex-shared-$home_key"
+# The lock must outlive systemd's removal of the service runtime directory.
+exec {lock_fd}>"$XDG_RUNTIME_DIR/codex-shared-$home_key.lock"
+flock -w 15 "$lock_fd" || fail "shared server startup is still busy"
 mkdir -p "$directory"
 [[ ! -L "$directory" && "$(stat -c '%u:%a' "$directory")" = "$UID:700" ]] ||
   fail "shared server directory must be private and owned by this user"
 socket="$directory/app-server.sock"
 endpoint="unix://$socket"
 unit="codex-shared-$home_key.service"
-exec {lock_fd}>"$directory/start.lock"
-flock -w 15 "$lock_fd" || fail "shared server startup is still busy"
-
-if ! systemctl --user is-active --quiet "$unit"; then
-  [[ ! -e "$socket" ]] ||
-    fail "shared server socket exists without an active owner; inspect $unit before retrying"
+state="$(systemctl --user show "$unit" --property=ActiveState --value)" ||
+  fail "cannot determine shared server state; inspect $unit"
+case "$state" in
+  active) ;;
+  inactive|failed)
+  if [[ -e "$socket" || -L "$socket" ]]; then
+    [[ ! -L "$socket" && -S "$socket" && "$(stat -c '%u' "$socket")" = "$UID" ]] ||
+      fail "unexpected shared server socket owner or file type; inspect $socket"
+    listeners="$(ss -H -xl src "$socket")" || fail "cannot inspect shared server listener"
+    [[ -z "$listeners" ]] || fail "shared server socket still has a listener; inspect $unit"
+    # Older units did not give systemd ownership of socket cleanup.
+    rm -- "$socket"
+  fi
   systemd-run --user --quiet --collect --unit="$unit" --service-type=exec \
     --property=UMask=0077 --property=Slice=agent.slice \
+    --property="RuntimeDirectory=codex-shared-$home_key" --property=RuntimeDirectoryMode=0700 \
     --working-directory="$HOME" \
     --setenv="HOME=$HOME" --setenv="PATH=$PATH" \
     --setenv="XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" \
@@ -41,7 +52,9 @@ if ! systemctl --user is-active --quiet "$unit"; then
     --setenv="CODEX_RUNTIME=$runtime" --setenv=NORTH_NO_SLICE=1 \
     -- "$(dirname "$self")/codex-pooled" app-server --listen "$endpoint" --enable multi_agent_v2 ||
     fail "shared server could not start; inspect $unit"
-fi
+  ;;
+  *) fail "shared server is $state; wait for $unit to finish its transition" ;;
+esac
 
 for ((attempt = 0; attempt < 100; attempt++)); do
   systemctl --user is-active --quiet "$unit" ||
@@ -49,8 +62,11 @@ for ((attempt = 0; attempt < 100; attempt++)); do
   if [[ -S "$socket" ]]; then
     [[ "$(stat -c '%u' "$socket")" = "$UID" ]] ||
       fail "shared server socket belongs to another user"
-    printf '%s\n' "$endpoint"
-    exit 0
+    listeners="$(ss -H -xl src "$socket")" || fail "cannot inspect shared server listener"
+    if [[ -n "$listeners" ]]; then
+      printf '%s\n' "$endpoint"
+      exit 0
+    fi
   fi
   sleep 0.1
 done

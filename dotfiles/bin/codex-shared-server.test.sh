@@ -4,6 +4,16 @@ set -euo pipefail
 # Test doubles record only this test's synthetic user-service state.
 case "${0##*/}" in
   systemctl)
+    if [[ " $* " = *" show "* ]]; then
+      if [[ -e "$SHARED_TEST_ROOT/transition" ]]; then
+        cat "$SHARED_TEST_ROOT/transition"
+      elif [[ -e "$SHARED_TEST_ROOT/active" ]]; then
+        echo active
+      else
+        echo inactive
+      fi
+      exit
+    fi
     [[ -e "$SHARED_TEST_ROOT/active" ]]
     exit
     ;;
@@ -18,7 +28,12 @@ case "${0##*/}" in
       previous="$argument"
     done
     touch "$SHARED_TEST_ROOT/active"
+    touch "$SHARED_TEST_ROOT/listening"
     exit
+    ;;
+  ss)
+    if [[ -e "$SHARED_TEST_ROOT/listening" ]]; then echo 'test listener'; fi
+    exit 0
     ;;
 esac
 
@@ -29,10 +44,12 @@ mkdir -p "$fixture/bin" "$fixture/runtime" "$fixture/home/pool"
 chmod 700 "$fixture/runtime"
 ln -s "$(realpath "$0")" "$fixture/bin/systemctl"
 ln -s "$(realpath "$0")" "$fixture/bin/systemd-run"
+ln -s "$(realpath "$0")" "$fixture/bin/ss"
 export SHARED_TEST_ROOT="$fixture"
 export PATH="$fixture/bin:$PATH"
 export XDG_RUNTIME_DIR="$fixture/runtime"
 export NORTH_CODEX_POOLED_HOME="$fixture/home/pool"
+unset NORTH_CODEX_CONVERSATION_HOME NORTH_CODEX_CONVERSATION_SQLITE_HOME
 export CODEX_RUNTIME
 CODEX_RUNTIME="$(type -P bash)"
 
@@ -62,8 +79,20 @@ grep -Fxq -- app-server "$fixture/start.argv" || fail "service did not start sup
 
 mv "$fixture/active" "$fixture/inactive"
 if "$helper" >"$fixture/failed" 2>"$fixture/error"; then
-  fail "ownerless socket allowed another writer"
+  fail "live listener allowed another writer"
 fi
 [[ "$(wc -l <"$fixture/starts")" = 1 ]] || fail "failure started another owner"
 [[ -S "${endpoint#unix://}" ]] || fail "failure deleted socket"
+rm "$fixture/listening"
+printf 'deactivating\n' >"$fixture/transition"
+if "$helper" >"$fixture/failed" 2>"$fixture/error"; then
+  fail "transitioning service allowed a replacement"
+fi
+[[ -S "${endpoint#unix://}" ]] || fail "transition deleted socket"
+rm "$fixture/transition"
+"$helper" >"$fixture/recovered"
+cmp "$fixture/first" "$fixture/recovered" || fail "recovery changed endpoint"
+[[ "$(wc -l <"$fixture/starts")" = 2 ]] || fail "dead socket did not recover"
+grep -Fxq -- "--property=RuntimeDirectory=$(basename "$(dirname "${endpoint#unix://}")")" "$fixture/start.argv" ||
+  fail "service did not give systemd ownership of cleanup"
 printf 'codex-shared-server.test.sh: all assertions passed\n'
