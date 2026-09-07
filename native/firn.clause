@@ -1,0 +1,28 @@
+DispatchError:
+  message: Text
+  status: F64
+
+missing-leaf(?node: Text, ?edge: Text, ?leaf: Text, ?summary: Text): Text
+  "firn: '{?node} {?edge}' requires a leaf node\nUsage: firn {?node} {?edge} {?leaf}\n  {?summary}\n"
+
+foreign arguments(): Sequence<Text>
+  get: "argv"
+  from: "node:process"
+  failure: throw
+
+foreign write-output(?fd: F64, ?message: Text): F64
+  call: "writeSync"
+  from: "node:fs"
+  failure: throw
+
+export dispatch(?args: Sequence<Text>): DispatchError
+  require(?args = ["module", "add"],
+    {message: missing-leaf("module", "add", "<name>", "Create a module"), status: 1},
+    "This comparison covers firn module add without a leaf")
+
+procedure deliver(?outcome: DispatchError): F64
+  write-output(2, ?outcome.message)
+  ?outcome.status
+
+export procedure run(): F64
+  deliver(dispatch(drop(arguments(), 2)))
