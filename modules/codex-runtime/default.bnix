@@ -51,5 +51,9 @@
                       "Root the Nix store dependencies of installed Codex runtimes"}
                    :Service
                     {:Type "oneshot"
+                     ;; A user unit inherits no dev-shell PATH, and patchelf is
+                     ;; not in the system profile. Pin it explicitly.
+                     :Environment
+                      [(s "PATH=" pkgs.patchelf "/bin:/run/current-system/sw/bin")]
                      :ExecStart (s homeDir "/.local/bin/codex-runtime-gcroots")}
                    :Install {:WantedBy ["default.target"]}}}})}})}))

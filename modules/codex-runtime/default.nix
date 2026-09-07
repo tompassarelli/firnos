@@ -32,6 +32,7 @@
           };
           Service = {
             Type = "oneshot";
+            Environment = [ "PATH=${pkgs.patchelf}/bin:/run/current-system/sw/bin" ];
             ExecStart = "${homeDir}/.local/bin/codex-runtime-gcroots";
           };
           Install = {

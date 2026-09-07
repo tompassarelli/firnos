@@ -17,8 +17,8 @@ versions="${CODEX_RUNTIME_VERSIONS:-$HOME/.local/lib/codex/versions}"
   exit 0
 }
 
-command -v readelf >/dev/null 2>&1 || {
-  echo 'codex-runtime-gcroots: readelf is required' >&2
+command -v patchelf >/dev/null 2>&1 || {
+  echo 'codex-runtime-gcroots: patchelf is required' >&2
   exit 127
 }
 command -v nix-store >/dev/null 2>&1 || {
@@ -29,9 +29,8 @@ command -v nix-store >/dev/null 2>&1 || {
 # Interpreter plus every RUNPATH/RPATH entry, reduced to its store root.
 store_deps() {
   {
-    readelf -p .interp "$1" 2>/dev/null | grep -o '/nix/store/[^ ]*'
-    readelf -d "$1" 2>/dev/null | grep -iE 'runpath|rpath' \
-      | grep -o '\[.*\]' | tr -d '[]' | tr ':' '\n'
+    patchelf --print-interpreter "$1" 2>/dev/null
+    patchelf --print-rpath "$1" 2>/dev/null | tr ':' '\n'
   } | grep '^/nix/store/' | sed -E 's|^(/nix/store/[^/]+).*|\1|' | sort -u
 }
 
