@@ -66,7 +66,7 @@ def check(label, condition):
 
 
 NORTH = "/home/tom/code/north-v2/main"
-BEAGLE = "/home/tom/code/beagle/main"
+CLAUSE = "/home/tom/code/clause/main"
 
 print("--- must DENY: what actually happened on 2026-07-29 ---")
 
@@ -79,11 +79,11 @@ check("git add from inside the north-v2 primary",
 check("git commit from inside the north-v2 primary",
       run(bash("git commit -q -m 'x'", cwd=NORTH)))
 
-check("git reset --hard against the beagle primary via -C",
-      run(bash("git -C /home/tom/code/beagle/main reset --hard origin/main")))
+check("git reset --hard against the clause primary via -C",
+      run(bash("git -C /home/tom/code/clause/main reset --hard origin/main")))
 
-check("git add of many paths from inside the beagle primary",
-      run(bash("FILES=$(cat list); git add $FILES", cwd=BEAGLE)))
+check("git add of many paths from inside the clause primary",
+      run(bash("FILES=$(cat list); git add $FILES", cwd=CLAUSE)))
 
 check("git push from inside the primary",
       run(bash("git push origin main", cwd=NORTH)))
@@ -92,13 +92,13 @@ check("redirection into a primary file",
       run(bash("echo x > /home/tom/code/north-v2/main/cli/x.clj")))
 
 check("sed -i against a primary file",
-      run(bash("sed -i s/a/b/ /home/tom/code/beagle/main/bin/beagle")))
+      run(bash("sed -i s/a/b/ /home/tom/code/clause/main/bin/clause")))
 
 check("cp INTO a primary",
       run(bash("cp /tmp/x.clj /home/tom/code/north-v2/main/cli/x.clj")))
 
 check("rm inside a primary",
-      run(bash("rm /home/tom/code/beagle/main/bin/beagle")))
+      run(bash("rm /home/tom/code/clause/main/bin/clause")))
 
 check("cd into a primary then write, in one command",
       run(bash("cd /home/tom/code/north-v2/main && echo x > cli/x.clj")))
@@ -111,7 +111,7 @@ print("--- must ALLOW: reads, and the sanctioned way out ---")
 
 check("git log against a primary", run(bash("git -C /home/tom/code/north-v2/main log --oneline -1")) is None)
 check("git status against a primary", run(bash("git status --porcelain", cwd=NORTH)) is None)
-check("git diff against a primary", run(bash("git -C /home/tom/code/beagle/main diff --stat")) is None)
+check("git diff against a primary", run(bash("git -C /home/tom/code/clause/main diff --stat")) is None)
 check("grep inside a primary", run(bash("grep -rn foo cli/", cwd=NORTH)) is None)
 check("cat a primary file", run(bash("cat /home/tom/code/north-v2/main/cli/coord.clj")) is None)
 
@@ -149,13 +149,13 @@ check("fd duplication (2>&1) opens no file",
 check("a redirect inside a HEREDOC BODY is data, not shell syntax",
       run(bash("cat > /tmp/t.py <<'EOF'\ncheck('echo x > /home/tom/code/north-v2/main/cli/x.clj')\nEOF")) is None)
 check("sed -i inside a heredoc body is data, not a command",
-      run(bash("cat > /tmp/t.sh <<'EOF'\nsed -i s/a/b/ /home/tom/code/beagle/main/bin/beagle\nEOF")) is None)
+      run(bash("cat > /tmp/t.sh <<'EOF'\nsed -i s/a/b/ /home/tom/code/clause/main/bin/clause\nEOF")) is None)
 
 # ...while the real forms are still refused.
 check("a REAL redirect into a primary is still denied",
       run(bash("echo x > /home/tom/code/north-v2/main/cli/zz.clj")))
 check("a REAL sed -i on a primary is still denied",
-      run(bash("sed -i s/a/b/ /home/tom/code/beagle/main/bin/beagle")))
+      run(bash("sed -i s/a/b/ /home/tom/code/clause/main/bin/clause")))
 
 check("redirect to /tmp while cwd is a primary is fine",
       run(bash("grep foo cli/x.clj > /tmp/out", cwd=NORTH)) is None)
@@ -499,7 +499,7 @@ check("reset --hard INSIDE a lane is the lane's own business",
 check("stash inside a lane is fine",
       run(bash("git -C /home/tom/code/north/worktrees/abc stash")) is None)
 check("clean -fd inside a lane is fine",
-      run(bash("git clean -fd", cwd="/home/tom/code/beagle/worktrees/abc")) is None)
+      run(bash("git clean -fd", cwd="/home/tom/code/clause/worktrees/abc")) is None)
 
 print("--- the landing flow must still run from main ---")
 
@@ -526,7 +526,7 @@ print("--- apply_patch envelopes: every header form ---")
 
 add_main = ENV.format(verb="Add", path=f"{NORTH}/cli/x.clj", body="+x\n")
 update_relative = ENV.format(verb="Update", path="cli/x.clj", body="@@\n-a\n+b\n")
-delete_beagle = ENV.format(verb="Delete", path=f"{BEAGLE}/x.rkt", body="")
+delete_clause = ENV.format(verb="Delete", path=f"{CLAUSE}/x.rkt", body="")
 move_main = ENV.format(
     verb="Update", path="/home/tom/code/north/worktrees/abc/a.clj",
     body=f"*** Move to: {NORTH}/a.clj\n@@\n-a\n+b\n")
@@ -538,7 +538,7 @@ tmp_add = ENV.format(verb="Add", path="/tmp/x.txt", body="+x\n")
 check("Add File with an absolute primary target is denied", run(patch(add_main)))
 check("Update File resolves a relative target against cwd",
       run(patch(update_relative, cwd=NORTH)))
-check("Delete File into beagle's primary is denied", run(patch(delete_beagle)))
+check("Delete File into clause's primary is denied", run(patch(delete_clause)))
 check("Move to destination alone trips primary protection", run(patch(move_main)))
 check("Update and Move to within a lane are allowed",
       run(patch(move_lane)) is None)

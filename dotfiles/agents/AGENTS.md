@@ -59,13 +59,13 @@ Source authority selects the language and typed authoring profile for owned
 semantics; runtime and backend select where and how the result executes. Do not
 use a target runtime or backend to bypass its source authority.
 
-For Tom-owned greenfield work and new project domain semantics, use the
-applicable typed Beagle profile: `.bclj` with `#lang beagle/clj` for JVM and
-Clojure, `.bjs` for JavaScript and Bun, and `.bnix` for Nix, as the live
-compiler confirms. Host-language source is allowed only as generated output or
-at an explicitly named irreducible bootstrap, operating-system, or foreign
-system boundary. A missing compiler capability requires an upstream Beagle
-repair and blocks host-language fallback.
+For Tom-owned greenfield work and new project domain semantics, resolve the
+project's source-owned typed language declaration and immutable compiler pin
+before authoring. Use that pin's current authoring guidance and source checker.
+Host-language source is allowed only as generated output or at an explicitly
+named irreducible bootstrap, operating-system, or foreign system boundary.
+Repair missing compiler capability at its upstream owner; it blocks
+host-language fallback.
 
 Do not infer a conversion mandate for externally owned source or existing
 non-greenfield implementations. Convert those only when the requested outcome

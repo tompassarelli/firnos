@@ -12,7 +12,7 @@ bash -n "$checker"
 # shellcheck source=agent-config-check.sh
 source "$checker"
 
-[ "$(codex_managed_policy_binding_count "$requirements")" = 10 ]
+[ "$(codex_managed_policy_binding_count "$requirements")" = 9 ]
 grep -Fq '[mcp_servers.linear-mcp-msa-new]' "$config"
 if grep -Fq '[mcp_servers.north]' "$config"; then
   printf 'retired North MCP declaration remains\n' >&2
@@ -61,7 +61,6 @@ PY
 
 for adapter in \
   lib/north-agent-activation.sh \
-  beagle-session-start.sh \
   firn-system-policy \
   concrete-model-identity-guard.sh \
   launch-critical-worktree-guard.sh \

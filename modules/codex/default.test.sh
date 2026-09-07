@@ -86,7 +86,6 @@ fi
 
 for adapter in \
   lib/north-agent-activation.sh \
-  beagle-session-start.sh \
   firn-system-policy \
   concrete-model-identity-guard.sh \
   launch-critical-worktree-guard.sh \

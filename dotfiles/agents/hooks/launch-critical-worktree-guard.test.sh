@@ -47,14 +47,14 @@ check() { # check <expect deny|allow> <path> <why>
 
 # --- 1. primaries are denied -------------------------------------------------
 check deny "$HOME/code/north-v2/main/cli/dashboard-cli.clj" "north-v2 primary"
-check deny "$HOME/code/beagle/main/bin/beagle-build"     "beagle primary"
+check deny "$HOME/code/clause/main/bin/clause-build"     "clause primary"
 check deny "$HOME/code/nixos-config/main/flake.nix"      "nixos-config primary"
-check deny "$HOME/code/beagle/main"                      "the checkout root itself, not only files under it"
+check deny "$HOME/code/clause/main"                      "the checkout root itself, not only files under it"
 
 # --- 2. the sanctioned destinations are NOT denied ---------------------------
-check allow "$HOME/code/beagle/worktrees/topic/server.rkt"     "a lane is where agents are TOLD to work"
+check allow "$HOME/code/clause/worktrees/topic/server.rkt"     "a lane is where agents are TOLD to work"
 check allow "/tmp/north-lane-abc123/cli/x.clj"                 "managed lane worktree"
-check allow "/tmp/beagle-store-indexed-show-lane/bin/beagle-store-cli.clj"    "ad-hoc lane worktree"
+check allow "/tmp/clause-store-indexed-show-lane/bin/clause-store-cli.clj"    "ad-hoc lane worktree"
 
 # T4 — the pre-filter gate. This payload contains NO literal `main` and names no
 # launch-critical container, so without `*pins*` in the cheap bash pre-filter the
@@ -67,13 +67,13 @@ check deny "$HOME/code/gjoa/pins/0123456789abcdef0123456789abcdef01234567/index.
 
 # --- 2b. gitignored paths are exempt ----------------------------------------
 # A gitignored file can never make the tree tracked-dirty, so it cannot cause
-# either failure this guard prevents (a runtime reading a dirty Beagle Store checkout,
+# either failure this guard prevents (a runtime reading a dirty compiler checkout,
 # or a rebuild publishing only committed state). Blocking them bought
 # nothing and stopped agents writing ignored local output.
 check allow "$HOME/code/north-v2/main/target/debug/local-note.txt" \
   "North-v2 target output is gitignored and cannot dirty the tree"
-check allow "$HOME/code/beagle/main/docs/private/scratch.md" \
-  "same exemption in beagle"
+check allow "$HOME/code/clause/main/target/debug/scratch.md" \
+  "same exemption in clause"
 
 # ...but a TRACKED file in the same repo is still denied.
 check deny "$HOME/code/north-v2/main/cli/trace-cli.clj" \
@@ -365,8 +365,8 @@ printf 'not json at all' | AGENT_NO_AUTHORING_HOOKS=0 "$HOOK" >/dev/null 2>&1 \
 
 # --- 5. kill-switch ----------------------------------------------------------
 # The path must be one the guard WOULD deny, or the case passes for the wrong
-# reason: `~/code/beagle/x.rkt` is the container root and is not protected.
-out="$(printf '{"tool_input":{"file_path":"%s"}}' "$HOME/code/beagle/main/x.rkt" \
+# reason: `~/code/clause/x.rkt` is the container root and is not protected.
+out="$(printf '{"tool_input":{"file_path":"%s"}}' "$HOME/code/clause/main/x.rkt" \
        | AGENT_NO_AUTHORING_HOOKS=1 "$HOOK" 2>/dev/null)"
 if [ -z "$out" ]; then pass=$((pass + 1)); else
   fail=$((fail + 1)); echo "FAIL  AGENT_NO_AUTHORING_HOOKS=1 must disable the guard" >&2

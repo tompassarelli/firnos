@@ -44,7 +44,7 @@ The launch-critical worktree guard refuses writes to protected `main/`
 checkouts and pins, including writes attempted through shell commands. A dirty
 `main/` is human work-in-progress: never commit, stash, reset, or clean it.
 
-`fram`, `north-v2`, and `beagle` are launch-critical. Their primary checkouts
+`fram`, `north-v2`, and `clause` are launch-critical. Their primary checkouts
 are production inputs, so agents always edit them in a worktree lane.
-Uncommitted North-v2, Beagle, or NixOS changes are absent from promoted runtime
+Uncommitted North-v2, Clause, or NixOS changes are absent from promoted runtime
 or commit-snapshot rebuilds.

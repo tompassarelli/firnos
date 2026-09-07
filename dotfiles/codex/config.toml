@@ -29,7 +29,7 @@ trust_level = "trusted"
 [projects."/tmp"]
 trust_level = "trusted"
 
-[projects."/home/tom/code/beagle"]
+[projects."/home/tom/code/clause"]
 trust_level = "trusted"
 
 [tui.model_availability_nux]

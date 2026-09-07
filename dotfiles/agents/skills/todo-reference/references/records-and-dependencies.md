@@ -25,8 +25,8 @@ conversation_ids = ["codex:019ffd07-c27b-7943-8a66-553dff2ae98b"]
 coordination = ["agent-coord.md#C007"]
 
 [[lane]]
-repo = "beagle"
-worktree = "~/code/beagle/worktrees/store-proposition-boundary"
+repo = "clause"
+worktree = "~/code/clause/worktrees/store-proposition-boundary"
 branch = "store-proposition-boundary"
 owner = "codex:/root"
 state = "active"

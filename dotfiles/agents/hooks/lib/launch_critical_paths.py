@@ -39,9 +39,9 @@ LAUNCH_CRITICAL = {
         "north-v2 is launch-critical: its promoted binary is the normal `north`"
         " command, so uncommitted work here is absent from the operator runtime."
     ),
-    "beagle": (
-        "beagle is launch-critical: it compiles nixos-config, and a"
-        " half-edited checkout breaks builds for every other lane at once."
+    "clause": (
+        "clause is launch-critical: its immutable compiler pins compile"
+        " nixos-config. Edit a worktree and repin consumers after verification."
     ),
     "nixos-config": (
         "nixos-config is launch-critical: it is the system source and `firn"

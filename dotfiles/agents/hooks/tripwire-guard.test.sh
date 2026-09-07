@@ -29,7 +29,7 @@ NOREPO_CWD="$FH/notrepo"           # cwd with no enclosing git repo
 # $HOME or the temp hierarchy — the unclassifiable tier.
 UNCLASSIFIED=/nix/var
 mkdir -p "$FH"/{Pictures/Screenshots,Documents} "$FH/.cache/thumbnails" \
-  "$FH/.cache/beagle/build-core" "$FH/notrepo/stuff" \
+  "$FH/.cache/clause/build-core" "$FH/notrepo/stuff" \
   "$FH/code/north-data/accounts" "$FH/.local/state/north/graph" \
   "$MAIN_CO" "$OTHER_WT/src" "$REPO_CWD" "$PIN/src"
 mkdir -p "$FH/Documents/notes"
@@ -188,7 +188,7 @@ runm default deny 'main/ checkout stays hard (default mode)' "rm -rf $MAIN_CO/re
 
 echo "== class 1d: recoverable — allowed without friction =="
 run allow 'the thumbnails cache regenerates itself' 'rm -rf ~/.cache/thumbnails/*'
-run allow 'a build cache under ~/.cache' 'rm -rf ~/.cache/beagle/build-core'
+run allow 'a build cache under ~/.cache' 'rm -rf ~/.cache/clause/build-core'
 run allow 'rm -rf in scratchpad /tmp/claude-*' 'rm -rf /tmp/claude-1000/x/scratchpad/build'
 run allow 'rm -rf under /tmp' 'rm -rf /tmp/build-cache'
 run allow 'gitignored dir inside this lane' 'rm -rf ./node_modules'
@@ -336,7 +336,7 @@ run allow 'chown -R tom' 'chown -R tom:users /tmp/claude-x'
 echo "== estate hot paths (must never trip) =="
 run allow 'firn build + validate' 'firn build && firn validate'
 run allow 'north-v2 checkout reads' '~/code/north-v2/main/target/release/north --help && git -C ~/code/north-v2/main status --short'
-run allow 'beagle build' 'cd ~/code/beagle && source bin/_beagle-racket && "$RACO" make src/main.rkt'
+run allow 'clause build' 'cd ~/code/clause/main && cargo build'
 run allow 'nix build' 'nix build --no-link .#default'
 run allow 'plain ls' 'ls -la'
 

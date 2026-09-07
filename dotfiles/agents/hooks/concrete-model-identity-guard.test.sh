@@ -139,7 +139,7 @@ run_case deny 'calibration table model placeholder' \
 run_case allow 'calibration completed-table current-source prose' \
   "$(payload Edit "$TODO/estimate-calibration.md" '| 2026-01-01 | fixture | 1m | 1m | 1.00x | current-source generation is valid prose |')"
 run_case allow 'calibration completed-table current prose' \
-  "$(payload Edit "$TODO/estimate-calibration.md" '| 2026-01-01 | fixture | 1m | 1m | 1.00x | current Beagle behavior is valid prose |')"
+  "$(payload Edit "$TODO/estimate-calibration.md" '| 2026-01-01 | fixture | 1m | 1m | 1.00x | current Clause behavior is valid prose |')"
 run_case deny 'calibration named model column placeholder' \
   "$(payload Write "$TODO/estimate-calibration.md" '| Attempt | Model | Outcome |
 | --- | --- | --- |

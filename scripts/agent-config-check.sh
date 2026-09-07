@@ -41,9 +41,6 @@ enabled = {
     "features": {"hooks": True},
     "hooks": {
         "managed_dir": "/etc/codex/hooks",
-        "SessionStart": [{
-            "hooks": [command("beagle-session-start.sh", 30)],
-        }],
         "PreToolUse": [
             {
                 "hooks": [command("firn-system-policy", 10, False)],
@@ -141,7 +138,6 @@ if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
 fi
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BEAGLE_INTEGRATION="${AGENT_CONFIG_BEAGLE_INTEGRATION:-$HOME/code/beagle/main/integrations/north}"
 FIRN_INTEGRATION="$REPO/modules/north-profile/firn"
 CODEX="$REPO/dotfiles/codex"
 LIVE_AGENT_ROOT="${NORTH_AGENT_STATE_ROOT:-$HOME/.local/state/north/agents}"
@@ -241,7 +237,6 @@ hook_count=0
 if command -v shellcheck >/dev/null 2>&1; then
   for hook_root in \
     "$LIVE_AGENT_ROOT/current/provider-hooks" \
-    "$BEAGLE_INTEGRATION/hooks" \
     "$FIRN_INTEGRATION/hooks"; do
     if [ ! -d "$hook_root" ]; then
       if [ "$LOCAL" -eq 1 ]; then
@@ -263,7 +258,6 @@ skill_count=0
 for skill_root in \
   "$REPO/dotfiles/agents/skills" \
   "$LIVE_AGENT_ROOT/current/skills/shared" \
-  "$BEAGLE_INTEGRATION/skills" \
   "$FIRN_INTEGRATION/skills"; do
   if [ ! -d "$skill_root" ]; then
     if [ "$LOCAL" -eq 1 ]; then
@@ -329,8 +323,8 @@ validate_codex_managed_policy() {
   CODEX_MANAGED_BINDINGS="$(
     codex_managed_policy_binding_count "$CODEX_REQUIREMENTS" 2>/dev/null
   )" || CODEX_MANAGED_BINDINGS=''
-  if [ "$CODEX_MANAGED_BINDINGS" = 10 ]; then
-    ok_detail 'Codex managed-only, fail-closed, remote-control-disabled policy is the exact 10-binding authoritative contract'
+  if [ "$CODEX_MANAGED_BINDINGS" = 9 ]; then
+    ok_detail 'Codex managed-only, fail-closed, remote-control-disabled policy is the exact 9-binding authoritative contract'
   elif [ "$CODEX_MANAGED_BINDINGS" = 0 ]; then
     ok_detail 'Codex managed hooks are authoritatively disabled; remote control remains disabled'
   else
@@ -341,7 +335,6 @@ validate_codex_managed_policy() {
   local live resolved adapter expected_adapter
   local -a provider_adapters=(
     lib/north-agent-activation.sh
-    beagle-session-start.sh
     firn-system-policy
     concrete-model-identity-guard.sh
     launch-critical-worktree-guard.sh

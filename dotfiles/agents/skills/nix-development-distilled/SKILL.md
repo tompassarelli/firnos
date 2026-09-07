@@ -10,8 +10,9 @@ Use the project's existing manifests, flake, lock file, build commands, and
 supported platforms as authority. Route NixOS machine configuration to
 `firn-distilled`; a project package or shell grants no system-closure access.
 
-Follow source-language policy: new Tom-owned Nix semantics use Beagle/Nix;
-existing plain Nix is not automatically a migration task. Keep credentials,
+Follow the project's typed source declaration and immutable compiler pin for
+new Tom-owned Nix semantics. Existing plain Nix is not automatically a migration
+task. Keep credentials,
 unrequested caches, and global settings out of the change.
 
 Declare only consumed outputs: a development shell, package, app, check, or

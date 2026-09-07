@@ -19,11 +19,10 @@ beagle/store/tests/codegraph_exec_test.sh	1
 beagle/store/tests/store_anchor_disambig_test.clj	1
 nixos-config/dotfiles/agents/hooks/concrete-model-identity-guard.test.sh	1
 nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.py	55
-nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.sh	13
+nixos-config/dotfiles/agents/hooks/launch-critical-worktree-guard.test.sh	7
 nixos-config/dotfiles/agents/hooks/tripwire-guard.test.sh	1
 nixos-config/dotfiles/bin/beagle	1
 nixos-config/dotfiles/codex/config.toml	4
 nixos-config/dotfiles/niri/config.kdl	7
 nixos-config/modules/beagle/default.bnix	1
 nixos-config/modules/theme-switcher/default.bnix	1
-nixos-config/scripts/agent-config-check.sh	1

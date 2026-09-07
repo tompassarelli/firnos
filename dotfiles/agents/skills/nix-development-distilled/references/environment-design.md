@@ -13,12 +13,11 @@ project flake, not the finished workflow.
 - Keep project development outside the NixOS system closure. A project flake,
   package, or dev shell does not authorize adding the project or its toolchain
   to host configuration. Route machine configuration to `firn-distilled`.
-- Follow source authority. In Tom-owned greenfield Nix work, author
-  `#lang beagle/nix` `.bnix` and commit its generated `.nix` sibling; preserve
-  existing plain Nix in externally owned or non-greenfield projects unless a
-  migration is explicitly requested. Use `beagle-authoring-distilled` for
-  `.bnix` work and repair missing Beagle capability upstream rather than
-  hand-editing the generated Nix.
+- Follow the project's source-owned typed language declaration and immutable
+  compiler pin for new semantics. Preserve existing plain Nix in externally
+  owned or non-greenfield projects unless migration is explicitly requested.
+  Use the declared compiler's authoring guidance and source checker; repair
+  missing capability upstream instead of hand-editing generated Nix.
 - Never put credentials in a flake, lock file, shell hook, substituter URL, or
   command. Do not add caches, trusted keys, or global Nix settings without a
   named consumer and separate authority.

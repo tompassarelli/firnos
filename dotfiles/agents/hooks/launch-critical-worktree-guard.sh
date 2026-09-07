@@ -85,7 +85,7 @@ if [ -z "${LAUNCH_CRITICAL_CODE_ROOT:-}" ]; then
         *) exit 0 ;;
       esac
       case "$payload" in
-        *main*|*pins*|*/code/north*|*/code/beagle*|*/code/nixos-config*|*CARGO_TARGET_DIR*|*--target-dir*) ;;
+        *main*|*pins*|*/code/north*|*/code/clause*|*/code/nixos-config*|*CARGO_TARGET_DIR*|*--target-dir*) ;;
         *) exit 0 ;;
       esac
       ;;
@@ -117,8 +117,8 @@ decision="$(printf '%s' "$payload" | python3 "$(dirname "$0")/lib/launch_critica
 #
 # The exemption does NOT transfer to a pin. Its argument is a main-checkout
 # argument ("cannot dirty the tree"); a pin is protected because a consumer
-# reads the tree at that path, and both live pins are full of ignored `.beagle/`
-# build artifacts that a consumer's build depends on. Tested on the raw payload,
+# reads the tree at that path, and pins can contain ignored
+# build artifacts that a consumer depends on. Tested on the raw payload,
 # BEFORE the extraction fork: over-matching here only ever means the python deny
 # stands, which is the safe direction, and it keeps a pin deny cheaper than a
 # main deny rather than more expensive.
