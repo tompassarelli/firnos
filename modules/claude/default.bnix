@@ -6,11 +6,11 @@
   (let [username config.myConfig.modules.users.username]
     {:tags-opt-in [development]
 
-     :options.myConfig.modules.claude-code.enable
+     :options.myConfig.modules.claude.enable
       (lib.mkEnableOption "Claude Code fallback coding agent")
 
      :config
-      (lib.mkIf config.myConfig.modules.claude-code.enable
+      (lib.mkIf config.myConfig.modules.claude.enable
         {:environment.systemPackages
           [pkgs.claude-code]
 
