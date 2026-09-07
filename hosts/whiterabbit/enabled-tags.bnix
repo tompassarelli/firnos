@@ -12,7 +12,7 @@
    [desktop -mako +river]
    theming
    auth
-   [development -beagle]
+   [development -beagle +claude]
    javascript
    python
    [database -postgresql]

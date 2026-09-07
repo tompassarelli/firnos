@@ -1,0 +1,25 @@
+#lang beagle/nix
+
+(ns default)
+
+(nix/module [config lib pkgs ...]
+  (let [username config.myConfig.modules.users.username]
+    {:tags-opt-in [development]
+
+     :options.myConfig.modules.claude-code.enable
+      (lib.mkEnableOption "Claude Code fallback coding agent")
+
+     :config
+      (lib.mkIf config.myConfig.modules.claude-code.enable
+        {:environment.systemPackages
+          [pkgs.claude-code]
+
+         :home-manager.users
+          {username
+           (nix/module [config ...]
+             {:home.file
+              {".claude/CLAUDE.md"
+               {:source
+                (config.lib.file.mkOutOfStoreSymlink
+                  (s config.home.homeDirectory
+                     "/.local/state/north/agents/current/instructions/shared/AGENTS.md"))}}})}})}))
