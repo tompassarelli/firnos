@@ -33,8 +33,14 @@ other than `Sequence<Text>` rejects at the foreign boundary. btop and jq retain
 Clause source is an error. Modules without this metadata file continue to use
 their existing Beagle source. Shared declaration files are not module entries.
 
-Set `FIRN_CLAUSE_WORKBENCH` to the executable built from
-`nixos-config:config/clause-revision` before tag, inventory, and build commands.
+Run `firn-runtime-update` after changing `nixos-config:config/clause-revision`.
+It builds that exact revision from `~/code/clause/main` (or the explicitly
+selected `FIRN_CLAUSE_REPO`) into the out-of-store user runtime and binds it
+automatically for tag, inventory, and build commands. The launchers reject
+a checkout whose declared revision differs from the installed runtime.
+No `FIRN_CLAUSE_WORKBENCH` setting is needed; an explicit setting must identify
+the same produced executable. The compiler's shared libraries are retained
+by user runtime GC roots without adding the compiler to the system closure.
 The build driver
 discovers the selected source, compiles it to the existing
 `nixos-config:modules/<name>/default.nix`, and retains the flake's ordinary

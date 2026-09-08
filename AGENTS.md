@@ -16,12 +16,13 @@ Selected Clause modules instead use `nixos-config:modules/<name>/tags.clause`
 for tag membership and `nixos-config:native/nix/<name>.clause` for the module.
 The metadata file explicitly selects Clause and cannot coexist with
 `nixos-config:modules/<name>/default.bnix`. Compile its `<name>-module` export
-through `firn repo build`, using `FIRN_CLAUSE_WORKBENCH` built from
+through `firn repo build`, using the runtime's compiler built from
 `nixos-config:config/clause-revision`; the generated output remains
 `nixos-config:modules/<name>/default.nix`. Shared declarations remain Clause
 source. See `nixos-config:native/nix/README.md` for the focused check.
 The metadata exports `tags(): Sequence<Text>`; the resolver compiles and calls
-that checked source with the same pinned `FIRN_CLAUSE_WORKBENCH`. It does not
+that checked source with the same pinned compiler. `firn-runtime-update`
+produces and binds that compiler for tag, inventory, and build commands. It does not
 parse Clause text or read the generated Nix for tags.
 
 Beagle lives at `~/code/beagle/main`. Override `BEAGLE_PATH` only for an

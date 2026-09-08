@@ -4,6 +4,7 @@ set -euo pipefail
 firn_repo="${FIRN_REPO:-$HOME/code/nixos-config/main}" # hardcoded-repo-path:allow
 beagle_path="${BEAGLE_PATH:-$HOME/code/beagle/main}" # hardcoded-repo-path:allow
 beagle="$beagle_path/bin/beagle"
+clause_path="${FIRN_CLAUSE_REPO:-$HOME/code/clause/main}" # hardcoded-repo-path:allow
 runtime_root="${FIRN_RUNTIME_ROOT:-$HOME/.local/lib/firn/cli}"
 versions="$runtime_root/versions"
 next=""
@@ -26,13 +27,20 @@ if [[ ! -x "$beagle" ]]; then
     "$beagle_path" >&2
   exit 1
 fi
-for prerequisite in cmp find git readlink sha256sum; do
+for prerequisite in cmp find git ldd nix nix-store readlink sha256sum tar; do
   if ! command -v "$prerequisite" >/dev/null 2>&1; then
     printf 'firn-runtime-update: required producer command is unavailable: %s\n' \
       "$prerequisite" >&2
     exit 127
   fi
 done
+clause_revision="$(cat "$firn_repo/config/clause-revision")"
+if [[ ! "$clause_revision" =~ ^[0-9a-f]{40}$ ]] ||
+   [[ "$(git -C "$clause_path" rev-parse --verify "$clause_revision^{commit}")" != "$clause_revision" ]]; then
+  printf 'firn-runtime-update: declared Clause revision is unavailable: %s\n' \
+    "$clause_revision" >&2
+  exit 1
+fi
 bun_candidate="${FIRN_BUN:-}"
 if [[ -z "$bun_candidate" && -x "$runtime_root/current/bin/bun" ]]; then
   bun_candidate="$runtime_root/current/bin/bun"
@@ -239,10 +247,11 @@ mkdir -p "$stage/bin" "$stage/lib" "$stage/artifacts" \
 
 manifest="$stage/manifest"
 {
-  printf 'format=firn-cli-runtime/v3\n'
+  printf 'format=firn-cli-runtime/v4\n'
   printf 'scope=%s\n' "$scope"
   printf 'firn_revision=%s\n' "$firn_revision"
   printf 'beagle_revision=%s\n' "$beagle_revision"
+  printf 'clause_revision=%s\n' "$clause_revision"
   printf 'bun_store_path=%s\n' "${bun_store_path:-copied}"
 } >"$manifest"
 
@@ -275,6 +284,42 @@ record_generated_artifact() {
   artifact_paths+=("$relative")
   printf 'artifact=%s path=%s artifact_sha256=%s\n' \
     "$component" "$relative" "$artifact_id" >>"$manifest"
+}
+
+materialize_clause() {
+  local source="$stage/.clause-build"
+  local dependencies
+  local dependency
+  local store_relative
+  local store_path
+
+  mkdir -p "$source"
+  git -C "$clause_path" archive "$clause_revision" | tar -x -C "$source"
+  nix develop "path:$source" --command cargo build --locked \
+    --manifest-path "$source/Cargo.toml" --target-dir "$source/target" \
+    -p clause-workbench
+  cp -- "$source/target/debug/clause-workbench" "$stage/bin/clause-workbench"
+  printf '%s\n' "$clause_revision" >"$stage/clause-revision"
+  record_generated_artifact clause-workbench bin/clause-workbench
+  record_artifact clause-revision clause-revision "$firn_repo/config/clause-revision"
+  binaries+=(clause-workbench)
+
+  dependencies="$(ldd "$stage/bin/clause-workbench")"
+  if [[ "$dependencies" == *'not found'* ]]; then
+    printf 'firn-runtime-update: Clause runtime dependencies are unavailable\n%s\n' \
+      "$dependencies" >&2
+    exit 1
+  fi
+  while IFS= read -r dependency; do
+    store_relative="${dependency#/nix/store/}"
+    store_path="/nix/store/${store_relative%%/*}"
+    clause_store_paths["$store_path"]=1
+  done < <(printf '%s\n' "$dependencies" | \
+    awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^\/nix\/store\//) print $i }')
+  for store_path in "${!clause_store_paths[@]}"; do
+    printf 'clause_runtime_dependency=%s\n' "$store_path"
+  done | sort >>"$manifest"
+  rm -rf -- "${source:?}"
 }
 
 materialize_dispatcher() {
@@ -342,6 +387,25 @@ materialize_js() {
 #!/usr/bin/env bash
 set -euo pipefail
 here="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+EOF
+  case "$component" in
+    tag|inventory|repo-build)
+      cat >>"$launcher" <<'EOF'
+repo="${FIRN_REPO:-$HOME/code/nixos-config/main}" # hardcoded-repo-path:allow
+if ! cmp -s "$repo/config/clause-revision" "$here/../clause-revision"; then
+  printf 'firn: this checkout needs an updated user runtime; run firn-runtime-update\n' >&2
+  exit 1
+fi
+if [[ -n "${FIRN_CLAUSE_WORKBENCH:-}" ]] &&
+   ! cmp -s "$FIRN_CLAUSE_WORKBENCH" "$here/clause-workbench"; then
+  printf 'firn: the supplied compiler does not match the installed runtime\n' >&2
+  exit 1
+fi
+export FIRN_CLAUSE_WORKBENCH="$here/clause-workbench"
+EOF
+      ;;
+  esac
+  cat >>"$launcher" <<EOF
 exec env $module_environment="\$here/../lib/$component/$module_relative" \
   "\$here/bun" "\$here/../lib/$component/host.mjs" "\$@"
 EOF
@@ -363,6 +427,8 @@ else
   chmod +x "$stage/bin/bun"
 fi
 record_artifact bun bin/bun "$bun_source"
+declare -A clause_store_paths=()
+materialize_clause
 materialize_dispatcher
 case "$scope" in
   repo)
@@ -459,6 +525,12 @@ if [[ -n "$bun_store_path" ]]; then
     exit 1
   fi
 fi
+
+mkdir -p "$destination/.clause-gcroots"
+for store_path in "${!clause_store_paths[@]}"; do
+  nix-store --add-root "$destination/.clause-gcroots/${store_path##*/}" \
+    --indirect --realise "$store_path" >/dev/null
+done
 
 next="$runtime_root/.current.$$"
 ln -s "versions/$bundle_id" "$next"
