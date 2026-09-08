@@ -22,18 +22,18 @@ foreign when-enabled<Body: Record>(?condition: Delayed<nix,Bool>, ?body: Body): 
   from: "lib"
   failure: throw
 
-foreign configured(?path: static FieldPath): Bool
+foreign configured(?path: FieldPath): Bool
   construction: "nix"
   get: ?path
   from: "config"
   failure: throw
 
-foreign package(?path: static FieldPath): Package
+foreign package(?path: FieldPath): Package
   construction: "nix"
   get: ?path
   from: "pkgs"
   failure: throw
 
-export module(?enable: static FieldPath, ?description: Text, ?package: Delayed<nix,Package>)
+export module(?enable: FieldPath, ?description: Text, ?package: Delayed<nix,Package>)
   {options: record-at(?enable, enable-option(?description)),
    config: when-enabled(configured(?enable), {environment: {systemPackages: [?package]}})}
