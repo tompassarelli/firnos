@@ -10,10 +10,13 @@ trap cleanup EXIT
 candidate_beagle="${BEAGLE_PATH:?set BEAGLE_PATH to the exact Beagle candidate}"
 bash_path="$(command -v bash)"
 producer_bun="${FIRN_BUN:-$HOME/.local/lib/firn/cli/current/bin/bun}"
+clause_repo="${FIRN_CLAUSE_REPO:-$HOME/code/clause/main}" # hardcoded-repo-path:allow
+real_git="$(command -v git)"
 [[ -x "$producer_bun" ]]
 real_runtime="$scratch/real-runtime"
 PATH="$(dirname "$producer_bun"):$PATH" \
   FIRN_REPO="$source_repo" BEAGLE_PATH="$candidate_beagle" \
+  FIRN_CLAUSE_REPO="$clause_repo" \
   FIRN_RUNTIME_ROOT="$real_runtime" \
   "$here/firn-runtime-update" >"$scratch/real-update.out"
 FIRN_REPO="$source_repo" BEAGLE_PATH="$candidate_beagle" \
@@ -28,7 +31,10 @@ runtime_root="$scratch/runtime"
 fake_bin="$scratch/bin"
 mkdir -p "$home" "$beagle_path/bin" "$firn_repo/native" "$fake_bin"
 cp -- "$source_repo"/native/*.bjs "$source_repo"/native/*.mjs \
+  "$source_repo/native/firn.clause" \
   "$firn_repo/native/"
+mkdir -p "$firn_repo/config"
+cp -- "$source_repo/config/clause-revision" "$firn_repo/config/clause-revision"
 mkdir -p \
   "$beagle_path/native-core/src/beagle" \
   "$beagle_path/native-core/src/native" \
@@ -50,23 +56,12 @@ printf 'export const fixture = true;\n' \
 printf 'export const fixtureHost = true;\n' \
   >"$beagle_path/beagle-lib/lib/beagle/host.js"
 
-cat >"$beagle_path/bin/beagle-build" <<'EOF'
+cat >"$beagle_path/bin/beagle" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 printf '%s\0' "$@" >>"$FAKE_BEAGLE_LOG"
-output="$2"
-mkdir -p "$(dirname "$output")"
-cat >"$output" <<'JS'
-export function run(bridge, args) {
-  const argv = Array.isArray(args) ? args : [];
-  const family = argv[0] === 'repo' && argv[1] === 'validate'
-    ? 'firn-schema' : 'firn-tag';
-  return bridge.executeRuntime(family, argv);
-}
-JS
 EOF
-chmod +x "$beagle_path/bin/beagle-build"
-ln -s beagle-build "$beagle_path/bin/beagle"
+chmod +x "$beagle_path/bin/beagle"
 
 cat >"$beagle_path/bin/beagle-build-all" <<'EOF'
 #!/usr/bin/env bash
@@ -110,20 +105,32 @@ chmod +x "$beagle_path/bin/beagle-build-all"
 cat >"$fake_bin/git" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "\${1:-}" == -C && "\${3:-}" == rev-parse && "\${4:-}" == HEAD ]]
+[[ "\${1:-}" == -C ]]
 case "\$2" in
   "$firn_repo") printf '1111111111111111111111111111111111111111\\n' ;;
   "$beagle_path") printf '2222222222222222222222222222222222222222\\n' ;;
+  "$clause_repo") exec "$real_git" "\$@" ;;
   *) exit 1 ;;
 esac
 EOF
 chmod +x "$fake_bin/git"
+cat >"$fake_bin/nix" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "\${1:-}" == develop && "\${4:-}" == cargo && "\${5:-}" == build ]]
+while [[ "\$#" -gt 0 && "\$1" != --target-dir ]]; do shift; done
+[[ "\$#" -ge 2 ]]
+mkdir -p "\$2/debug"
+cp -- "$real_runtime/current/bin/clause-workbench" "\$2/debug/clause-workbench"
+EOF
+chmod +x "$fake_bin/nix"
 ln -s "$producer_bun" "$fake_bin/bun"
 
 export HOME="$home"
 export PATH="$fake_bin:$PATH"
 export BEAGLE_PATH="$beagle_path"
 export FIRN_REPO="$firn_repo"
+export FIRN_CLAUSE_REPO="$clause_repo"
 export FIRN_RUNTIME_ROOT="$runtime_root"
 export FAKE_BEAGLE_LOG="$scratch/beagle.log"
 

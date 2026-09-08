@@ -36,16 +36,16 @@ die() {
   exit 1
 }
 
+"$repo/native/firn_dispatch.test.sh"
+
 json="$beagle/native-core/src/native/json.bjs"
 quality="$repo/native/repo_quality.bjs"
-dispatcher="$repo/native/firn.bjs"
-dispatcher_test="$repo/native/firn_dispatch_test.bjs"
 workflows="$repo/native/repo_workflows.bjs"
 runtime="$repo/native/repo_workflows_runtime.bjs"
 pin_ancestry_test="$repo/native/repo_pin_ancestry_test.bjs"
 mkdir -p "$scratch/modules/node_modules/beagle"
 timeout --foreground 90 "$beagle/bin/beagle-build-all" \
-  "$json" "$quality" "$dispatcher" "$dispatcher_test" \
+  "$json" "$quality" \
   "$workflows" "$runtime" "$pin_ancestry_test" \
   --out "$scratch/modules" \
   >"$scratch/build.out" 2>"$scratch/build.err" || {
@@ -59,7 +59,7 @@ cp -- "$beagle/beagle-lib/lib/beagle/host.js" \
 printf '%s\n' '{"type":"module"}' \
   >"$scratch/modules/node_modules/beagle/package.json"
 
-for test_module in firn/dispatch-test.js firn/repo-pin-ancestry-test.js; do
+for test_module in firn/repo-pin-ancestry-test.js; do
   FIRN_TEST_MODULE="$scratch/modules/$test_module" \
     bun -e \
       'const m = await import(process.env.FIRN_TEST_MODULE); process.exitCode = m["run-tests"]();'

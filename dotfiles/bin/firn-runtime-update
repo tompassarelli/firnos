@@ -69,14 +69,16 @@ esac
 datum_reader="$beagle_path/native-core/src/beagle/datum_reader.bjs"
 native_json="$beagle_path/native-core/src/native/json.bjs"
 nix_schema_path="$beagle_path/native-core/src/beagle/nix_schema_path.bjs"
-dispatcher_source="$firn_repo/native/firn.bjs"
+dispatcher_source="$firn_repo/native/firn.clause"
 dispatcher_bridge="$firn_repo/native/firn_host.mjs"
+dispatcher_io="$firn_repo/native/firn_io.mjs"
 beagle_core="$beagle_path/beagle-lib/lib/beagle/core.js"
 beagle_host="$beagle_path/beagle-lib/lib/beagle/host.js"
 
 dispatcher_sources=(
   "$dispatcher_source"
   "$dispatcher_bridge"
+  "$dispatcher_io"
   "$beagle_core"
   "$beagle_host"
 )
@@ -325,7 +327,7 @@ materialize_clause() {
 materialize_dispatcher() {
   local output="$stage/lib/firn-dispatcher.js"
 
-  if ! "$beagle_path/bin/beagle-build" "$dispatcher_source" "$output"; then
+  if ! "$stage/bin/clause-workbench" compile-js "$dispatcher_source" "$output"; then
     printf 'firn-runtime-update: JS dispatcher materialization failed\n' >&2
     exit 1
   fi
@@ -335,17 +337,16 @@ materialize_dispatcher() {
   fi
 
   cp -- "$dispatcher_bridge" "$stage/bin/firn-host.mjs"
+  cp -- "$dispatcher_io" "$stage/bin/firn-io.mjs"
   cp -- "$beagle_core" "$stage/node_modules/beagle/core.js"
   cp -- "$beagle_host" "$stage/node_modules/beagle/host.js"
   printf '%s\n' '{"type":"module"}' \
     >"$stage/node_modules/beagle/package.json"
 
   record_artifact dispatcher lib/firn-dispatcher.js "$dispatcher_source"
-  if [[ -f "$output.map" ]]; then
-    record_artifact dispatcher-map lib/firn-dispatcher.js.map \
-      "$dispatcher_source"
-  fi
+  record_artifact dispatcher-types lib/firn-dispatcher.d.ts "$dispatcher_source"
   record_artifact bridge bin/firn-host.mjs "$dispatcher_bridge"
+  record_artifact dispatcher-io bin/firn-io.mjs "$dispatcher_io"
   record_artifact beagle-core node_modules/beagle/core.js "$beagle_core"
   record_artifact beagle-host node_modules/beagle/host.js "$beagle_host"
   record_generated_artifact beagle-package node_modules/beagle/package.json

@@ -59,7 +59,7 @@ function kind(path) {
 
 function looksLikeFirn(path) {
   return kind(path) === 2
-    && kind(`${path}/native/firn.bjs`) === 1
+    && kind(`${path}/native/firn.clause`) === 1
     && kind(`${path}/flake.bnix`) === 1;
 }
 
