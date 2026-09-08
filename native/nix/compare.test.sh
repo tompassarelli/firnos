@@ -8,7 +8,7 @@ discovered="${2:-$repo}"
 output="$repo/.firn-build/nix-comparison"
 mkdir -p "$output/baseline"
 
-for name in btop jq; do
+for name in btop jq gnome-keyring; do
   git -C "$repo" show "d5734ff6:modules/$name/default.nix" >"$output/baseline/$name.nix"
   "$workbench" check-source "$here/$name.clause"
   "$workbench" compile-nix "$here/$name.clause" "$name-module" "$output/$name.nix"
@@ -34,6 +34,9 @@ FIRN_NIX_COMPARISON_DISCOVERED="$discovered" \
                   type = lib.types.listOf lib.types.package;
                   default = [];
                 };
+                options.security.pam.services.login.enableGnomeKeyring = lib.mkEnableOption "GNOME Keyring login";
+                options.services.gnome.gnome-keyring.enable = lib.mkEnableOption "GNOME Keyring service";
+                options.programs.seahorse.enable = lib.mkEnableOption "Seahorse";
               }
               module
             ] ++ lib.optional (enabled != null) {
@@ -49,6 +52,11 @@ FIRN_NIX_COMPARISON_DISCOVERED="$discovered" \
           type = option.type.name;
           default = option.default;
           description = option.description;
+          settings = with evaluated.config; {
+            login = security.pam.services.login.enableGnomeKeyring;
+            service = services.gnome.gnome-keyring.enable;
+            seahorse = programs.seahorse.enable;
+          };
         };
       compare = name: map (enabled:
         let
@@ -57,5 +65,5 @@ FIRN_NIX_COMPARISON_DISCOVERED="$discovered" \
           expected = inspect name (import (output + "/baseline/" + name + ".nix")) enabled;
         in assert actual == expected; assert selected == expected; actual
       ) [ null false true ];
-    in { btop = compare "btop"; jq = compare "jq"; }
+    in { btop = compare "btop"; jq = compare "jq"; gnome-keyring = compare "gnome-keyring"; }
   '

@@ -30,12 +30,14 @@ export FIRN_REPO_BUILD_MODULE="$output/firn/repo-build-family.js"
 export FIRN_CLAUSE_WORKBENCH="$workbench"
 
 cp "$here/nixpkgs.clause" "$fixture/native/nix/"
-for name in btop jq; do
+for name in btop jq gnome-keyring; do
   mkdir -p "$fixture/modules/$name"
   cp "$here/$name.clause" "$fixture/native/nix/"
   cp "$repo/modules/$name/tags.clause" "$fixture/modules/$name/"
   actual="$(bun "$repo/native/firn_tag_host.mjs" tag show "$name")"
-  expected="$(printf 'module: %s\n:tags         cli-tools\n:tags-opt-in  (none)' "$name")"
+  tag=cli-tools
+  if [[ "$name" == gnome-keyring ]]; then tag=auth; fi
+  expected="$(printf 'module: %s\n:tags         %s\n:tags-opt-in  (none)' "$name" "$tag")"
   [[ "$actual" == "$expected" ]]
 done
 
@@ -58,7 +60,7 @@ cat >"$fixture/flake.bnix" <<'EOF'
 EOF
 bun "$repo/native/repo_build_host.mjs" repo build
 bun "$repo/native/repo_build_host.mjs" repo diff native/nix >"$output/diff.out"
-rg -Fx 'firn diff: 2 checked, 0 differing or failed' "$output/diff.out"
+rg -Fx 'firn diff: 3 checked, 0 differing or failed' "$output/diff.out"
 "$here/compare.test.sh" "$workbench" "$fixture"
 
 cat >"$fixture/modules/btop/tags.clause" <<'EOF'

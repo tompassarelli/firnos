@@ -35,5 +35,8 @@ foreign package(?path: FieldPath): Package
   failure: throw
 
 export module(?enable: FieldPath, ?description: Text, ?package: Delayed<nix,Package>)
+  configuration-module(?enable, ?description, {environment: {systemPackages: [?package]}})
+
+export configuration-module<Body: Record>(?enable: FieldPath, ?description: Text, ?body: Body)
   {options: record-at(?enable, enable-option(?description)),
-   config: when-enabled(configured(?enable), {environment: {systemPackages: [?package]}})}
+   config: when-enabled(configured(?enable), ?body)}
