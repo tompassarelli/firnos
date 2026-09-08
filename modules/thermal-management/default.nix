@@ -1,21 +1,2 @@
-{ config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.thermal-management.enable = lib.mkEnableOption "CPU thermal management for sustained builds";
-  config = lib.mkIf config.myConfig.modules.thermal-management.enable {
-    boot.kernelParams = [ "amd_pstate=active" ];
-    services.auto-cpufreq.enable = true;
-    services.auto-cpufreq.settings = {
-      charger = {
-        governor = "performance";
-        turbo = "never";
-        energy_performance_preference = "balance_performance";
-      };
-      battery = {
-        governor = "powersave";
-        turbo = "never";
-        energy_performance_preference = "power";
-      };
-    };
-  };
-}
+{ config, lib, ... }:
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."thermal-management"."enable") ({ "boot" = { "kernelParams" = [ ("amd_pstate=active") ]; }; "services" = { "auto-cpufreq" = { "enable" = true; "settings" = { "battery" = { "energy_performance_preference" = "power"; "governor" = "powersave"; "turbo" = "never"; }; "charger" = { "energy_performance_preference" = "balance_performance"; "governor" = "performance"; "turbo" = "never"; }; }; }; }; })); "options" = { "myConfig" = { "modules" = { "thermal-management" = { "enable" = (lib."mkEnableOption" ("CPU thermal management for sustained builds")); }; }; }; }; }
