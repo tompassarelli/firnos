@@ -1,2 +1,4 @@
-export tags(): Sequence<Text>
-  ["csharp"]
+import "../../native/module_metadata.clause"
+
+export metadata(): ModuleMetadata
+  module-metadata(["csharp"], [])

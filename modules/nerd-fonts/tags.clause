@@ -1,2 +1,4 @@
-export tags(): Sequence<Text>
-  ["doom-emacs", "theming"]
+import "../../native/module_metadata.clause"
+
+export metadata(): ModuleMetadata
+  module-metadata(["doom-emacs", "theming"], [])

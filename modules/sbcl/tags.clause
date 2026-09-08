@@ -1,2 +1,4 @@
-export tags(): Sequence<Text>
-  ["doom-emacs","lisp"]
+import "../../native/module_metadata.clause"
+
+export metadata(): ModuleMetadata
+  module-metadata(["doom-emacs","lisp"], [])

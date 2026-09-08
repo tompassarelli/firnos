@@ -29,8 +29,9 @@ export FIRN_TAG_MODULE="$output/firn/tag-family.js"
 export FIRN_REPO_BUILD_MODULE="$output/firn/repo-build-family.js"
 export FIRN_CLAUSE_WORKBENCH="$workbench"
 
+cp "$repo/native/module_metadata.clause" "$fixture/native/"
 cp "$here/nixpkgs.clause" "$fixture/native/nix/"
-for name in btop jq gnome-keyring; do
+for name in btop jq gnome-keyring kitty ladybird; do
   mkdir -p "$fixture/modules/$name"
   cp "$here/$name.clause" "$fixture/native/nix/"
   cp "$repo/modules/$name/tags.clause" "$fixture/modules/$name/"
@@ -38,8 +39,34 @@ for name in btop jq gnome-keyring; do
   tag=cli-tools
   if [[ "$name" == gnome-keyring ]]; then tag=auth; fi
   expected="$(printf 'module: %s\n:tags         %s\n:tags-opt-in  (none)' "$name" "$tag")"
-  [[ "$actual" == "$expected" ]]
+  if [[ "$name" == kitty || "$name" == ladybird ]]; then
+    tag=terminal
+    if [[ "$name" == ladybird ]]; then tag=browsers; fi
+    [[ "$actual" == *":tags-opt-in  $tag" ]]
+  else
+    [[ "$actual" == "$expected" ]]
+  fi
 done
+
+mkdir -p "$fixture/hosts/fixture"
+cat >"$fixture/hosts/fixture/enabled-tags.bnix" <<'EOF'
+#lang beagle/nix
+(ns enabled-tags)
+{:platform linux :enabled [terminal browsers cli-tools] :disabled []}
+EOF
+export FIRN_HOST=fixture
+bun "$repo/native/firn_tag_host.mjs" tag status fixture >"$output/default.out"
+rg -F 'Resolved active modules (2):' "$output/default.out"
+if rg -x '  (kitty|ladybird)' "$output/default.out"; then
+  printf 'resolver: opt-in module enabled by default tag\n' >&2
+  exit 1
+fi
+bun "$repo/native/firn_tag_host.mjs" tag opt-in terminal+kitty
+bun "$repo/native/firn_tag_host.mjs" tag opt-in browsers+ladybird
+bun "$repo/native/firn_tag_host.mjs" tag status fixture >"$output/opt-in.out"
+rg -F 'Resolved active modules (4):' "$output/opt-in.out"
+rg -x '  kitty' "$output/opt-in.out"
+rg -x '  ladybird' "$output/opt-in.out"
 
 cat >"$fixture/flake.bnix" <<'EOF'
 #lang beagle/nix
@@ -60,18 +87,17 @@ cat >"$fixture/flake.bnix" <<'EOF'
 EOF
 bun "$repo/native/repo_build_host.mjs" repo build
 bun "$repo/native/repo_build_host.mjs" repo diff native/nix >"$output/diff.out"
-rg -Fx 'firn diff: 3 checked, 0 differing or failed' "$output/diff.out"
-"$here/compare.test.sh" "$workbench" "$fixture"
+rg -Fx 'firn diff: 5 checked, 0 differing or failed' "$output/diff.out"
 
 cat >"$fixture/modules/btop/tags.clause" <<'EOF'
-export tags(): F64
+export metadata(): F64
   42.0
 EOF
 if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/type.out" 2>"$output/type.err"; then
   printf 'resolver: non-text tag result was accepted\n' >&2
   exit 1
 fi
-rg -F 'tags must return Sequence<Text>' "$output/type.err"
+rg -F 'metadata must return ModuleMetadata' "$output/type.err"
 cp "$repo/modules/btop/tags.clause" "$fixture/modules/btop/"
 
 git -C "$repo" show fe9f50f4:modules/fd/default.bnix >"$fixture/modules/btop/default.bnix"
@@ -86,4 +112,5 @@ if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/missing.out" 2>"
   exit 1
 fi
 rg -F 'native/nix/btop.clause' "$output/missing.err"
+"$here/compare.test.sh" "$workbench" "$fixture"
 printf 'ok: Clause discovery, compilation, tags, evaluation, and source ownership\n'

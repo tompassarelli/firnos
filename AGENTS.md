@@ -20,8 +20,10 @@ through `firn repo build`, using the runtime's compiler built from
 `nixos-config:config/clause-revision`; the generated output remains
 `nixos-config:modules/<name>/default.nix`. Shared declarations remain Clause
 source. See `nixos-config:native/nix/README.md` for the focused check.
-The metadata exports `tags(): Sequence<Text>`; the resolver compiles and calls
-that checked source with the same pinned compiler. `firn-runtime-update`
+The metadata imports `nixos-config:native/module_metadata.clause` and exports
+`metadata(): ModuleMetadata`, supplying automatic tags and opt-in tags once.
+The resolver compiles each source once and calls that checked export with the
+same pinned compiler. `firn-runtime-update`
 produces and binds that compiler for tag, inventory, and build commands. It does not
 parse Clause text or read the generated Nix for tags.
 

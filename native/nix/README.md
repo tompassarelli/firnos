@@ -11,7 +11,7 @@ ripgrep, fd, tree, wget, unzip, and curl.
 
 Build `clause-workbench` from the exact revision in
 `nixos-config:config/clause-revision`, read its `authoring-card`, and pass that
-executable to `nixos-config:native/nix/compare.test.sh`. The check opens both
+executable to `nixos-config:native/nix/compare.test.sh`. The check opens all five
 sources through reading, elaboration, lowering, and session opening, then
 compiles them and evaluates default, disabled, and enabled configurations. It
 compares enablement, option types, defaults, descriptions, package names, and
@@ -20,17 +20,21 @@ package output paths. Generated modules remain under
 
 `nixos-config:modules/<name>/tags.clause` explicitly selects
 `nixos-config:native/nix/<name>.clause`, exporting `<name>-module`, as the
-module source. The metadata file owns only tag membership, for example:
+module source. The metadata file owns automatic and opt-in tag membership, for example:
 
 ```clause
-export tags(): Sequence<Text>
-  ["cli-tools"]
+import "../../native/module_metadata.clause"
+
+export metadata(): ModuleMetadata
+  module-metadata(["cli-tools"], [])
 ```
 
-The resolver compiles this source and calls the checked export. A result
-other than `Sequence<Text>` rejects at the foreign boundary. btop and jq retain
-`cli-tools`. A competing `nixos-config:modules/<name>/default.bnix` or a missing
-Clause source is an error. Modules without this metadata file continue to use
+The resolver compiles each source once and calls its checked metadata export.
+The shared record requires `tags` and `optIn`, both `Sequence<Text>`; malformed
+foreign results reject. btop and jq retain automatic `cli-tools` membership.
+Kitty uses `module-metadata([], ["terminal"])`; Ladybird opts into `browsers`.
+Enabling either tag alone excludes its opt-in module. A competing
+`nixos-config:modules/<name>/default.bnix` or a missing Clause source is an error. Modules without this metadata file continue to use
 their existing Beagle source. Shared declaration files are not module entries.
 
 Run `firn-runtime-update` after changing `nixos-config:config/clause-revision`.
@@ -51,9 +55,10 @@ system configuration.
 With `BEAGLE_PATH` set to the repository's Beagle compiler, run
 `nixos-config:native/nix/resolver.test.sh` with the pinned workbench executable
 as its argument. It builds the resolver/build graph, discovers and compiles the
-two actual sources in a fixture, checks their tags and generated outputs,
+five actual sources in a fixture, checks automatic and opt-in selection and
+generated outputs,
 evaluates them against the original modules, and rejects conflicting or missing
-source ownership and wrongly typed tag exports.
+source ownership and wrongly typed metadata exports.
 
 The three Clause sources follow
 `clause:test-vectors/authoring/static-modules/` at revision

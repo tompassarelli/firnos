@@ -172,13 +172,14 @@
     (if (nil? compiler)
       (->ModulesRejected
         "firn: set FIRN_CLAUSE_WORKBENCH to the compiler built from config/clause-revision\n")
-      (let [result Any (.readTextSequenceSource bridge compiler
-                         (path root relative) "tags"
+      (let [result Any (.readModuleMetadataSource bridge compiler
+                         (path root relative)
                          (path root ".firn-build/clause-tags") max-source-bytes)
             status Int (.status bridge result)]
         (if (= status 0)
-          (let [tags (Vec String) (.value bridge result)]
-            (->ModulesLoaded [(r/->ModuleTags name tags [] [])]))
+          (let [tags (Vec String) (.metadataTags bridge result)
+                opt-in (Vec String) (.metadataOptIn bridge result)]
+            (->ModulesLoaded [(r/->ModuleTags name tags opt-in [])]))
           (->ModulesRejected
             (str "firn: cannot load module tags '" relative "': "
                  (.message bridge result) "\n")))))))

@@ -1,2 +1,4 @@
-export tags(): Sequence<Text>
-  ["auth"]
+import "../../native/module_metadata.clause"
+
+export metadata(): ModuleMetadata
+  module-metadata(["auth"], [])

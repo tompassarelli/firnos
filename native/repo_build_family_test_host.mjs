@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
-import { readTextSequenceSource } from './clause_source_host.mjs';
+import { readModuleMetadataSource } from './clause_source_host.mjs';
 
 const build = await import(new URL('./firn/repo-build-test.js', import.meta.url));
 const flake = await import(new URL('./firn/flake-input-test.js', import.meta.url));
@@ -20,7 +20,9 @@ function result(status, value = null) {
 }
 
 const bridge = Object.freeze({
-  readTextSequenceSource,
+  readModuleMetadataSource,
+  metadataTags(result) { return result.value.tags; },
+  metadataOptIn(result) { return result.value.optIn; },
   message(result) { return result.message; },
   env(name) { return process.env[name] ?? null; },
   status(value) { return value.status; },

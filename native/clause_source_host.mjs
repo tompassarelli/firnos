@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 const load = createRequire(import.meta.url);
 
-export function readTextSequenceSource(compiler, source, entry, outputRoot, maximum) {
+export function readModuleMetadataSource(compiler, source, outputRoot, maximum) {
   let directory;
   try {
     if (readFileSync(source).length > maximum) {
@@ -21,13 +21,18 @@ export function readTextSequenceSource(compiler, source, entry, outputRoot, maxi
     if (compiled.exitCode !== 0) {
       throw new Error(compiled.stderr.toString() || `compiler exited ${compiled.exitCode}`);
     }
+    const entry = 'metadata';
     const callable = load(output)[entry];
     if (typeof callable !== 'function') throw new Error(`missing exported callable ${entry}`);
     const value = callable();
-    if (!Array.isArray(value) || value.some(item => typeof item !== 'string')) {
-      throw new Error(`${entry} must return Sequence<Text>`);
+    if (!value || Object.keys(value).sort().join(',') !== 'optIn,tags' ||
+        [value.tags, value.optIn].some(items =>
+          !Array.isArray(items) || items.some(item => typeof item !== 'string'))) {
+      throw new Error('metadata must return ModuleMetadata {tags: Sequence<Text>, optIn: Sequence<Text>}');
     }
-    return Object.freeze({ status: 0, value: Object.freeze([...value]), message: '' });
+    return Object.freeze({ status: 0, value: Object.freeze({
+      tags: Object.freeze([...value.tags]), optIn: Object.freeze([...value.optIn]),
+    }), message: '' });
   } catch (error) {
     return Object.freeze({ status: Math.abs(Number(error?.errno)) || 1,
       value: null, message: String(error?.message ?? error) });
