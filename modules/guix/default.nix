@@ -1,8 +1,2 @@
-{ config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.guix.enable = lib.mkEnableOption "GNU Guix package manager";
-  config = lib.mkIf config.myConfig.modules.guix.enable {
-    services.guix.enable = true;
-  };
-}
+{ config, lib, ... }:
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."guix"."enable") ({ "services" = { "guix" = { "enable" = true; }; }; })); "options" = { "myConfig" = { "modules" = { "guix" = { "enable" = (lib."mkEnableOption" ("GNU Guix package manager")); }; }; }; }; }

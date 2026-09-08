@@ -1,0 +1,6 @@
+import "nixpkgs.clause"
+
+export ssh-module()
+  configuration-module(path(myConfig.modules.ssh.enable),
+    "SSH server",
+    {services: {openssh: {enable: true}}})
