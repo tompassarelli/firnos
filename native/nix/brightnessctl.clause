@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export brightnessctl-module()
+  module(path(myConfig.modules.brightnessctl.enable), "screen brightness control", package(path(brightnessctl)))

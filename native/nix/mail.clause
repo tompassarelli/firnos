@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export mail-module()
+  module(path(myConfig.modules.mail.enable), "email applications", package(path(unstable.protonmail-desktop)))

@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export nodejs-module()
+  module(path(myConfig.modules.nodejs.enable), "Node.js runtime", package(path(nodejs)))

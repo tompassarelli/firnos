@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export todoist-module()
+  module(path(myConfig.modules.todoist.enable), "Todoist task manager", package(path(todoist-electron)))

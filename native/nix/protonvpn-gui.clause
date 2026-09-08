@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export protonvpn-gui-module()
+  module(path(myConfig.modules.protonvpn-gui.enable), "ProtonVPN GUI client", package(path(unstable.proton-vpn)))

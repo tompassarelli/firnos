@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export nh-module()
+  module(path(myConfig.modules.nh.enable), "Nix helper (nicer nixos-rebuild output, generation diff, search, clean)", package(path(nh)))

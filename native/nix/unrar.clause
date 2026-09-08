@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export unrar-module()
+  module(path(myConfig.modules.unrar.enable), "unrar archive tool", package(path(unrar)))

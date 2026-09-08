@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export emacs-module()
+  module(path(myConfig.modules.emacs.enable), "GNU Emacs editor", package(path(emacs-pgtk)))

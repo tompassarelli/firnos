@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export godot-module()
+  module(path(myConfig.modules.godot.enable), "Godot game engine", package(path(unstable.godot_4)))

@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export protonvpn-cli-module()
+  module(path(myConfig.modules.protonvpn-cli.enable), "ProtonVPN CLI client", package(path(protonvpn-cli)))

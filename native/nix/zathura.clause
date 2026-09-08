@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export zathura-module()
+  module(path(myConfig.modules.zathura.enable), "Zathura PDF viewer", package(path(zathura)))

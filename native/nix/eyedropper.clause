@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export eyedropper-module()
+  module(path(myConfig.modules.eyedropper.enable), "Wayland color picker", package(path(eyedropper)))

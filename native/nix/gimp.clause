@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export gimp-module()
+  module(path(myConfig.modules.gimp.enable), "GIMP image editor", package(path(gimp)))
