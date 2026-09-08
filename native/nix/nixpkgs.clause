@@ -22,6 +22,6 @@ foreign when-enabled<Body: Record>(?condition: Delayed<nix,Bool>, ?body: Body): 
   from: "lib"
   failure: throw
 
-export module<Options: Record>(?options: Options, ?enabled: Delayed<nix,Bool>, ?package: Package)
+export module<Options: Record>(?options: Options, ?enabled: Delayed<nix,Bool>, ?package: Delayed<nix,Package>)
   {options: ?options,
    config: when-enabled(?enabled, {environment: {systemPackages: [?package]}})}
