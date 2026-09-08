@@ -16,7 +16,7 @@ import {
 import { hostname, platform } from 'node:os';
 
 const modulePath = process.env.FIRN_PREWARM_MODULE
-  ?? new URL('../lib/firn-prewarm.js', import.meta.url).pathname;
+  ?? new URL('./prewarm.js', import.meta.url).pathname;
 const policy = await import(modulePath);
 const call = (name, ...args) => policy[name](...args);
 const maxOutput = 16 * 1024 * 1024;
@@ -69,7 +69,8 @@ function resolveRepository() {
   if (!candidate) return null;
   const common = captureGit(['-C', candidate, 'rev-parse',
     '--path-format=absolute', '--git-common-dir']);
-  for (const path of call('container-main-candidates', candidate, common)) {
+  for (const path of call('container-main-candidates', candidate,
+    common ?? { message: 'Git common directory unavailable' })) {
     if (looksLikeFirn(path)) return path;
   }
   return null;
@@ -90,7 +91,7 @@ function resolveWarm() {
   const host = configuredHost(repository);
   if (revision === null || branch === null || !host) return null;
   const system = platform() === 'darwin' ? 'darwin' : 'linux';
-  return { repository, key: call('warm-key', repository, revision, branch, host, system) };
+  return { repository, key: call('warm-spec', { repository, revision, branch, host, platform: system }).key };
 }
 
 function readOptional(path, bound = maxOutput) {
@@ -142,7 +143,7 @@ function rebuildRunning() {
   if (platform() !== 'linux') return false;
   for (const name of readdirSync('/proc').slice(0, 131072)) {
     if (!/^\d+$/u.test(name) || Number(name) === process.pid) continue;
-    if (call('rebuild-argv?', processArgv(Number(name)))) return true;
+    if (call('rebuild-argv', processArgv(Number(name)))) return true;
   }
   return false;
 }
@@ -182,15 +183,16 @@ async function signalExact(pid, expected) {
 
 async function contention(ownerPath, desiredKey, executable, repository) {
   const ownerText = readOptional(ownerPath);
-  if (ownerText === null) return ['contended'];
-  const fields = call('parsed-owner-fields', ownerText);
-  if (fields.length !== 3) return ['contended'];
-  const workerPid = Number(fields[0]);
-  const childPid = Number(fields[1]);
-  const action = call('supersede-action', desiredKey, process.pid, executable,
-    repository, ownerText, processArgv(workerPid), processArgv(childPid));
-  if (action[0] !== 'supersede') return action;
-  const key = fields[2];
+  if (ownerText === null) return { contended: desiredKey };
+  const owner = call('parse-lease-owner', ownerText);
+  if ('message' in owner) return { contended: desiredKey };
+  const workerPid = owner['worker-pid'];
+  const childPid = owner['child-pid'];
+  const action = call('supersede-plan', desiredKey, process.pid, executable,
+    repository, owner, { pid: workerPid, argv: processArgv(workerPid) },
+    { pid: childPid, argv: processArgv(childPid) });
+  if (!('child-pid' in action)) return action;
+  const key = owner.key;
   const childSignaled = await signalExact(childPid, call('nix-build-argv', key));
   const childDead = childSignaled && await waitNotAlive(childPid, 1000);
   let workerDead = await waitNotAlive(workerPid, 1000);
@@ -199,11 +201,11 @@ async function contention(ownerPath, desiredKey, executable, repository) {
       call('worker-argv', executable, repository, key));
     workerDead = workerSignaled && await waitNotAlive(workerPid, 250);
   }
-  return childDead && workerDead ? ['superseded', key] : ['contended'];
+  return childDead && workerDead ? { superseded: key } : { contended: key };
 }
 
 async function runBuild(ownerPath, stampPath, key) {
-  if (call('stamp-current?', readOptional(stampPath) ?? '', key)
+  if (call('stamp-current', readOptional(stampPath) ?? '', key)
       || rebuildRunning()) return 0;
   let child;
   let cancelled = false;
@@ -218,7 +220,7 @@ async function runBuild(ownerPath, stampPath, key) {
       stdin: 'ignore', stdout: 'pipe', stderr: 'inherit',
     });
     if (!atomicWrite(ownerPath,
-      call('render-owner', process.pid, child.pid, key))) {
+      call('render-owner', { 'worker-pid': process.pid, 'child-pid': child.pid, key }))) {
       child.kill('SIGTERM');
     }
     let amount = 0;
@@ -227,7 +229,8 @@ async function runBuild(ownerPath, stampPath, key) {
       if (amount > maxOutput) child.kill('SIGTERM');
     }
     const status = await child.exited;
-    if (!cancelled && amount <= maxOutput && status === 0) atomicWrite(stampPath, `${key}\n`);
+    const stamp = call('stamp-plan', key, status, cancelled, amount, maxOutput);
+    if ('text' in stamp) atomicWrite(stampPath, stamp.text);
     return status;
   } catch { return 0; }
   finally {
@@ -249,7 +252,7 @@ async function runWorker(executable, repository, key) {
       finally { atomicWrite(ownerPath, '0\n0\n\n'); await releaseLease(lease); }
     }
     const action = await contention(ownerPath, key, executable, repository);
-    if (action[0] === 'deduplicated') return 0;
+    if ('deduplicated' in action) return 0;
     await Bun.sleep(retryMilliseconds);
   }
   return 0;
@@ -274,10 +277,12 @@ async function main(args) {
       || args[0] === '--reference-transaction')) {
     const warm = resolveWarm();
     if (!warm) return 0;
-    const argv = call('hook-argv-or-empty', args[2], args.slice(3), args[1],
+    const plan = call('hook-plan', args[2], args.slice(3), args[1],
       warm.repository, warm.key);
-    if (args[0] === '--plan-reference-transaction') emit(argv);
-    else if (argv.length > 0) Bun.spawnSync({ cmd: argv, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' });
+    if ('argv' in plan) {
+      if (args[0] === '--plan-reference-transaction') emit(plan.argv);
+      else Bun.spawnSync({ cmd: plan.argv, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' });
+    }
     return 0;
   }
   if (args.length === 4 && args[0] === '--worker') return runWorker(args[1], args[2], args[3]);

@@ -164,7 +164,7 @@ rebuild_sources=(
 )
 rebuild_bridge="$firn_repo/native/firn_rebuild_host.mjs"
 prewarm_sources=(
-  "$firn_repo/native/prewarm.bjs"
+  "$firn_repo/native/prewarm.clause"
 )
 prewarm_bridge="$firn_repo/native/prewarm_host.mjs"
 system_policy_sources=(
@@ -366,11 +366,23 @@ materialize_js() {
   local relative
 
   mkdir -p "$output_root"
-  if ! "$beagle_path/bin/beagle-build-all" "$@" --out "$output_root"; then
-    printf 'firn-runtime-update: Beagle/JS materialization failed: %s\n' \
-      "$component" >&2
-    exit 1
-  fi
+  case "$component" in
+    prewarm)
+      if ! "$stage/bin/clause-workbench" compile-js "$@" "$module"; then
+        printf 'firn-runtime-update: Clause/JS materialization failed: %s\n' \
+          "$component" >&2
+        exit 1
+      fi
+      record_artifact "$component-types" "lib/$component/${module_relative%.js}.d.ts" "$1"
+      ;;
+    *)
+      if ! "$beagle_path/bin/beagle-build-all" "$@" --out "$output_root"; then
+        printf 'firn-runtime-update: Beagle/JS materialization failed: %s\n' \
+          "$component" >&2
+        exit 1
+      fi
+      ;;
+  esac
   if [[ ! -f "$module" ]]; then
     printf 'firn-runtime-update: materializer produced no JS module: %s\n' \
       "$component" >&2
@@ -457,7 +469,7 @@ case "$scope" in
       FIRN_REPO_WORKFLOW_MODULE "$repo_workflow_bridge" "${repo_workflow_sources[@]}"
     materialize_js rebuild firn-rebuild firn/rebuild-family.js \
       FIRN_REBUILD_MODULE "$rebuild_bridge" "${rebuild_sources[@]}"
-    materialize_js prewarm firn-prewarm firn/prewarm.js \
+    materialize_js prewarm firn-prewarm prewarm.js \
       FIRN_PREWARM_MODULE "$prewarm_bridge" "${prewarm_sources[@]}"
     materialize_js system-policy firn-system-policy firn/system-policy-native.js \
       FIRN_SYSTEM_POLICY_MODULE "$system_policy_bridge" \

@@ -31,7 +31,7 @@ runtime_root="$scratch/runtime"
 fake_bin="$scratch/bin"
 mkdir -p "$home" "$beagle_path/bin" "$firn_repo/native" "$fake_bin"
 cp -- "$source_repo"/native/*.bjs "$source_repo"/native/*.mjs \
-  "$source_repo/native/firn.clause" \
+  "$source_repo/native/firn.clause" "$source_repo/native/prewarm.clause" \
   "$firn_repo/native/"
 mkdir -p "$firn_repo/config"
 cp -- "$source_repo/config/clause-revision" "$firn_repo/config/clause-revision"
@@ -95,7 +95,6 @@ write_module "$out/firn/repo-build-family.js" repo-build
 write_module "$out/firn/schema-transaction-native.js" schema
 write_module "$out/firn/repo-workflows-runtime.js" repo-workflow
 write_module "$out/firn/rebuild-family.js" rebuild
-write_module "$out/firn/prewarm.js" prewarm
 write_module "$out/firn/system-policy-native.js" system-policy
 write_module "$out/activity/native.js" activity
 write_module "$out/activity/menu.js" activity-menu
@@ -137,7 +136,7 @@ export FAKE_BEAGLE_LOG="$scratch/beagle.log"
 "$here/firn-runtime-update" >"$scratch/update.out"
 target="$(readlink "$runtime_root/current")"
 destination="$runtime_root/$target"
-grep -Fxq 'format=firn-cli-runtime/v3' "$destination/manifest"
+grep -Fxq 'format=firn-cli-runtime/v4' "$destination/manifest"
 grep -Fxq 'scope=full' "$destination/manifest"
 grep -Fxq 'firn_revision=1111111111111111111111111111111111111111' \
   "$destination/manifest"
