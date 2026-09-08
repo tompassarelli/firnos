@@ -1,21 +1,2 @@
-{ config, lib, pkgs, ... }:
-
-let
-  username = config.myConfig.modules.users.username;
-in
-{
-  options.myConfig.modules.atuin.enable = lib.mkEnableOption "atuin shell history sync";
-  config = lib.mkIf config.myConfig.modules.atuin.enable {
-    home-manager.users.${username} = ({ config, ... }: {
-      programs.atuin = {
-        enable = true;
-        enableFishIntegration = true;
-        settings = {
-          auto_sync = true;
-          sync_frequency = "5m";
-          search_mode = "fuzzy";
-        };
-      };
-    });
-  };
-}
+{ config, lib, ... }:
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."atuin"."enable") ({ "home-manager" = { "users" = { ${config."myConfig"."modules"."users"."username"} = { "programs" = { "atuin" = { "enable" = true; "enableFishIntegration" = true; "settings" = { "auto_sync" = true; "search_mode" = "fuzzy"; "sync_frequency" = "5m"; }; }; }; }; }; }; })); "options" = { "myConfig" = { "modules" = { "atuin" = { "enable" = (lib."mkEnableOption" ("atuin shell history sync")); }; }; }; }; }
