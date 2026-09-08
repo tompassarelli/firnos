@@ -13,5 +13,4 @@ foreign enabled(): Bool
   failure: throw
 
 export jq-module()
-  {options: {myConfig: {modules: {jq: {enable: enable-option("jq command-line JSON processor")}}}},
-   config: when-enabled(enabled(), {environment: {systemPackages: [jq()]}})}
+  module({myConfig: {modules: {jq: {enable: enable-option("jq command-line JSON processor")}}}}, enabled(), jq())

@@ -13,5 +13,4 @@ foreign enabled(): Bool
   failure: throw
 
 export btop-module()
-  {options: {myConfig: {modules: {btop: {enable: enable-option("Enable btop system monitor")}}}},
-   config: when-enabled(enabled(), {environment: {systemPackages: [btop()]}})}
+  module({myConfig: {modules: {btop: {enable: enable-option("Enable btop system monitor")}}}}, enabled(), btop())
