@@ -1,5 +1,0 @@
-#lang beagle/nix
-
-(ns tags)
-
-(nix/module [] {:tags [cli-tools]})

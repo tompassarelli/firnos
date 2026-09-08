@@ -33,7 +33,7 @@ cp "$here/nixpkgs.clause" "$fixture/native/nix/"
 for name in btop jq; do
   mkdir -p "$fixture/modules/$name"
   cp "$here/$name.clause" "$fixture/native/nix/"
-  cp "$repo/modules/$name/tags.bnix" "$fixture/modules/$name/"
+  cp "$repo/modules/$name/tags.clause" "$fixture/modules/$name/"
   actual="$(bun "$repo/native/firn_tag_host.mjs" tag show "$name")"
   expected="$(printf 'module: %s\n:tags         cli-tools\n:tags-opt-in  (none)' "$name")"
   [[ "$actual" == "$expected" ]]
@@ -61,7 +61,18 @@ bun "$repo/native/repo_build_host.mjs" repo diff native/nix >"$output/diff.out"
 rg -Fx 'firn diff: 2 checked, 0 differing or failed' "$output/diff.out"
 "$here/compare.test.sh" "$workbench" "$fixture"
 
-cp "$repo/modules/fd/default.bnix" "$fixture/modules/btop/default.bnix"
+cat >"$fixture/modules/btop/tags.clause" <<'EOF'
+export tags(): F64
+  42.0
+EOF
+if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/type.out" 2>"$output/type.err"; then
+  printf 'resolver: non-text tag result was accepted\n' >&2
+  exit 1
+fi
+rg -F 'tags must return Sequence<Text>' "$output/type.err"
+cp "$repo/modules/btop/tags.clause" "$fixture/modules/btop/"
+
+git -C "$repo" show fe9f50f4:modules/fd/default.bnix >"$fixture/modules/btop/default.bnix"
 if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/conflict.out" 2>"$output/conflict.err"; then
   printf 'resolver: competing module sources were accepted\n' >&2
   exit 1

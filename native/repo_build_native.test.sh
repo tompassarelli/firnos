@@ -44,6 +44,7 @@ build_family() {
     >"$output/node_modules/beagle/package.json"
   cp -- "$repo/native/repo_build_family_test_host.mjs" \
     "$output/repo_build_family_test_host.mjs"
+  cp -- "$repo/native/clause_source_host.mjs" "$output/clause_source_host.mjs"
   [[ -f "$output/firn/repo-build-family.js" ]] \
     || die "compiled repo-build family module is unavailable"
 }

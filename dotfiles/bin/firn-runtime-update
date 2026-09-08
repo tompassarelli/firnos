@@ -85,6 +85,7 @@ tag_sources=(
   "$firn_repo/native/firn_tag_family.bjs"
 )
 tag_bridge="$firn_repo/native/firn_tag_host.mjs"
+clause_source_bridge="$firn_repo/native/clause_source_host.mjs"
 flake_input_sources=(
   "$datum_reader"
   "$firn_repo/native/flake_input.bjs"
@@ -166,6 +167,7 @@ system_policy_bridge="$firn_repo/native/system_policy_host.mjs"
 case "$scope" in
   repo)
     selected_sources=(
+      "$clause_source_bridge"
       "${dispatcher_sources[@]}"
       "${repo_build_sources[@]}"
       "$repo_build_bridge"
@@ -175,6 +177,7 @@ case "$scope" in
     ;;
   full)
     selected_sources=(
+      "$clause_source_bridge"
       "${dispatcher_sources[@]}"
       "${tag_sources[@]}"
       "$tag_bridge"
@@ -328,6 +331,13 @@ materialize_js() {
     exit 1
   fi
   cp -- "$bridge" "$host"
+  case "$component" in
+    tag|inventory|repo-build)
+      cp -- "$clause_source_bridge" "$output_root/clause_source_host.mjs"
+      record_artifact "$component-clause-source-host" \
+        "lib/$component/clause_source_host.mjs" "$clause_source_bridge"
+      ;;
+  esac
   cat >"$launcher" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
