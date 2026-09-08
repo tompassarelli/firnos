@@ -39,7 +39,7 @@ evaluates them against the original modules, and rejects conflicting or missing
 source ownership.
 
 The three Clause sources follow
-`clause:test-vectors/authoring/shared-foreign/` at revision
-`6e25a33fbc1d7d421a36c01607734ff9d7115a2d`, under MIT, copyright 2026 Tom
+`clause:test-vectors/authoring/static-modules/` at revision
+`51e9e126af7029945b1e08bdb4763e6a058061e9`, under MIT, copyright 2026 Tom
 Passarelli. The matching notice and license are retained in
 `nixos-config:LICENSE-MIT`.

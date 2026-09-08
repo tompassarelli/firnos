@@ -1,16 +1,4 @@
 import "nixpkgs.clause"
 
-foreign jq(): Package
-  construction: "nix"
-  get: "jq"
-  from: "pkgs"
-  failure: throw
-
-foreign enabled(): Bool
-  construction: "nix"
-  get: "myConfig.modules.jq.enable"
-  from: "config"
-  failure: throw
-
 export jq-module()
-  module({myConfig: {modules: {jq: {enable: enable-option("jq command-line JSON processor")}}}}, enabled(), jq())
+  module(path(myConfig.modules.jq.enable), "jq command-line JSON processor", package(path(jq)))
