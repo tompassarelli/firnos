@@ -1,12 +1,2 @@
 { config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.networking.enable = lib.mkEnableOption "network configuration";
-  config = lib.mkIf config.myConfig.modules.networking.enable {
-    networking.networkmanager.enable = true;
-    networking.networkmanager.unmanaged = [ "interface-name:wg*" ];
-    networking.networkmanager.wifi.powersave = false;
-    networking.networkmanager.logLevel = "DEBUG";
-    environment.systemPackages = with pkgs; [ networkmanagerapplet ];
-  };
-}
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."networking"."enable") ({ "environment" = { "systemPackages" = [ (pkgs."networkmanagerapplet") ]; }; "networking" = { "networkmanager" = { "enable" = true; "logLevel" = "DEBUG"; "unmanaged" = [ ("interface-name:wg*") ]; "wifi" = { "powersave" = false; }; }; }; })); "options" = { "myConfig" = { "modules" = { "networking" = { "enable" = (lib."mkEnableOption" ("network configuration")); }; }; }; }; }

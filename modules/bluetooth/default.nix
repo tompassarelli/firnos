@@ -1,19 +1,2 @@
 { config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.bluetooth.enable = lib.mkEnableOption "Enable Bluetooth configuration";
-  config = lib.mkIf config.myConfig.modules.bluetooth.enable {
-    hardware.bluetooth = {
-      enable = true;
-      powerOnBoot = true;
-      settings = {
-        General = {
-          Enable = "Source,Sink,Media,Socket";
-          Experimental = true;
-        };
-      };
-    };
-    services.blueman.enable = true;
-    environment.systemPackages = with pkgs; [ bluez ];
-  };
-}
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."bluetooth"."enable") ({ "environment" = { "systemPackages" = [ (pkgs."bluez") ]; }; "hardware" = { "bluetooth" = { "enable" = true; "powerOnBoot" = true; "settings" = { "General" = { "Enable" = "Source,Sink,Media,Socket"; "Experimental" = true; }; }; }; }; "services" = { "blueman" = { "enable" = true; }; }; })); "options" = { "myConfig" = { "modules" = { "bluetooth" = { "enable" = (lib."mkEnableOption" ("Enable Bluetooth configuration")); }; }; }; }; }
