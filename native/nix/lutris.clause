@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export lutris-module()
+  module(path(myConfig.modules.lutris.enable), "Lutris gaming platform", package(path(unstable.lutris)))

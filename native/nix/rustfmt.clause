@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export rustfmt-module()
+  module(path(myConfig.modules.rustfmt.enable), "Rust formatter", package(path(unstable.rustfmt)))

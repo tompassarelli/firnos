@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export racket-module()
+  module(path(myConfig.modules.racket.enable), "Racket programming language", package(path(unstable.racket)))

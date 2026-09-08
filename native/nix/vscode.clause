@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export vscode-module()
+  module(path(myConfig.modules.vscode.enable), "Visual Studio Code (Microsoft build)", package(path(unstable.vscode)))

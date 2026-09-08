@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export zed-module()
+  module(path(myConfig.modules.zed.enable), "Zed editor", package(path(zed-editor)))
