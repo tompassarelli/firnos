@@ -10,6 +10,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { extname } from 'node:path';
 
 const modulePath = process.env.FIRN_REPO_BUILD_MODULE
   ?? new URL('../lib/firn-repo-build.js', import.meta.url).pathname;
@@ -84,7 +85,7 @@ const bridge = Object.freeze({
     }
   },
   createTemporarySibling(destination) {
-    const temporary = `${destination}.firn-${process.pid}-${crypto.randomUUID()}.tmp`;
+    const temporary = `${destination}.firn-${process.pid}-${crypto.randomUUID()}.tmp${extname(destination)}`;
     try {
       closeSync(openSync(temporary, 'wx', 0o600));
       return result(0, temporary);

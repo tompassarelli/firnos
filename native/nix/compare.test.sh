@@ -4,20 +4,24 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
 workbench="${1:?pass the clause-workbench executable built from config/clause-revision}"
+discovered="${2:-$repo}"
 output="$repo/.firn-build/nix-comparison"
-mkdir -p "$output"
+mkdir -p "$output/baseline"
 
 for name in btop jq; do
+  git -C "$repo" show "d5734ff6:modules/$name/default.nix" >"$output/baseline/$name.nix"
   "$workbench" check-source "$here/$name.clause"
   "$workbench" compile-nix "$here/$name.clause" "$name-module" "$output/$name.nix"
 done
 
 # Nix's module evaluator is the foreign-system boundary being compared.
 FIRN_NIX_COMPARISON_REPO="$repo" FIRN_NIX_COMPARISON_OUTPUT="$output" \
+FIRN_NIX_COMPARISON_DISCOVERED="$discovered" \
   nix eval --impure --json --expr '
     let
       repo = builtins.getEnv "FIRN_NIX_COMPARISON_REPO";
       output = builtins.getEnv "FIRN_NIX_COMPARISON_OUTPUT";
+      discovered = builtins.getEnv "FIRN_NIX_COMPARISON_DISCOVERED";
       flake = builtins.getFlake ("git+file://" + repo);
       pkgs = import flake.inputs.nixpkgs { system = "x86_64-linux"; };
       lib = pkgs.lib;
@@ -49,8 +53,9 @@ FIRN_NIX_COMPARISON_REPO="$repo" FIRN_NIX_COMPARISON_OUTPUT="$output" \
       compare = name: map (enabled:
         let
           actual = inspect name (import (output + "/" + name + ".nix")) enabled;
-          expected = inspect name (import (repo + "/modules/" + name + "/default.nix")) enabled;
-        in assert actual == expected; actual
+          selected = inspect name (import (discovered + "/modules/" + name + "/default.nix")) enabled;
+          expected = inspect name (import (output + "/baseline/" + name + ".nix")) enabled;
+        in assert actual == expected; assert selected == expected; actual
       ) [ null false true ];
     in { btop = compare "btop"; jq = compare "jq"; }
   '

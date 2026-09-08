@@ -12,6 +12,15 @@ run `firn repo build` to regenerate their sibling `.nix` targets. Never edit a
 generated `.nix`. Both files are committed because the flake reads the Git
 tree. Run `firn repo build` before any Nix build after a `.bnix` change.
 
+Selected Clause modules instead use `nixos-config:modules/<name>/tags.bnix`
+for tag membership and `nixos-config:native/nix/<name>.clause` for the module.
+The metadata file explicitly selects Clause and cannot coexist with
+`nixos-config:modules/<name>/default.bnix`. Compile its `<name>-module` export
+through `firn repo build`, using `FIRN_CLAUSE_WORKBENCH` built from
+`nixos-config:config/clause-revision`; the generated output remains
+`nixos-config:modules/<name>/default.nix`. Shared declarations remain Clause
+source. See `nixos-config:native/nix/README.md` for the focused check.
+
 Beagle lives at `~/code/beagle/main`. Override `BEAGLE_PATH` only for an
 explicit alternate checkout. Query the compiler for forms, signatures, option
 paths, types, callers, exports, and targets; never trust a copied inventory.

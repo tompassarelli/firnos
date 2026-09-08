@@ -8,6 +8,14 @@
 (def max-directory-entries Int 16384)
 
 (js/export
+  (defunion ModuleSourceSelection
+  (ModuleSourceSelected
+    [source String
+     metadata String
+     output String])
+  (ModuleSelectionRejected [message String])))
+
+(js/export
   (defunion DirectoryNamesResult
   (DirectoryNamesLoaded [names (Vec String)])
   (DirectoryNamesRejected [message String])))
@@ -61,13 +69,13 @@
 
 (js/export
   (defn directory-names
-  [bridge Any
-   root String
-   relative String] DirectoryNamesResult
-  (let [absolute String (path root relative)
-        result Any (.listDirectory bridge absolute max-directory-entries)
-        errno Int (.status bridge result)]
-    (if (not (= errno 0))
+    [bridge Any
+     root String
+     relative String] DirectoryNamesResult
+    (let [absolute String (path root relative)
+          result Any (.listDirectory bridge absolute max-directory-entries)
+          errno Int (.status bridge result)]
+      (if (not (= errno 0))
       (if (= errno 2)
          (->DirectoryNamesLoaded [])
          (->DirectoryNamesRejected
@@ -121,12 +129,48 @@
 (defn empty-module [name String] r/ModuleTags
   (r/->ModuleTags name [] [] []))
 
+(js/export
+  (defn module-source
+    [bridge Any
+     root String
+     name String] ModuleSourceSelection
+    (let [directory String (str "modules/" name "/")
+          beagle String (str directory "default.bnix")
+          metadata String (str directory "tags.bnix")
+          output String (str directory "default.nix")
+          marker Any (.pathKind bridge (path root metadata))
+          marker-errno Int (.status bridge marker)]
+      (cond
+      [(= marker-errno 2) (->ModuleSourceSelected beagle beagle output)]
+      [(not (= marker-errno 0))
+       (->ModuleSelectionRejected (errno-message "cannot inspect" metadata marker-errno))]
+      [:else
+       (let [prior Any (.pathKind bridge (path root beagle))
+             prior-errno Int (.status bridge prior)
+             clause String (str "native/nix/" name ".clause")
+             source Any (.pathKind bridge (path root clause))
+             source-errno Int (.status bridge source)]
+         (cond
+           [(= prior-errno 0)
+            (->ModuleSelectionRejected
+              (str "firn: competing module sources: " beagle " and " metadata "\n"))]
+           [(not (= prior-errno 2))
+            (->ModuleSelectionRejected (errno-message "cannot inspect" beagle prior-errno))]
+           [(not (= source-errno 0))
+            (->ModuleSelectionRejected (errno-message "cannot inspect" clause source-errno))]
+           [(or (not (or (= (.value bridge marker) 1) (= (.value bridge marker) 3)))
+                (not (or (= (.value bridge source) 1) (= (.value bridge source) 3))))
+            (->ModuleSelectionRejected (str "firn: module source and tag metadata must be files: " clause "\n"))]
+           [:else (->ModuleSourceSelected clause metadata output)]))]))))
+
 (defn load-module
   [bridge Any
    root String
    name String] ModulesLoadResult
-  (let [relative String (str "modules/" name "/default.bnix")
-        absolute String (path root relative)
+  (match (module-source bridge root name)
+    [(ModuleSelectionRejected message) (->ModulesRejected message)]
+    [(ModuleSourceSelected module-source relative output)
+  (let [absolute String (path root relative)
         kind-result Any (.pathKind bridge absolute)
         kind-errno Int (.status bridge kind-result)]
     (if (not (= kind-errno 0))
@@ -151,7 +195,7 @@
                     [(ModuleSourceRejected message offset)
                      (->ModulesRejected
                        (parse-message "module tag source" relative message
-                         offset))]))))))))))
+                         offset))])))))))))]))
 
 (defn load-modules-from
   [bridge Any
@@ -167,18 +211,22 @@
        (load-modules-from bridge root names (+ index 1) (into modules loaded))])))
 
 (js/export
- (defn load-modules [bridge Any root String] ModulesLoadResult
-  (match (directory-names bridge root "modules")
+ (defn load-modules
+   [bridge Any
+    root String] ModulesLoadResult
+   (match (directory-names bridge root "modules")
     [(DirectoryNamesRejected message) (->ModulesRejected message)]
     [(DirectoryNamesLoaded names) (load-modules-from bridge root names 0 [])])))
 
 (js/export
- (defn load-darwin-allowlist [bridge Any root String] AllowlistLoadResult
-  (let [relative String "config/darwin-modules.json"
-        absolute String (path root relative)
-        result Any (.readText bridge absolute max-source-bytes)
-        errno Int (.status bridge result)]
-    (if (not (= errno 0))
+ (defn load-darwin-allowlist
+   [bridge Any
+    root String] AllowlistLoadResult
+   (let [relative String "config/darwin-modules.json"
+         absolute String (path root relative)
+         result Any (.readText bridge absolute max-source-bytes)
+         errno Int (.status bridge result)]
+     (if (not (= errno 0))
       (->AllowlistRejected (errno-message "cannot read" relative errno))
       (let [source String (.value bridge result)]
        (match (input/darwin-allowlist-from-json source)
@@ -255,15 +303,15 @@
 
 (js/export
   (defn load-host
-  [bridge Any
-   root String
-   host String
-   load-generated? Bool] HostLoadResult
-  (let [relative String (str "hosts/" host "/enabled-tags.bnix")
-        absolute String (path root relative)
-        kind-result Any (.pathKind bridge absolute)
-        kind-errno Int (.status bridge kind-result)]
-    (if (not (= kind-errno 0))
+    [bridge Any
+     root String
+     host String
+     load-generated? Bool] HostLoadResult
+    (let [relative String (str "hosts/" host "/enabled-tags.bnix")
+          absolute String (path root relative)
+          kind-result Any (.pathKind bridge absolute)
+          kind-errno Int (.status bridge kind-result)]
+      (if (not (= kind-errno 0))
       (if (= kind-errno 2)
          (host-data (empty-host host) false
            (load-generated bridge root host load-generated?))
@@ -327,7 +375,9 @@
           (driver/->TagResolveHostData
             (empty-host (nth names index)) false false ""))))))
 
-(defn emit-io-error [bridge Any message String] Int
+(defn emit-io-error
+  [bridge Any
+   message String] Int
   (do (.err bridge message) 1))
 
 (defn any-tag-source? [hosts (Vec driver/TagResolveHostData)] Bool
@@ -362,11 +412,11 @@
 
 (js/export
   (defn run-action
-  [bridge Any
-   root String
-   host-names (Vec String)
-   action driver/TagResolveAction] Int
-  (if (and (not (driver/action-all? action))
+    [bridge Any
+     root String
+     host-names (Vec String)
+     action driver/TagResolveAction] Int
+    (if (and (not (driver/action-all? action))
            (not (string-member? host-names (driver/action-host action))))
     (execute-effects bridge root
       (driver/run-tag-resolve-action
@@ -414,8 +464,10 @@
     64))
 
 (js/export
-  (defn run [bridge Any args (Vec String)] Int
-  (match (driver/parse-tag-resolve-argv args (default-host bridge)
+  (defn run
+    [bridge Any
+     args (Vec String)] Int
+    (match (driver/parse-tag-resolve-argv args (default-host bridge)
            (some? (.env bridge "FIRN_TAG_EMIT")))
     [(OtherFirnCommand argv) (usage-error bridge)]
     [(InvalidTagResolveArgv argv) (usage-error bridge)]

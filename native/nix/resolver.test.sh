@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo="$(cd "$here/../.." && pwd)"
+beagle="${BEAGLE_PATH:?set BEAGLE_PATH to the repository compiler}"
+workbench="${1:?pass the clause-workbench executable built from config/clause-revision}"
+output="$repo/.firn-build/nix-resolver"
+mkdir -p "$output/node_modules/beagle"
+fixture="$(mktemp -d "$repo/.firn-build/nix-resolver-fixture.XXXXXX")"
+mkdir -p "$fixture/native/nix" "$fixture/modules"
+
+sources=(
+  "$beagle/native-core/src/beagle/datum_reader.bjs"
+  "$beagle/native-core/src/native/json.bjs"
+)
+for source in tag_resolve tag_inputs tag_resolve_driver tag_resolve_family \
+  tag_commands tag_commands_driver tag_commands_family firn_tag_family \
+  flake_input flake_input_driver flake_input_family repo_build repo_build_family; do
+  sources+=("$repo/native/$source.bjs")
+done
+"$beagle/bin/beagle-build-all" "${sources[@]}" --out "$output"
+cp "$beagle/beagle-lib/lib/beagle/core.js" "$beagle/beagle-lib/lib/beagle/host.js" \
+  "$output/node_modules/beagle/"
+printf '%s\n' '{"type":"module"}' >"$output/node_modules/beagle/package.json"
+
+export FIRN_REPO="$fixture"
+export FIRN_TAG_MODULE="$output/firn/tag-family.js"
+export FIRN_REPO_BUILD_MODULE="$output/firn/repo-build-family.js"
+export FIRN_CLAUSE_WORKBENCH="$workbench"
+
+cp "$here/nixpkgs.clause" "$fixture/native/nix/"
+for name in btop jq; do
+  mkdir -p "$fixture/modules/$name"
+  cp "$here/$name.clause" "$fixture/native/nix/"
+  cp "$repo/modules/$name/tags.bnix" "$fixture/modules/$name/"
+  actual="$(bun "$repo/native/firn_tag_host.mjs" tag show "$name")"
+  expected="$(printf 'module: %s\n:tags         cli-tools\n:tags-opt-in  (none)' "$name")"
+  [[ "$actual" == "$expected" ]]
+done
+
+cat >"$fixture/flake.bnix" <<'EOF'
+#lang beagle/nix
+(ns flake)
+;; --- GENERATED MODULE INPUTS (do not edit) ---
+;; --- END GENERATED MODULE INPUTS ---
+;; --- GENERATED MODULE ARGS (do not edit) ---
+;; --- END GENERATED MODULE ARGS ---
+;; --- GENERATED MODULE SPECIALARGS (do not edit) ---
+;; --- END GENERATED MODULE SPECIALARGS ---
+;; --- GENERATED HM SPECIALARGS (do not edit) ---
+;; --- END GENERATED HM SPECIALARGS ---
+;; --- GENERATED DARWIN SPECIALARGS (do not edit) ---
+;; --- END GENERATED DARWIN SPECIALARGS ---
+;; --- GENERATED DARWIN HM SPECIALARGS (do not edit) ---
+;; --- END GENERATED DARWIN HM SPECIALARGS ---
+{}
+EOF
+bun "$repo/native/repo_build_host.mjs" repo build
+bun "$repo/native/repo_build_host.mjs" repo diff native/nix >"$output/diff.out"
+rg -Fx 'firn diff: 2 checked, 0 differing or failed' "$output/diff.out"
+"$here/compare.test.sh" "$workbench" "$fixture"
+
+cp "$repo/modules/fd/default.bnix" "$fixture/modules/btop/default.bnix"
+if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/conflict.out" 2>"$output/conflict.err"; then
+  printf 'resolver: competing module sources were accepted\n' >&2
+  exit 1
+fi
+rg -F 'competing module sources' "$output/conflict.err"
+rm "$fixture/modules/btop/default.bnix" "$fixture/native/nix/btop.clause"
+if bun "$repo/native/firn_tag_host.mjs" tag show btop >"$output/missing.out" 2>"$output/missing.err"; then
+  printf 'resolver: missing Clause source was accepted\n' >&2
+  exit 1
+fi
+rg -F 'native/nix/btop.clause' "$output/missing.err"
+printf 'ok: Clause discovery, compilation, tags, evaluation, and source ownership\n'

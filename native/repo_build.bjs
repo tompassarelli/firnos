@@ -49,6 +49,8 @@
   (defn traversal-excluded? [relative String] Bool
   (or (= relative ".direnv")
       (starts-with? relative ".direnv/")
+      (= relative ".firn-build")
+      (starts-with? relative ".firn-build/")
       (root-result-path? relative))))
 
 (defn source-excluded? [relative String] Bool
@@ -65,8 +67,23 @@
       (ends-with? relative "/responsibilities.bnix")))
 
 (js/export
+  (defn clause-metadata-path? [relative String] Bool
+    (and (starts-with? relative "modules/")
+         (ends-with? relative "/tags.bnix"))))
+
+(js/export
+  (defn clause-source-path? [relative String] Bool
+    (and (starts-with? relative "native/nix/")
+         (ends-with? relative ".clause"))))
+
+(js/export
+  (defn clause-module-name [relative String] String
+    (subs relative 11 (- (count relative) 7))))
+
+(js/export
   (defn source-path? [relative String] Bool
   (and (ends-with? relative ".bnix")
+       (not (clause-metadata-path? relative))
        (not (source-excluded? relative)))))
 
 (js/export
@@ -99,7 +116,10 @@
     (let [source-relative String (sourcestate-relative state)
           destination-relative String (sourcestate-output-relative state)]
       (->CompilerProcess source-relative destination-relative
-      [compiler (absolute-path root source-relative) temporary]))))
+      (if (clause-source-path? source-relative)
+        [compiler "compile-nix" (absolute-path root source-relative)
+         (str (clause-module-name source-relative) "-module") temporary]
+        [compiler (absolute-path root source-relative) temporary])))))
 
 (js/export
   (defn parse-repo-build-argv [argv (Vec String)] RepoBuildArgv

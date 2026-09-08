@@ -24,6 +24,8 @@ const failed = (error) => Object.freeze({ status: errno(error), value: null });
 let temporaryId = 0;
 
 const bridge = Object.freeze({
+  status(result) { return result.status; },
+  value(result) { return result.value; },
   env(name) { return process.env[name] ?? null; },
   out(text) { process.stdout.write(text); },
   err(text) { process.stderr.write(text); },
