@@ -28,5 +28,12 @@ normal workflow.
 
 Distinguish evaluation, input, source-filtering, lock, and project-code failures.
 Report the working output and untested platform limits.
+
+Bad: rewriting a working `flake.nix` into Beagle/Nix source because the
+tooling now supports it, with no new semantics being added in that file.
+Good: convert only the file you are already changing for new Tom-owned
+semantic work; existing working plain Nix elsewhere is not a migration task
+just because it is now possible.
+
 Full notes: [output and environment design](references/environment-design.md)
 and [evaluation and completion](references/evaluation.md).
