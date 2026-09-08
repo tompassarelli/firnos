@@ -1,8 +1,2 @@
 { config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.bc.enable = lib.mkEnableOption "Enable bc arbitrary-precision calculator language";
-  config = lib.mkIf config.myConfig.modules.bc.enable {
-    environment.systemPackages = with pkgs; [ bc ];
-  };
-}
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."bc"."enable") ({ "environment" = { "systemPackages" = [ (pkgs."bc") ]; }; })); "options" = { "myConfig" = { "modules" = { "bc" = { "enable" = (lib."mkEnableOption" ("Enable bc arbitrary-precision calculator language")); }; }; }; }; }

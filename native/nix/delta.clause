@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export delta-module()
+  module(path(myConfig.modules.delta.enable), "delta git diff viewer", package(path(delta)))

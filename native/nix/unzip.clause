@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export unzip-module()
+  module(path(myConfig.modules.unzip.enable), "unzip archive tool", package(path(unzip)))

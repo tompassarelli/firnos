@@ -1,8 +1,2 @@
 { config, lib, pkgs, ... }:
-
-{
-  options.myConfig.modules.fd.enable = lib.mkEnableOption "fd file finder";
-  config = lib.mkIf config.myConfig.modules.fd.enable {
-    environment.systemPackages = with pkgs; [ fd ];
-  };
-}
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."fd"."enable") ({ "environment" = { "systemPackages" = [ (pkgs."fd") ]; }; })); "options" = { "myConfig" = { "modules" = { "fd" = { "enable" = (lib."mkEnableOption" ("fd file finder")); }; }; }; }; }

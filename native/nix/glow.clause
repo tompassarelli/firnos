@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export glow-module()
+  module(path(myConfig.modules.glow.enable), "glow — terminal markdown renderer (tables, pager, dir browser)", package(path(glow)))
