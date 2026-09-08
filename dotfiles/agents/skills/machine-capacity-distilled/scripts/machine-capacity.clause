@@ -1,0 +1,25 @@
+Resources:
+  cpus: F64
+  memoryMiB: F64
+
+export aggregate-cpus(?cores: F64): F64
+  ?cores * 0.75
+
+export resource-class(?kind: Text, ?cores: F64): Resources
+  if(?kind = "agent", {cpus: 0, memoryMiB: 768},
+    if(?kind = "moderate", {cpus: if(?cores > 1, 2, 1), memoryMiB: 2048},
+      if(?kind = "heavy", {cpus: if(?cores > 8, 6, if(?cores > 4, 3, 1)), memoryMiB: 8192},
+        require(?kind = "exclusive", {cpus: aggregate-cpus(?cores), memoryMiB: 16384},
+          "Unknown resource class"))))
+
+export reserve-class(?kind: Text): Bool
+  ?kind = "agent"
+
+export admission-decision(?kind: Text, ?cores: F64, ?memory-total-mib: F64, ?memory-available-mib: F64, ?cpu-some-avg10-basis-points: F64, ?leased-memory-mib: F64, ?requested-cpus: F64, ?requested-memory-mib: F64, ?peer-runs: F64, ?peer-exclusive-runs: F64, ?unbounded-runs: F64): Text
+  if(?cores <= 0 or ?memory-total-mib <= 0 or ?memory-available-mib <= 0 or ?requested-cpus < 0 or ?requested-memory-mib <= 0, "INVALID",
+    if(?memory-available-mib - ?requested-memory-mib < 4096 or (?memory-available-mib - ?requested-memory-mib) * 5 < ?memory-total-mib, "DEFER_MEMORY_HEADROOM",
+      if(?cpu-some-avg10-basis-points >= 2000, "DEFER_CPU_PRESSURE",
+        if((?leased-memory-mib + ?requested-memory-mib) * 4 > ?memory-total-mib * 3, "DEFER_MEMORY_CAPACITY",
+          if(?kind = "agent", "RUN",
+            if(?unbounded-runs > 0, "DEFER_UNBOUNDED_PEER",
+              if(?peer-exclusive-runs > 0 or (?kind = "exclusive" and ?peer-runs > 0), "DEFER_EXCLUSIVE", "RUN")))))))

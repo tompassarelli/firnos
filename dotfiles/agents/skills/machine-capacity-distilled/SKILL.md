@@ -21,7 +21,10 @@ Set an honest hard runtime bound including legitimate setup and downloads;
 the example is not a universal timeout.
 
 The wrapper admits atomically and contains every descendant in one user
-cgroup. Do not detach work outside it. One owner retains the terminal
+cgroup. All helper jobs share a CPU limit of 75% of the host; per-job CPU
+allowances are ceilings, not measured use or additive reservations. Exclusive
+runs wait for all peer local jobs and block new local jobs until release.
+Do not detach work outside the scope. One owner retains the terminal
 `RELEASED` result and cleans up the exact scope.
 
 `RUN`/`RESERVED` continues; `DEFER` queues heavy work while useful light work
@@ -31,7 +34,8 @@ Memory PSI is diagnostic: local cgroup throttling can raise it despite ample
 host headroom. Admission uses available memory, lease budgets, and CPU pressure.
 
 Before a parallel worker expected to consume local compute, reserve its
-`agent` lease (1 CPU/768 MiB); renew before expiry and release at settlement.
+`agent` lease (768 MiB, no local CPU reservation); renew before expiry and
+release at settlement. Its local commands still require their own `run` scope.
 Only `agent` permits persistent reservation. Exact commands and headroom
 rules: [nixos-config:capacity leases and limits](references/leases-and-limits.md).
 

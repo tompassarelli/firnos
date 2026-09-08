@@ -27,7 +27,19 @@ releasing the exact known lease. A prose report is not a release receipt.
 
 The helper reserves 25% of CPUs and memory headroom of at least 20% and 4 GiB.
 It defers work at CPU PSI of 20% or more over ten seconds, insufficient
-available memory, or CPU/memory lease budgets above 75% of host capacity.
+available memory, or memory lease budgets above 75% of host capacity.
+Every local job joins `agent-capacity.slice`, whose aggregate CPU quota is 75%
+of host CPUs. The sum of per-job CPU ceilings may exceed that quota: sleeping
+or serial jobs do not consume their ceilings continuously. Agent reservations
+retain their 768 MiB memory budget without charging remote inference as local
+CPU work. Admission reports CPU pressure separately from CPU ceilings and the
+aggregate limit; a reserved ceiling is not a utilization measurement.
+
+Exclusive work requires no other local run lease and prevents new local runs
+until release; agent memory reservations may coexist. A run lease outside the
+aggregate limit defers new local jobs until its owner finishes. Activation
+must therefore wait for old helper invocations to drain; never move or kill
+peer jobs to activate this policy.
 Full-memory PSI remains diagnostic telemetry: cgroup-local throttling can
 raise it without exhausting host headroom, so it does not independently veto
 admission. Per-job CPU, memory, and runtime bounds still apply.

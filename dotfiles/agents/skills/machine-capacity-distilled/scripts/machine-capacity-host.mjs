@@ -15,7 +15,9 @@ import * as policy from './machine-capacity-logic.js';
 
 const admissionDecision = policy['admission-decision'];
 const resourceClass = policy['resource-class'];
-const reserveClass = policy['reserve-class?'];
+const reserveClass = policy['reserve-class'];
+const aggregateCpus = policy['aggregate-cpus'];
+const aggregateSlice = 'agent-capacity.slice';
 const classNames = new Set(['agent', 'moderate', 'heavy', 'exclusive']);
 const maximumTimeoutSeconds = 3600;
 const lockStaleMilliseconds = 2000;
@@ -72,10 +74,10 @@ function parseClass(values, cores) {
   const name = required(values, '--class');
   if (!classNames.has(name)) fail('--class must be agent, moderate, heavy, or exclusive');
   const resources = resourceClass(name, cores);
-  if (!Array.isArray(resources) || resources.length !== 2) {
+  if (!Number.isFinite(resources.cpus) || !Number.isFinite(resources.memoryMiB)) {
     fail(`policy rejected resource class: ${name}`);
   }
-  return { name, cpus: resources[0], memoryMiB: resources[1] };
+  return { name, ...resources };
 }
 
 function parsePsi(path, kind) {
@@ -161,7 +163,7 @@ function readLeases(root, now) {
 
 function totals(leases) {
   return leases.reduce((sum, lease) => ({
-    cpus: sum.cpus + lease.cpus,
+    cpus: sum.cpus + (lease.kind === 'run' ? lease.cpus : 0),
     memoryMiB: sum.memoryMiB + lease.memoryMiB,
   }), { cpus: 0, memoryMiB: 0 });
 }
@@ -171,16 +173,20 @@ function decision(root, requested, create) {
     const now = Date.now();
     const { active, reclaimed } = readLeases(root, now);
     const leased = totals(active);
+    const runs = active.filter(lease => lease.kind === 'run');
     const signals = readSignals();
     const code = admissionDecision(
+      requested.name,
       signals.cores,
       signals.memoryTotalMiB,
       signals.memoryAvailableMiB,
       signals.cpuSomeAvg10BasisPoints,
-      leased.cpus,
       leased.memoryMiB,
       requested.cpus,
       requested.memoryMiB,
+      runs.length,
+      runs.filter(lease => lease.class === 'exclusive').length,
+      runs.filter(lease => lease.aggregateSlice !== aggregateSlice).length,
     );
     const result = {
       decision: code === 'RUN' ? (create ? 'RESERVED' : 'RUN') : 'DEFER',
@@ -188,7 +194,8 @@ function decision(root, requested, create) {
       class: requested.name,
       requestedCpus: requested.cpus,
       requestedMemoryMiB: requested.memoryMiB,
-      leasedCpus: leased.cpus,
+      leasedCpuCeilings: leased.cpus,
+      aggregateCpuLimit: aggregateCpus(signals.cores),
       leasedMemoryMiB: leased.memoryMiB,
       cpuSomeAvg10: signals.cpuSomeAvg10BasisPoints / 100,
       memoryFullAvg10: signals.memoryFullAvg10BasisPoints / 100,
@@ -201,6 +208,8 @@ function decision(root, requested, create) {
       schema: 'agent-capacity-lease/v1',
       id,
       kind: create.kind,
+      class: requested.name,
+      aggregateSlice: create.kind === 'run' ? aggregateSlice : null,
       owner: create.owner,
       cpus: requested.cpus,
       memoryMiB: requested.memoryMiB,
@@ -255,31 +264,42 @@ function parseOwner(values) {
 }
 
 async function runScoped(root, requested, owner, timeoutSeconds, command) {
+  if (requested.name === 'agent') fail('run --class must be moderate, heavy, or exclusive');
+  // The parent limit must exist before any admitted command can execute.
+  const capped = Bun.spawnSync([
+    'systemctl', '--user', 'set-property', '--runtime', aggregateSlice,
+    `CPUQuota=${aggregateCpus(readSignals().cores) * 100}%`,
+  ], { stdin: 'ignore', stdout: 'ignore', stderr: 'inherit' });
+  if (capped.exitCode !== 0) fail('cannot establish aggregate CPU limit', 75);
   const admitted = decision(root, requested, { kind: 'run', owner, timeoutSeconds });
   print(admitted, process.stderr);
   if (admitted.decision !== 'RESERVED') return 75;
   const unit = `agent-capacity-${admitted.lease.replaceAll('-', '')}.scope`;
+  const stop = () => {
+    Bun.spawnSync(['systemctl', '--user', 'stop', unit], {
+      stdin: 'ignore', stdout: 'ignore', stderr: 'ignore',
+    });
+  };
   try {
     const child = Bun.spawn([
-      'systemd-run', '--user', '--scope', '--quiet', '--collect',
+      'systemd-run', '--user', '--scope', '--quiet', '--collect', '--expand-environment=no',
       `--unit=${unit}`,
+      `--slice=${aggregateSlice}`,
       `--property=CPUQuota=${requested.cpus * 100}%`,
       `--property=MemoryHigh=${requested.memoryMiB}M`,
       `--property=RuntimeMaxSec=${timeoutSeconds}s`,
       '--property=KillMode=control-group',
       '--', ...command,
     ], { stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' });
-    const stop = () => {
-      Bun.spawnSync(['systemctl', '--user', 'stop', unit], {
-        stdin: 'ignore', stdout: 'ignore', stderr: 'ignore',
-      });
-    };
     process.once('SIGINT', stop);
     process.once('SIGTERM', stop);
     return await child.exited;
   } finally {
+    stop();
+    process.removeListener('SIGINT', stop);
+    process.removeListener('SIGTERM', stop);
     try {
-      changeLease(root, admitted.lease, owner, null);
+      print(changeLease(root, admitted.lease, owner, null), process.stderr);
     } catch (error) {
       process.stderr.write(`machine-capacity: lease cleanup failed: ${error?.message ?? String(error)}\n`);
     }
@@ -293,6 +313,7 @@ async function main(argv) {
       '--class', '--cores', '--memory-total-mib', '--memory-available-mib',
       '--cpu-some-avg10-basis-points', '--memory-full-avg10-basis-points',
       '--leased-cpus', '--leased-memory-mib',
+      '--peer-runs', '--peer-exclusive-runs', '--unbounded-runs',
     ]));
     if (parsed.separator !== argv.length) fail('fixture accepts no command');
     const cores = parsePositiveInteger(required(parsed.values, '--cores'), '--cores');
@@ -300,17 +321,24 @@ async function main(argv) {
     const memoryFullAvg10 = parseNonnegativeInteger(
       required(parsed.values, '--memory-full-avg10-basis-points'), '--memory-full-avg10-basis-points',
     ) / 100;
+    const leasedCpuCeilings = parseNonnegativeInteger(
+      required(parsed.values, '--leased-cpus'), '--leased-cpus',
+    );
     const code = admissionDecision(
+      requested.name,
       cores,
       parsePositiveInteger(required(parsed.values, '--memory-total-mib'), '--memory-total-mib'),
       parsePositiveInteger(required(parsed.values, '--memory-available-mib'), '--memory-available-mib'),
       parseNonnegativeInteger(required(parsed.values, '--cpu-some-avg10-basis-points'), '--cpu-some-avg10-basis-points'),
-      parseNonnegativeInteger(required(parsed.values, '--leased-cpus'), '--leased-cpus'),
       parseNonnegativeInteger(required(parsed.values, '--leased-memory-mib'), '--leased-memory-mib'),
       requested.cpus,
       requested.memoryMiB,
+      parseNonnegativeInteger(parsed.values.get('--peer-runs') ?? '0', '--peer-runs'),
+      parseNonnegativeInteger(parsed.values.get('--peer-exclusive-runs') ?? '0', '--peer-exclusive-runs'),
+      parseNonnegativeInteger(parsed.values.get('--unbounded-runs') ?? '0', '--unbounded-runs'),
     );
-    print({ decision: code, class: requested.name, cpus: requested.cpus, memoryMiB: requested.memoryMiB, memoryFullAvg10 });
+    print({ decision: code, class: requested.name, cpus: requested.cpus, memoryMiB: requested.memoryMiB, memoryFullAvg10,
+      leasedCpuCeilings, aggregateCpuLimit: aggregateCpus(cores) });
     return code === 'RUN' ? 0 : 75;
   }
   const root = runtimeRoot();
