@@ -13,8 +13,9 @@ fi
 beagle_path="${BEAGLE_PATH:-$HOME/code/beagle/main}" # hardcoded-repo-path:allow
 runtime_root="${FIRN_RUNTIME_ROOT:-$HOME/.local/lib/firn/cli}"
 runtime_bin="$runtime_root/current/bin"
-runtime="$runtime_bin/firn-host.mjs"
-bun="$runtime_bin/bun"
+firn_source="$(dirname "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")")"
+runtime="$firn_source/native/firn_host.mjs"
+bun="${FIRN_BUN:-$runtime_bin/bun}"
 
 if [[ ! -f "$runtime" || ! -x "$bun" ]]; then
   printf 'firn: user runtime is not installed; run firn-runtime-update\n' >&2
@@ -24,4 +25,6 @@ fi
 export FIRN_REPO="$firn_repo"
 export BEAGLE_PATH="$beagle_path"
 export FIRN_RUNTIME_BIN="$runtime_bin"
+export FIRN_DISPATCHER_MODULE="${FIRN_DISPATCHER_MODULE:-$runtime_bin/../lib/firn-dispatcher.js}"
+export FIRN_CLAUSE_HOST_LIST_MODULE="$firn_source/native/firn-host-list.js"
 exec "$bun" "$runtime" "$@"

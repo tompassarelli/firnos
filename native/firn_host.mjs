@@ -2,6 +2,13 @@
 
 const modulePath = process.env.FIRN_DISPATCHER_MODULE
   ?? new URL('../lib/firn-dispatcher.js', import.meta.url).pathname;
+const args = Bun.argv.slice(2);
+const clauseModule = process.env.FIRN_CLAUSE_HOST_LIST_MODULE;
+const hostList = clauseModule ? await import(clauseModule) : undefined;
+
+if (hostList?.handles(args)) {
+  process.exitCode = hostList.run(process.env.FIRN_REPO, args);
+} else {
 const { run } = await import(modulePath);
 
 const runtimeBin = process.env.FIRN_RUNTIME_BIN;
@@ -26,4 +33,5 @@ const bridge = Object.freeze({
   },
 });
 
-process.exitCode = run(bridge, Bun.argv.slice(2));
+process.exitCode = run(bridge, args);
+}
