@@ -211,7 +211,7 @@ bench-script(): Text
       echo "shield OFF — original CPU allocation restored and verified."
       ;;
   esac
-  
+
   """
 
 export bench-shield-module()
