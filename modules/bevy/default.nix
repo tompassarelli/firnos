@@ -1,23 +1,2 @@
 { config, lib, pkgs, ... }:
-
-let
-  bevyLibs = with pkgs; [
-    alsa-lib
-    vulkan-loader
-    vulkan-tools
-    wayland
-    libxkbcommon
-    xorg.libX11
-    xorg.libXcursor
-    xorg.libXrandr
-    xorg.libXi
-    libudev-zero
-  ];
-in
-{
-  options.myConfig.modules.bevy.enable = lib.mkEnableOption "Bevy game engine development libraries";
-  config = lib.mkIf config.myConfig.modules.bevy.enable {
-    environment.systemPackages = bevyLibs;
-    programs.nix-ld.libraries = bevyLibs;
-  };
-}
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."bevy"."enable") ({ "environment" = { "systemPackages" = [ (pkgs."alsa-lib") (pkgs."vulkan-loader") (pkgs."vulkan-tools") (pkgs."wayland") (pkgs."libxkbcommon") (pkgs."xorg"."libX11") (pkgs."xorg"."libXcursor") (pkgs."xorg"."libXrandr") (pkgs."xorg"."libXi") (pkgs."libudev-zero") ]; }; "programs" = { "nix-ld" = { "libraries" = [ (pkgs."alsa-lib") (pkgs."vulkan-loader") (pkgs."vulkan-tools") (pkgs."wayland") (pkgs."libxkbcommon") (pkgs."xorg"."libX11") (pkgs."xorg"."libXcursor") (pkgs."xorg"."libXrandr") (pkgs."xorg"."libXi") (pkgs."libudev-zero") ]; }; }; })); "options" = { "myConfig" = { "modules" = { "bevy" = { "enable" = (lib."mkEnableOption" ("Bevy game engine development libraries")); }; }; }; }; }
