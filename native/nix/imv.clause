@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export imv-module()
+  module(path(myConfig.modules.imv.enable), "imv image viewer", package(path(imv)))

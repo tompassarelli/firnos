@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export libtool-module()
+  module(path(myConfig.modules.libtool.enable), "GNU Libtool", package(path(libtool)))

@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export gitleaks-module()
+  module(path(myConfig.modules.gitleaks.enable), "Enable gitleaks secret scanner (safe-push depends on it being on PATH)", package(path(gitleaks)))

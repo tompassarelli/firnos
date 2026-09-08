@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export hugo-module()
+  module(path(myConfig.modules.hugo.enable), "Hugo static site generator", package(path(hugo)))

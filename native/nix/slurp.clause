@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export slurp-module()
+  module(path(myConfig.modules.slurp.enable), "Wayland region selector", package(path(slurp)))

@@ -1,0 +1,4 @@
+import "nixpkgs.clause"
+
+export vim-module()
+  module(path(myConfig.modules.vim.enable), "Vim text editor", package(path(vim)))
