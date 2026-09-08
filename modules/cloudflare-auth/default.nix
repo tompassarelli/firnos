@@ -1,20 +1,2 @@
-{ config, lib, flakeRoot, ... }:
-
-let
-  username = config.myConfig.modules.users.username;
-  sopsFile = config.myConfig.modules.cloudflare-auth.sopsFile;
-in
-{
-  options.myConfig.modules.cloudflare-auth.enable = lib.mkEnableOption "Cloudflare deployment credentials";
-  options.myConfig.modules.cloudflare-auth.sopsFile = lib.mkOption {
-    type = lib.types.str;
-    default = "${flakeRoot}/secrets/cloudflare.yaml";
-    description = "sops file holding Cloudflare deployment credentials";
-  };
-  config = lib.mkIf config.myConfig.modules.cloudflare-auth.enable {
-    sops.secrets."cloudflare-global-api-key" = {
-      sopsFile = sopsFile;
-      owner = username;
-    };
-  };
-}
+{ config, flakeRoot, lib, ... }:
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."cloudflare-auth"."enable") ({ "sops" = { "secrets" = { "cloudflare-global-api-key" = { "owner" = config."myConfig"."modules"."users"."username"; "sopsFile" = config."myConfig"."modules"."cloudflare-auth"."sopsFile"; }; }; }; })); "options" = { "myConfig" = { "modules" = { "cloudflare-auth" = { "enable" = (lib."mkEnableOption" ("Cloudflare deployment credentials")); "sopsFile" = (lib."mkOption" ({ "default" = (("" + flakeRoot) + "/secrets/cloudflare.yaml"); "description" = "sops file holding Cloudflare deployment credentials"; "type" = lib."types"."str"; })); }; }; }; }; }

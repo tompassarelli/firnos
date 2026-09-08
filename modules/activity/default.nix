@@ -1,26 +1,2 @@
-{ config, lib, pkgs, ... }:
-
-((username: ((homeDir: {
-  options.myConfig.modules.activity.enable = lib.mkEnableOption "activity — activities own workspaces: two-level layer over niri (daemon + CLI)";
-  config = lib.mkIf config.myConfig.modules.activity.enable {
-    home-manager.users.${username} = ({ config, ... }: {
-      systemd.user.services.activity-daemon = {
-        Unit = {
-          Description = "activity daemon (niri activity layer)";
-          PartOf = [ "graphical-session.target" ];
-          After = [ "graphical-session.target" ];
-          Requisite = [ "graphical-session.target" ];
-        };
-        Service = {
-          ExecStart = "${homeDir}/.local/bin/activity daemon";
-          Restart = "on-failure";
-          RestartSec = 2;
-        };
-        Install = {
-          WantedBy = [ "niri.service" ];
-        };
-      };
-      xdg.configFile."activity/activities.json".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/code/nixos-config/dotfiles/activity/activities.json";
-    });
-  };
-}) config.myConfig.modules.users.homeDir)) config.myConfig.modules.users.username)
+{ config, lib, ... }:
+{ "config" = (lib."mkIf" (config."myConfig"."modules"."activity"."enable") ({ "home-manager" = { "users" = { ${config."myConfig"."modules"."users"."username"} = (__clause_argument_0: { "systemd" = { "user" = { "services" = { "activity-daemon" = { "Install" = { "WantedBy" = [ ("niri.service") ]; }; "Service" = { "ExecStart" = (("" + config."myConfig"."modules"."users"."homeDir") + "/.local/bin/activity daemon"); "Restart" = "on-failure"; "RestartSec" = 2; }; "Unit" = { "After" = [ ("graphical-session.target") ]; "Description" = "activity daemon (niri activity layer)"; "PartOf" = [ ("graphical-session.target") ]; "Requisite" = [ ("graphical-session.target") ]; }; }; }; }; }; "xdg" = { "configFile" = { "activity/activities.json" = { "source" = (((((__clause_argument_0)."config")."lib")."file")."mkOutOfStoreSymlink" ((("" + (((__clause_argument_0)."config")."home")."homeDirectory") + "/code/nixos-config/dotfiles/activity/activities.json"))); }; }; }; }); }; }; })); "options" = { "myConfig" = { "modules" = { "activity" = { "enable" = (lib."mkEnableOption" ("activity — activities own workspaces: two-level layer over niri (daemon + CLI)")); }; }; }; }; }
