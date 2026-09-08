@@ -1,0 +1,17 @@
+import "nixpkgs.clause"
+
+foreign jq(): Package
+  construction: "nix"
+  get: "jq"
+  from: "pkgs"
+  failure: throw
+
+foreign enabled(): Bool
+  construction: "nix"
+  get: "myConfig.modules.jq.enable"
+  from: "config"
+  failure: throw
+
+export jq-module()
+  {options: {myConfig: {modules: {jq: {enable: enable-option("jq command-line JSON processor")}}}},
+   config: when-enabled(enabled(), {environment: {systemPackages: [jq()]}})}

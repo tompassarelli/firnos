@@ -1,0 +1,23 @@
+Package:
+  foreign: "nixpkgs"
+  type: "Package"
+
+Option:
+  foreign: "nixpkgs/lib"
+  type: "Option"
+
+Definition:
+  foreign: "nixpkgs/lib"
+  type: "Definition"
+
+foreign enable-option(?description: Text): Option
+  construction: "nix"
+  call: "mkEnableOption"
+  from: "lib"
+  failure: throw
+
+foreign when-enabled<Body: Record>(?condition: Delayed<nix,Bool>, ?body: Body): Definition
+  construction: "nix"
+  call: "mkIf"
+  from: "lib"
+  failure: throw
