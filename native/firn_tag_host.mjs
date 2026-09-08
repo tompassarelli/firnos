@@ -27,6 +27,8 @@ const bridge = Object.freeze({
   env(name) { return process.env[name] ?? null; },
   out(text) { process.stdout.write(text); },
   err(text) { process.stderr.write(text); },
+  status(value) { return value.status; },
+  value(value) { return value.value; },
   pathKind(path) {
     try {
       const info = lstatSync(path);
