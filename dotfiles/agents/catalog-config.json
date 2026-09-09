@@ -17,6 +17,7 @@
     "threejs-shaders-distilled",
     "threejs-textures-distilled",
     "clause-authoring-distilled",
+    "game-design-prototyping-distilled",
     "greywrought-development-distilled",
     "firn-distilled",
     "nix-development-distilled",
@@ -414,6 +415,14 @@
       "owner": {
         "repo": "nixos-config",
         "path": "dotfiles/agents/hooks/tripwire-guard.sh"
+      }
+    },
+    "game-design-prototyping-distilled": {
+      "kind": "skill",
+      "category": "games",
+      "owner": {
+        "repo": "nixos-config",
+        "path": "dotfiles/agents/skills/game-design-prototyping-distilled/SKILL.md"
       }
     }
   },
@@ -1391,6 +1400,16 @@
       ]
     },
     "work-ownership-distilled": {
+      "distributions": [
+        {
+          "type": "skill",
+          "targets": [
+            "shared"
+          ]
+        }
+      ]
+    },
+    "game-design-prototyping-distilled": {
       "distributions": [
         {
           "type": "skill",
